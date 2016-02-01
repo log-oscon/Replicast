@@ -23,8 +23,8 @@
     }
   ],
   "support": {
-    "issues": "http://log.pt/",
-    "source": "http://log.pt/"
+    "issues": "https://bitbucket.org/log-oscon/replicast/issues",
+    "source": "https://bitbucket.org/log-oscon/replicast/src"
   },
   "autoload": {
     "psr-4": {
