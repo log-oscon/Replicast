@@ -412,7 +412,7 @@ class Site {
 	 */
 	public function get_rest_fields( $object, $field_name, $request ) {
 		return array(
-			'meta'           => $this->get_object_meta( $object ),
+			'meta' => $this->get_object_meta( $object ),
 		);
 	}
 
@@ -420,12 +420,17 @@ class Site {
 	 * Get custom fields for a post type.
 	 *
 	 * @since     1.0.0
-	 * @param     mixed     $value         The value of the field.
-	 * @param     object    $object        The object from the response.
-	 * @param     string    $field_name    Name of field.
-	 * @return    mixed                    Returns true on success and false on failure.
+	 * @param     array     $value     The value of the field.
+	 * @param     object    $object    The object from the response.
+	 * @return    mixed                Returns true on success and false on failure.
 	 */
-	public function update_rest_fields( $value, $object, $field_name ) {
+	public function update_rest_fields( $value, $object ) {
+
+		// Update meta
+		if ( ! empty( $value['meta'] ) ) {
+			$this->update_object_meta( $value['meta'], $object );
+		}
+
 		return;
 	}
 
@@ -435,7 +440,10 @@ class Site {
 	 * @access    private
 	 * @since     1.0.0
 	 * @param     array    $object    Details of current content object.
-	 * @return    mixed               Single metadata value, or array of values. If the $meta_type or $object_id parameters are invalid, false is returned. If the meta value isn't set, an empty string or array is returned, respectively.
+	 * @return    mixed               Single metadata value, or array of values. If the $meta_type
+	 *                                or $object_id parameters are invalid, false is returned.
+	 *                                If the meta value isn't set, an empty string or array is returned,
+	 *                                respectively.
 	 */
 	private function get_object_meta( $object ) {
 
@@ -452,4 +460,27 @@ class Site {
 
 		return $metadata;
 	}
+
+	/**
+	 * Update metadata for the specified object.
+	 *
+	 * @access    private
+	 * @since     1.0.0
+	 * @param     array    $object    Details of current content object.
+	 */
+	private function update_object_meta( $values, $object ) {
+
+		// TODO: should this be returning any kind of success/failure information?
+
+		foreach ( $values as $meta_key => $meta_value ) {
+			\update_metadata(
+				$object->post_type,
+				$object->ID,
+				\sanitize_key( $meta_key ),
+				\sanitize_text_field( $meta_value[0] )
+			);
+		}
+
+	}
+
 }
