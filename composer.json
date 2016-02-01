@@ -1,0 +1,53 @@
+{
+  "name": "logoscon/replicast",
+  "description": "Replicate content across WordPress installs via the WP REST API.",
+  "type": "wordpress-plugin",
+  "keywords": ["wordpress", "plugin"],
+  "homepage": "http://log.pt/",
+  "license": "GPL-2.0+",
+  "authors": [
+    {
+      "name": "log.OSCON, Lda.",
+      "email": "engenharia@log.pt",
+      "homepage": "http://log.pt/"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "http://wpackagist.org"
+    },
+    {
+      "type": "composer",
+      "url": "https://composer.log.pt"
+    }
+  ],
+  "support": {
+    "issues": "http://log.pt/",
+    "source": "http://log.pt/"
+  },
+  "autoload": {
+    "psr-4": {
+      "Replicast\\": "lib/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\Replicast\\": "tests/"
+    }
+  },
+  "config": {
+    "platform": {
+      "php": "5.5"
+    }
+  },
+  "require": {
+    "guzzlehttp/guzzle": "^6.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "*@stable",
+    "apigen/apigen": "@stable",
+    "10up/wp_mock": "dev-master"
+  },
+  "suggest": {}
+}
