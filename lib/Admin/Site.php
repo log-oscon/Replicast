@@ -482,12 +482,16 @@ class Site {
 		// TODO: should this be returning any kind of success/failure information?
 
 		foreach ( $values as $meta_key => $meta_value ) {
+
+			$meta_value = array_map( 'sanitize_text_field', $meta_value );
+
 			\update_metadata(
 				$object->post_type,
 				$object->ID,
 				\sanitize_key( $meta_key ),
-				\sanitize_text_field( $meta_value[0] )
+				\maybe_serialize( $meta_value )
 			);
+
 		}
 
 	}
