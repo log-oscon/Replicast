@@ -88,7 +88,7 @@ class Site {
 		 * @since    1.0.0
 		 * @param    array|string    Name(s) of the object type(s) for \Replicast\Admin\Site.
 		 */
-		self::$object_types = \apply_filters( 'replicast_site_object_type', array(
+		static::$object_types = \apply_filters( 'replicast_site_object_type', array(
 			'post',
 			'page',
 			'attachment'
@@ -167,7 +167,7 @@ class Site {
 	 * @return    array    Supported object type(s).
 	 */
 	public static function get_object_types() {
-		return self::$object_types;
+		return static::$object_types;
 	}
 
 	/**
@@ -194,7 +194,7 @@ class Site {
 
 		$this->taxonomy = \register_taxonomy(
 			$this->name,
-			self::get_object_types(),
+			static::get_object_types(),
 			array(
 				'label'              => \__( 'Sites', 'replicast' ),
 				'labels'             => $labels,
