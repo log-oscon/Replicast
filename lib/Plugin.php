@@ -143,7 +143,7 @@ class Plugin {
 		$this->loader->add_action( static::TAXONOMY_SITE . '_edit_form_fields', $site, 'edit_fields' );
 		$this->loader->add_action( 'created_' . static::TAXONOMY_SITE,          $site, 'update_fields' );
 		$this->loader->add_action( 'edited_' . static::TAXONOMY_SITE,           $site, 'update_fields' );
-		$this->loader->add_action( 'deleted_term_taxonomy',                     $site, 'on_deleted_term' );
+		$this->loader->add_action( 'delete_' . static::TAXONOMY_SITE,           $site, 'on_deleted_term' );
 		$this->loader->add_action( 'rest_api_init',                             $site, 'register_rest_fields' );
 
 	}
