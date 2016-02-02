@@ -63,7 +63,7 @@ class Post extends Request {
 			if ( $replicated_post ) {
 
 				// Update post with replicast info
-				$this->update_replicast_info( $site->get_id(), $replicated_post->id );
+				$this->update_replicast_info( $site, $replicated_post->id );
 
 				$result = array(
 					'status_code'   => $response->getStatusCode(),
@@ -121,7 +121,7 @@ class Post extends Request {
 			if ( $replicated_post ) {
 
 				// Update post with replicast info
-				$this->update_replicast_info( $site->get_id(), $replicated_post->id );
+				$this->update_replicast_info( $site, $replicated_post->id );
 
 				$result = array(
 					'status_code'   => $response->getStatusCode(),
@@ -179,7 +179,7 @@ class Post extends Request {
 			if ( $replicated_post ) {
 
 				// Update post with replicast info
-				$this->update_replicast_info( $site->get_id() );
+				$this->update_replicast_info( $site );
 
 				$result = array(
 					'status_code'   => $response->getStatusCode(),

@@ -532,12 +532,15 @@ abstract class Request {
 	 *
 	 * @since     1.0.0
 	 * @access    protected
-	 * @param     int          $site_id                    Site term ID to where the object was replicated.
-	 * @param     int|false    $object_id    (optional)    Post ID on remote site. False if it's for removal (trash).
-	 * @return    mixed                                    Returns meta ID if the meta doesn't exist, otherwise
-	 *                                                     returns true on success and false on failure.
+	 * @param     \Replicast\Model\Site    $site                       Site object.
+	 * @param     int|false                $object_id    (optional)    Post ID on remote site. False if it's for removal (trash).
+	 * @return    mixed                                                Returns meta ID if the meta doesn't exist, otherwise
+	 *                                                                 returns true on success and false on failure.
 	 */
-	protected function update_replicast_info( $site_id, $object_id = false ) {
+	protected function update_replicast_info( $site, $object_id = false ) {
+
+		// Get site ID
+		$site_id = $site->get_id();
 
 		// Get replicast object info
 		$replicast_ids = $this->get_replicast_info();
