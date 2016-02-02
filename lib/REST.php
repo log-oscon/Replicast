@@ -118,9 +118,6 @@ class REST {
 		$meta_type = $object->post_type;
 		$object_id = $object->ID;
 
-		// First, delete metadata comparing previous values with the new values
-		static::delete_metadata( $meta_type, $object_id, $value );
-
 		// Update metadata
 		foreach ( $value as $meta_key => $meta_value ) {
 
@@ -174,31 +171,6 @@ class REST {
 		}
 
 		return $prepared_metadata;
-	}
-
-	/**
-	 * Delete metadata for the specified object.
-	 *
-	 * @access    private
-	 * @since     1.0.0
-	 * @param     string    $meta_type     Type of object metadata.
-	 * @param     int       $object_id     ID of the object metadata.
-	 * @param     array     $new_values    New object metadata values.
-	 */
-	private static function delete_metadata( $meta_type, $object_id, $new_values ) {
-
-		$metadata = static::get_metadata( $meta_type, $object_id );
-
-		foreach ( $metadata as $meta_key => $meta_value ) {
-
-			if ( array_key_exists( $meta_key, $new_values ) ) {
-				continue;
-			}
-
-			\delete_metadata( $meta_type, $object_id, $meta_key );
-
-		}
-
 	}
 
 }
