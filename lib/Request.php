@@ -542,4 +542,144 @@ abstract class Request {
 		return \update_metadata( $this->object->post_type, $this->object->ID, Plugin::REPLICAST_IDS, $replicast_ids );
 	}
 
+	/**
+	 * Get custom fields for a object type.
+	 *
+	 * @since     1.0.0
+	 * @param     array               $object        Details of current content object.
+	 * @param     string              $field_name    Name of field.
+	 * @param     \WP_REST_Request    $request       Current \WP_REST_Request request.
+	 * @return    array                              Custom fields.
+	 */
+	public static function get_rest_fields( $object, $field_name, $request ) {
+		return array(
+			'meta' => self::get_object_meta( $object ),
+		);
+	}
+
+	/**
+	 * Retrieve metadata for the specified object.
+	 *
+	 * @since     1.0.0
+	 * @param     array    $object    Details of current content object.
+	 * @return    array               Object metadata.
+	 */
+	public static function get_object_meta( $object ) {
+		return self::get_metadata( $object['type'], $object['id'] );
+	}
+
+	/**
+	 * Get custom fields for a post type.
+	 *
+	 * @since     1.0.0
+	 * @param     array     $value     The value of the field.
+	 * @param     object    $object    The object from the response.
+	 */
+	public static function update_rest_fields( $value, $object ) {
+
+		// Update meta
+		if ( ! empty( $value['meta'] ) ) {
+			self::update_object_meta( $value['meta'], $object );
+		}
+
+	}
+
+	/**
+	 * Update metadata for the specified object.
+	 *
+	 * @since     1.0.0
+	 * @param     array     $value     The value of the field.
+	 * @param     object    $object    The object from the response.
+	 */
+	public static function update_object_meta( $value, $object ) {
+
+		// TODO: should this be returning any kind of success/failure information?
+
+		$meta_type = $object->post_type;
+		$object_id = $object->ID;
+
+		// First, delete metadata comparing previous values with the new values
+		self::delete_metadata( $meta_type, $object_id, $value );
+
+		// Update metadata
+		foreach ( $value as $meta_key => $meta_value ) {
+
+			// Sanitize
+			$meta_value = array_map( 'sanitize_text_field', $value[ $meta_key ] );
+
+			// Maybe serialize array of values
+			if ( sizeof( $meta_value ) > 1 ) {
+				$meta_value = \maybe_serialize( $meta_value );
+			}
+			else {
+				$meta_value = $meta_value[0];
+			}
+
+			\update_metadata( $meta_type, $object_id, $meta_key, $meta_value );
+
+		}
+
+	}
+
+	/**
+	 * Retrieve metadata for the specified object.
+	 *
+	 * @access    private
+	 * @since     1.0.0
+	 * @param     string    $meta_type    Type of object metadata.
+	 * @param     int       $object_id    ID of the object metadata.
+	 * @return    array                   Object metadata.
+	 */
+	private static function get_metadata( $meta_type, $object_id ) {
+
+		$metadata = \get_metadata( $meta_type, $object_id );
+
+		// If the $meta_type or $object_id parameters are invalid, false is returned
+		if ( ! $metadata ) {
+			return $prepared_metadata;
+		}
+
+		if ( ! is_array( $metadata ) ) {
+			$metadata = (array) $metadata;
+		}
+
+		$prepared_metadata = array();
+		foreach ( $metadata as $meta_key => $meta_value ) {
+
+			if ( \is_protected_meta( $meta_key ) ) {
+				continue;
+			}
+
+			$prepared_metadata[ $meta_key ] = $meta_value;
+
+		}
+
+		return $prepared_metadata;
+	}
+
+	/**
+	 * Delete metadata for the specified object.
+	 *
+	 * @access    private
+	 * @since     1.0.0
+	 * @param     string    $meta_type     Type of object metadata.
+	 * @param     int       $object_id     ID of the object metadata.
+	 * @param     array     $new_values    New object metadata values.
+	 */
+	private static function delete_metadata( $meta_type, $object_id, $new_values ) {
+
+		$metadata = self::get_metadata( $meta_type, $object_id );
+
+		foreach ( $metadata as $meta_key => $meta_value ) {
+
+			if ( array_key_exists( $meta_key, $new_values ) ) {
+				continue;
+			}
+
+			\delete_metadata( $meta_type, $object_id, $meta_key );
+
+		}
+
+	}
+
 }

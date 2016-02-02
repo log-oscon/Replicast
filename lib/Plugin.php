@@ -122,6 +122,7 @@ class Plugin {
 		$this->loader->add_action( 'admin_notices', $admin, 'display_admin_notices' );
 		$this->loader->add_action( 'save_post',     $admin, 'on_save_post', 10, 2 );
 		$this->loader->add_action( 'wp_trash_post', $admin, 'on_trash_post', 10, 1 );
+		$this->loader->add_action( 'rest_api_init', $admin, 'register_rest_fields' );
 
 	}
 
@@ -144,7 +145,6 @@ class Plugin {
 		$this->loader->add_action( 'created_' . static::TAXONOMY_SITE,          $site, 'update_fields' );
 		$this->loader->add_action( 'edited_' . static::TAXONOMY_SITE,           $site, 'update_fields' );
 		$this->loader->add_action( 'delete_' . static::TAXONOMY_SITE,           $site, 'on_deleted_term' );
-		$this->loader->add_action( 'rest_api_init',                             $site, 'register_rest_fields' );
 
 	}
 
