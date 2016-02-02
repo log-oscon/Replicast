@@ -122,7 +122,21 @@ class Plugin {
 		$this->loader->add_action( 'admin_notices', $admin, 'display_admin_notices' );
 		$this->loader->add_action( 'save_post',     $admin, 'on_save_post', 10, 2 );
 		$this->loader->add_action( 'wp_trash_post', $admin, 'on_trash_post' );
-		$this->loader->add_action( 'rest_api_init', $admin, 'register_rest_fields' );
+
+	}
+
+	/**
+	 * Register all of the hooks related to the RESTful functionality
+	 * of the plugin.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 */
+	private function define_rest_hooks() {
+
+		$rest = new REST( $this );
+
+		$this->loader->add_action( 'rest_api_init', $rest, 'register_rest_fields' );
 
 	}
 
@@ -159,6 +173,7 @@ class Plugin {
 	public function run() {
 		$this->set_locale();
 		$this->define_admin_hooks();
+		$this->define_rest_hooks();
 		$this->define_site_hooks();
 		$this->loader->run();
 	}

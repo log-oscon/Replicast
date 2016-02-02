@@ -1,7 +1,7 @@
 <?php
 
 /**
- * The dashboard-specific functionality of the plugin.
+ * The dashboard-specific functionality of the plugin
  *
  * @link       http://log.pt/
  * @since      1.0.0
