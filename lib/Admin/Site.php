@@ -457,7 +457,7 @@ class Site {
 		$meta_type = $object->post_type;
 		$object_id = $object->ID;
 
-		// First, delete previous metadata
+		// First, delete metadata comparing previous values with the new values
 		$this->delete_metadata( $meta_type, $object_id, $value );
 
 		// Update metadata
@@ -466,6 +466,7 @@ class Site {
 			// Sanitize
 			$meta_value = array_map( 'sanitize_text_field', $value[ $meta_key ] );
 
+			// Maybe serialize array of values
 			if ( sizeof( $meta_value ) > 1 ) {
 				$meta_value = \maybe_serialize( $meta_value );
 			}
@@ -490,9 +491,9 @@ class Site {
 	 */
 	private function get_metadata( $meta_type, $object_id ) {
 
-		$prepared_metadata = array();
-		$metadata          = \get_metadata( $meta_type, $object_id );
+		$metadata = \get_metadata( $meta_type, $object_id );
 
+		// If the $meta_type or $object_id parameters are invalid, false is returned
 		if ( ! $metadata ) {
 			return $prepared_metadata;
 		}
@@ -501,6 +502,7 @@ class Site {
 			$metadata = (array) $metadata;
 		}
 
+		$prepared_metadata = array();
 		foreach ( $metadata as $meta_key => $meta_value ) {
 
 			if ( \is_protected_meta( $meta_key ) ) {
@@ -508,6 +510,7 @@ class Site {
 			}
 
 			$prepared_metadata[ $meta_key ] = $meta_value;
+
 		}
 
 		return $prepared_metadata;
@@ -524,7 +527,9 @@ class Site {
 	 */
 	private function delete_metadata( $meta_type, $object_id, $new_values ) {
 
-		foreach ( $this->get_metadata( $meta_type, $object_id ) as $meta_key => $meta_value ) {
+		$metadata = $this->get_metadata( $meta_type, $object_id );
+
+		foreach ( $metadata as $meta_key => $meta_value ) {
 
 			if ( array_key_exists( $meta_key, $new_values ) ) {
 				continue;
