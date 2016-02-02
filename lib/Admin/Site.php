@@ -447,18 +447,27 @@ class Site {
 	 */
 	private function get_object_meta( $object ) {
 
-		$metadata = array();
+		$prepared_metadata = array();
+		$metadata          = \get_metadata( $object['type'], $object['id'] );
 
-		foreach ( \get_metadata( $object['type'], $object['id'] ) as $meta_key => $meta_value ) {
+		if ( ! $metadata ) {
+			return $prepared_metadata;
+		}
+
+		if ( ! is_array( $metadata ) ) {
+			$metadata = (array) $metadata;
+		}
+
+		foreach ( $metadata as $meta_key => $meta_value ) {
 
 			if ( \is_protected_meta( $meta_key ) ) {
 				continue;
 			}
 
-			$metadata[ $meta_key ] = $meta_value;
+			$prepared_metadata[ $meta_key ] = $meta_value;
 		}
 
-		return $metadata;
+		return $prepared_metadata;
 	}
 
 	/**
