@@ -408,7 +408,7 @@ class Site {
 	 * @param     array               $object        Details of current content object.
 	 * @param     string              $field_name    Name of field.
 	 * @param     \WP_REST_Request    $request       Current \WP_REST_Request request.
-	 * @return    mixed                              Custom fields.
+	 * @return    array                              Custom fields.
 	 */
 	public function get_rest_fields( $object, $field_name, $request ) {
 		return array(
@@ -417,12 +417,22 @@ class Site {
 	}
 
 	/**
+	 * Retrieve metadata for the specified object.
+	 *
+	 * @since     1.0.0
+	 * @param     array    $object    Details of current content object.
+	 * @return    array               Object metadata.
+	 */
+	public function get_object_meta( $object ) {
+		return $this->get_metadata( $object['type'], $object['id'] );
+	}
+
+	/**
 	 * Get custom fields for a post type.
 	 *
 	 * @since     1.0.0
 	 * @param     array     $value     The value of the field.
 	 * @param     object    $object    The object from the response.
-	 * @return    mixed                Returns true on success and false on failure.
 	 */
 	public function update_rest_fields( $value, $object ) {
 
@@ -431,7 +441,42 @@ class Site {
 			$this->update_object_meta( $value['meta'], $object );
 		}
 
-		return;
+	}
+
+	/**
+	 * Update metadata for the specified object.
+	 *
+	 * @since     1.0.0
+	 * @param     array     $value     The value of the field.
+	 * @param     object    $object    The object from the response.
+	 */
+	public function update_object_meta( $value, $object ) {
+
+		// TODO: should this be returning any kind of success/failure information?
+
+		$meta_type = $object->post_type;
+		$object_id = $object->ID;
+
+		// First, delete previous metadata
+		$this->delete_metadata( $meta_type, $object_id, $value );
+
+		// Update metadata
+		foreach ( $value as $meta_key => $meta_value ) {
+
+			// Sanitize
+			$meta_value = array_map( 'sanitize_text_field', $value[ $meta_key ] );
+
+			if ( sizeof( $meta_value ) > 1 ) {
+				$meta_value = \maybe_serialize( $meta_value );
+			}
+			else {
+				$meta_value = $meta_value[0];
+			}
+
+			\update_metadata( $meta_type, $object_id, $meta_key, $meta_value );
+
+		}
+
 	}
 
 	/**
@@ -439,16 +484,14 @@ class Site {
 	 *
 	 * @access    private
 	 * @since     1.0.0
-	 * @param     array    $object    Details of current content object.
-	 * @return    mixed               Single metadata value, or array of values. If the $meta_type
-	 *                                or $object_id parameters are invalid, false is returned.
-	 *                                If the meta value isn't set, an empty string or array is returned,
-	 *                                respectively.
+	 * @param     string    $meta_type    Type of object metadata.
+	 * @param     int       $object_id    ID of the object metadata.
+	 * @return    array                   Object metadata.
 	 */
-	private function get_object_meta( $object ) {
+	private function get_metadata( $meta_type, $object_id ) {
 
 		$prepared_metadata = array();
-		$metadata          = \get_metadata( $object['type'], $object['id'] );
+		$metadata          = \get_metadata( $meta_type, $object_id );
 
 		if ( ! $metadata ) {
 			return $prepared_metadata;
@@ -471,26 +514,23 @@ class Site {
 	}
 
 	/**
-	 * Update metadata for the specified object.
+	 * Delete metadata for the specified object.
 	 *
 	 * @access    private
 	 * @since     1.0.0
-	 * @param     object    $object    Details of current content object.
+	 * @param     string    $meta_type     Type of object metadata.
+	 * @param     int       $object_id     ID of the object metadata.
+	 * @param     array     $new_values    New object metadata values.
 	 */
-	private function update_object_meta( $values, $object ) {
+	private function delete_metadata( $meta_type, $object_id, $new_values ) {
 
-		// TODO: should this be returning any kind of success/failure information?
+		foreach ( $this->get_metadata( $meta_type, $object_id ) as $meta_key => $meta_value ) {
 
-		foreach ( $values as $meta_key => $meta_value ) {
+			if ( array_key_exists( $meta_key, $new_values ) ) {
+				continue;
+			}
 
-			$meta_value = array_map( 'sanitize_text_field', $meta_value );
-
-			\update_metadata(
-				$object->post_type,
-				$object->ID,
-				\sanitize_key( $meta_key ),
-				\maybe_serialize( $meta_value )
-			);
+			\delete_metadata( $meta_type, $object_id, $meta_key );
 
 		}
 
