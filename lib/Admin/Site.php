@@ -475,7 +475,7 @@ class Site {
 	 *
 	 * @access    private
 	 * @since     1.0.0
-	 * @param     array    $object    Details of current content object.
+	 * @param     object    $object    Details of current content object.
 	 */
 	private function update_object_meta( $values, $object ) {
 
