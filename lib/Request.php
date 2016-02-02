@@ -508,10 +508,21 @@ abstract class Request {
 	 *
 	 * @since     1.0.0
 	 * @access    protected
-	 * @return    array|bool    The replicast info meta field.
+	 * @return    array    The replicast info meta field.
 	 */
 	protected function get_replicast_info() {
-		return \get_metadata( $this->object->post_type, $this->object->ID, Plugin::REPLICAST_IDS, true );
+
+		$replicast_ids = \get_metadata( $this->object->post_type, $this->object->ID, Plugin::REPLICAST_IDS, true );
+
+		if ( ! $replicast_ids ) {
+			return array();
+		}
+
+		if ( ! is_array( $replicast_ids ) ) {
+			$replicast_ids = (array) $replicast_ids;
+		}
+
+		return $replicast_ids;
 	}
 
 	/**
@@ -634,9 +645,8 @@ abstract class Request {
 
 		$metadata = \get_metadata( $meta_type, $object_id );
 
-		// If the $meta_type or $object_id parameters are invalid, false is returned
 		if ( ! $metadata ) {
-			return $prepared_metadata;
+			return array();
 		}
 
 		if ( ! is_array( $metadata ) ) {
