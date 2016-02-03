@@ -323,15 +323,11 @@ abstract class Request {
 	 */
 	protected function get_object_id() {
 
-		if ( $this->object instanceof \WP_Post ) {
-			return $this->object->ID;
-		}
-
 		if ( $this->object instanceof \WP_Term ) {
 			return $this->object->term_id;
 		}
 
-		return;
+		return $this->object->ID;
 	}
 
 	/**
@@ -343,15 +339,11 @@ abstract class Request {
 	 */
 	protected function get_object_type() {
 
-		if ( $this->object instanceof \WP_Post ) {
-			return $this->object->post_type;
-		}
-
 		if ( $this->object instanceof \WP_Term ) {
 			return $this->object->taxonomy;
 		}
 
-		return;
+		return $this->object->post_type;
 	}
 
 	/**
