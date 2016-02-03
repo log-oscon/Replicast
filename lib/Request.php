@@ -241,6 +241,10 @@ abstract class Request {
 		// Get object data
 		$data = $this->data;
 
+		if ( \is_wp_error( $data ) ) {
+			return array();
+		}
+
 		// Remove object ID
 		unset( $data['id'] );
 
@@ -269,6 +273,10 @@ abstract class Request {
 
 		// Get object data
 		$data = $this->data;
+
+		if ( \is_wp_error( $data ) ) {
+			return array();
+		}
 
 		// Get replicast object info
 		$replicast_ids = $this->get_replicast_info();
