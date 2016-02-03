@@ -34,6 +34,7 @@ class Category extends Request {
 	public function __construct( \WP_Term $term ) {
 		$this->rest_base = 'categories';
 		$this->object    = $term;
+		$this->data      = $this->get_object_data();
 	}
 
 	/**
