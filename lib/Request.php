@@ -242,6 +242,8 @@ abstract class Request {
 	 */
 	protected function prepare_body_for_create( $site ) {
 
+		$object_type = $this->get_object_type();
+
 		// Get object data
 		$data = $this->data;
 
@@ -250,7 +252,11 @@ abstract class Request {
 		}
 
 		// Remove object ID
-		unset( $data['id'] );
+		if ( $object_type !== 'post' ) {
+			unset( $data['term_id'] );
+		} else {
+			unset( $data['id'] );
+		}
 
 		/**
 		 * Filter the prepared object data for creation.
@@ -258,11 +264,7 @@ abstract class Request {
 		 * @since    1.0.0
 		 * @param    array    Prepared object data.
 		 */
-		if ( ! empty( $data['type'] ) ) {
-			$data = \apply_filters( "replicast_prepare_{$data['type']}_for_create", $data );
-		}
-
-		return $data;
+		return \apply_filters( "replicast_prepare_{$object_type}_for_create", $data );
 	}
 
 	/**
@@ -274,6 +276,8 @@ abstract class Request {
 	 * @return    array                             Prepared object data.
 	 */
 	protected function prepare_body_for_update( $site ) {
+
+		$object_type = $this->get_object_type();
 
 		// Get object data
 		$data = $this->data;
@@ -289,7 +293,11 @@ abstract class Request {
 		$object_id = $replicast_ids[ $site->get_id() ];
 
 		// Update object ID
-		$data['id'] = $object_id;
+		if ( $object_type !== 'post' ) {
+			$data['term_id'] = $object_id;
+		} else {
+			$data['id'] = $object_id;
+		}
 
 		/**
 		 * Filter the prepared object data for update.
@@ -297,11 +305,7 @@ abstract class Request {
 		 * @since    1.0.0
 		 * @param    array    Prepared object data.
 		 */
-		if ( ! empty( $data['type'] ) ) {
-			$data = \apply_filters( "replicast_prepare_{$data['type']}_for_update", $data );
-		}
-
-		return $data;
+		return \apply_filters( "replicast_prepare_{$object_type}_for_update", $data );
 	}
 
 	/**
