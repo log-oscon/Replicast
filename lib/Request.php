@@ -244,7 +244,17 @@ abstract class Request {
 		// Remove object ID
 		unset( $data['id'] );
 
-		return \apply_filters( "replicast_prepare_{$data['type']}_for_create", $data );
+		/**
+		 * Filter the prepared object data for creation.
+		 *
+		 * @since    1.0.0
+		 * @param    array    Prepared object data.
+		 */
+		if ( ! empty( $data['type'] ) ) {
+			$data = \apply_filters( "replicast_prepare_{$data['type']}_for_create", $data );
+		}
+
+		return $data;
 	}
 
 	/**
@@ -269,7 +279,17 @@ abstract class Request {
 		// Update object ID
 		$data['id'] = $object_id;
 
-		return \apply_filters( "replicast_prepare_{$data['type']}_for_update", $data );
+		/**
+		 * Filter the prepared object data for update.
+		 *
+		 * @since    1.0.0
+		 * @param    array    Prepared object data.
+		 */
+		if ( ! empty( $data['type'] ) ) {
+			$data = \apply_filters( "replicast_prepare_{$data['type']}_for_update", $data );
+		}
+
+		return $data;
 	}
 
 	/**
@@ -383,6 +403,12 @@ abstract class Request {
 			unset( $args['ip'] );
 		}
 
+		/**
+		 * Filter the name of the selected hashing algorithm (e.g. "md5", "sha256", "haval160,4", etc..).
+		 *
+		 * @since    1.0.0
+		 * @param    string    Name of the selected hashing algorithm.
+		 */
 		return hash( \apply_filters( 'replicast_key_auth_signature_algo', 'sha256' ), json_encode( $args ) . $config['api_secret'] );
 	}
 
