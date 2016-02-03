@@ -61,7 +61,6 @@ class REST {
 
 	}
 
-
 	/**
 	 * Get custom fields for a object type.
 	 *
