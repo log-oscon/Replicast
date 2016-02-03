@@ -40,18 +40,22 @@ class Post extends Request {
 	/**
 	 * Get post from a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	public function get( $site ) {}
 
 	/**
 	 * Create post on a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	public function post( $site ) {
+
+		$result = array();
 
 		try {
 
@@ -106,10 +110,13 @@ class Post extends Request {
 	/**
 	 * Update post on a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	public function put( $site ) {
+
+		$result = array();
 
 		try {
 
@@ -165,10 +172,13 @@ class Post extends Request {
 	/**
 	 * Delete post from a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	public function delete( $site ) {
+
+		$result = array();
 
 		try {
 

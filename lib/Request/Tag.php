@@ -29,7 +29,7 @@ class Tag extends Request {
 	 * Constructor.
 	 *
 	 * @since    1.0.0
-	 * @param    \WP_Term|array    $term    Term object.
+	 * @param    \WP_Term    $term    Term object.
 	 */
 	public function __construct( \WP_Term $term ) {
 		$this->rest_base = 'tags';
@@ -39,32 +39,36 @@ class Tag extends Request {
 	/**
 	 * Get tag from a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	public function get( $site ) {}
 
 	/**
 	 * Create tag on a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	public function post( $site ) {}
 
 	/**
 	 * Update tag on a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	public function put( $site ) {}
 
 	/**
 	 * Delete tag from a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	public function delete( $site ) {}
 

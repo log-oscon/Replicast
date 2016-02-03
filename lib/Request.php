@@ -172,32 +172,36 @@ abstract class Request {
 	/**
 	 * Get object from a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	abstract public function get( $site );
 
 	/**
 	 * Create object on a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	abstract public function post( $site );
 
 	/**
 	 * Update object on a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	abstract public function put( $site );
 
 	/**
 	 * Delete object from a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	abstract public function delete( $site );
 
