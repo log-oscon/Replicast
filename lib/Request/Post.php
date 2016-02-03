@@ -32,8 +32,9 @@ class Post extends Request {
 	 * @param    \WP_Post    $post    Post object.
 	 */
 	public function __construct( \WP_Post $post ) {
-		$this->object = $post;
-		$this->data   = $this->get_object_data();
+		$this->rest_base = 'posts';
+		$this->object    = $post;
+		$this->data      = $this->get_object_data();
 	}
 
 	/**
@@ -55,7 +56,7 @@ class Post extends Request {
 		try {
 
 			// Do request
-			$response = $this->do_request( Request::CREATABLE, 'posts', $site );
+			$response = $this->do_request( Request::CREATABLE, $site );
 
 			// Get the replicated post data
 			$replicated_post = json_decode( $response->getBody()->getContents() );
@@ -113,7 +114,7 @@ class Post extends Request {
 		try {
 
 			// Do request
-			$response = $this->do_request( Request::EDITABLE, 'posts', $site );
+			$response = $this->do_request( Request::EDITABLE, $site );
 
 			// Get the replicated post data
 			$replicated_post = json_decode( $response->getBody()->getContents() );
@@ -171,7 +172,7 @@ class Post extends Request {
 		try {
 
 			// Do request
-			$response = $this->do_request( Request::DELETABLE, 'posts', $site );
+			$response = $this->do_request( Request::DELETABLE, $site );
 
 			// Get the replicated post data
 			$replicated_post = json_decode( $response->getBody()->getContents() );

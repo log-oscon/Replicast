@@ -82,13 +82,13 @@ abstract class Request {
 	protected $method = 'GET';
 
 	/**
-	 * Request path.
+	 * The base of this request route.
 	 *
 	 * @since     1.0.0
 	 * @access    protected
 	 * @var       string
 	 */
-	protected $path = '/wp/v2/posts/';
+	protected $rest_base = 'posts';
 
 	/**
 	 * Attributes for the request.
@@ -320,7 +320,11 @@ abstract class Request {
 		);
 
 		// Build request
-		$request = new \WP_REST_Request( $this->method, \trailingslashit( $this->path ) . $this->object->ID );
+		$request = new \WP_REST_Request(
+			$this->method,
+			sprintf( '/wp/v2/%s', \trailingslashit( $this->rest_base ) . $this->object->ID )
+		);
+
 		foreach ( $attributes as $k => $v ) {
 			$request->set_param( $k, $v );
 		}
@@ -377,11 +381,10 @@ abstract class Request {
 	 * @since     1.0.0
 	 * @access    protected
 	 * @param     string                   $method       Request method.
-	 * @param     string                   $path         Request path.
 	 * @param     \Replicast\Model\Site    $site         Site object.
 	 * @return    \Psr\Http\Message\ResponseInterface    Response.
 	 */
-	protected function do_request( $method, $path, $site ) {
+	protected function do_request( $method, $site ) {
 
 		// Bail out if the site is invalid
 		if ( ! $site->is_valid() ) {
@@ -410,7 +413,7 @@ abstract class Request {
 		$config = $site->get_config();
 
 		// Add request path to endpoint
-		$config['api_url'] = $config['api_url'] . \trailingslashit( $path );
+		$config['api_url'] = $config['api_url'] . \trailingslashit( $this->rest_base );
 
 		// Build endpoint for GET, PUT and DELETE
 		// FIXME: this has to be more bulletproof!
