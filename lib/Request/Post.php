@@ -58,13 +58,13 @@ class Post extends Request {
 			// Do request
 			$response = $this->do_request( Request::CREATABLE, $site );
 
-			// Get the replicated post data
-			$replicated_post = json_decode( $response->getBody()->getContents() );
+			// Get the replicated data
+			$replicated_data = json_decode( $response->getBody()->getContents() );
 
-			if ( $replicated_post ) {
+			if ( $replicated_data ) {
 
-				// Update post with replicast info
-				$this->update_replicast_info( $site, $replicated_post->id );
+				// Update data with replicast info
+				$this->update_replicast_info( $site, $replicated_data->id );
 
 				$result = array(
 					'status_code'   => $response->getStatusCode(),
@@ -77,7 +77,7 @@ class Post extends Request {
 						),
 						sprintf(
 							'<a href="%s" title="%s" target="_blank">%s</a>',
-							\esc_url( $replicated_post->link ),
+							\esc_url( $replicated_data->link ),
 							\esc_attr( $site->get_name() ),
 							\__( 'View post', 'replicast' )
 						)
@@ -116,13 +116,14 @@ class Post extends Request {
 			// Do request
 			$response = $this->do_request( Request::EDITABLE, $site );
 
-			// Get the replicated post data
-			$replicated_post = json_decode( $response->getBody()->getContents() );
+			// Get the replicated data
+			$replicated_data = json_decode( $response->getBody()->getContents() );
 
-			if ( $replicated_post ) {
+			if ( $replicated_data ) {
 
-				// Update post with replicast info
-				$this->update_replicast_info( $site, $replicated_post->id );
+				// Update data with replicast info
+				$this->update_replicast_info( $site, $replicated_data->id );
+
 
 				$result = array(
 					'status_code'   => $response->getStatusCode(),
@@ -135,7 +136,7 @@ class Post extends Request {
 						),
 						sprintf(
 							'<a href="%s" title="%s" target="_blank">%s</a>',
-							\esc_url( $replicated_post->link ),
+							\esc_url( $replicated_data->link ),
 							\esc_attr( $site->get_name() ),
 							\__( 'View post', 'replicast' )
 						)
@@ -174,12 +175,12 @@ class Post extends Request {
 			// Do request
 			$response = $this->do_request( Request::DELETABLE, $site );
 
-			// Get the replicated post data
-			$replicated_post = json_decode( $response->getBody()->getContents() );
+			// Get the replicated data
+			$replicated_data = json_decode( $response->getBody()->getContents() );
 
-			if ( $replicated_post ) {
+			if ( $replicated_data ) {
 
-				// Update post with replicast info
+				// Update data with replicast info
 				$this->update_replicast_info( $site );
 
 				$result = array(
