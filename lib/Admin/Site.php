@@ -200,7 +200,7 @@ class Site {
 				'labels'             => $labels,
 				'description'        => '',
 				'public'             => false,
-				'show_ui'            => true,
+				'show_ui'            => ! defined( 'REPLICAST_SITE_SHOW_UI' ) || REPLICAST_SITE_SHOW_UI,
 				'show_in_nav_menus'  => false,
 				'show_tagcloud'      => false,
 				'show_in_quick_edit' => false,
