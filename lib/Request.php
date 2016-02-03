@@ -82,7 +82,14 @@ abstract class Request {
 	protected $method = 'GET';
 
 	/**
-	 * The base of this request route.
+	 * The namespace of the request route.
+	 *
+	 * @var string
+	 */
+	protected $namespace = 'wp/v2';
+
+	/**
+	 * The base of the request route.
 	 *
 	 * @since     1.0.0
 	 * @access    protected
@@ -322,7 +329,11 @@ abstract class Request {
 		// Build request
 		$request = new \WP_REST_Request(
 			$this->method,
-			sprintf( '/wp/v2/%s', \trailingslashit( $this->rest_base ) . $this->object->ID )
+			sprintf(
+				'/%s/%s',
+				$this->namespace,
+				\trailingslashit( $this->rest_base ) . $this->object->ID
+			)
 		);
 
 		foreach ( $attributes as $k => $v ) {
