@@ -305,11 +305,51 @@ abstract class Request {
 	}
 
 	/**
+	 * Get object ID.
+	 *
+	 * @since     1.0.0
+	 * @access    protected
+	 * @return    string    The object ID.
+	 */
+	protected function get_object_id() {
+
+		if ( $this->object instanceof \WP_Post ) {
+			return $this->object->ID;
+		}
+
+		if ( $this->object instanceof \WP_Term ) {
+			return $this->object->term_id;
+		}
+
+		return;
+	}
+
+	/**
+	 * Get object type.
+	 *
+	 * @since     1.0.0
+	 * @access    protected
+	 * @return    string    The object type.
+	 */
+	protected function get_object_type() {
+
+		if ( $this->object instanceof \WP_Post ) {
+			return $this->object->post_type;
+		}
+
+		if ( $this->object instanceof \WP_Term ) {
+			return $this->object->taxonomy;
+		}
+
+		return;
+	}
+
+	/**
 	 * Wrap an object in a REST API compliant schema.
 	 *
 	 * @since     1.0.0
 	 * @access    protected
-	 * @return    array    Post data.
+	 * @return    array    The object data.
 	 */
 	protected function get_object_data() {
 		return $this->rest_do_request();
@@ -352,7 +392,7 @@ abstract class Request {
 		// Request attributes
 		$attributes = array_merge(
 			array(
-				'context' => 'edit',
+				'context' => $this->get_object_type() === 'post' ? 'edit' : 'embed',
 				'_embed'  => true,
 			),
 			$this->attributes
@@ -364,7 +404,7 @@ abstract class Request {
 			sprintf(
 				'/%s/%s',
 				$this->namespace,
-				\trailingslashit( $this->rest_base ) . $this->object->ID
+				\trailingslashit( $this->rest_base ) . $this->get_object_id()
 			)
 		);
 
@@ -568,7 +608,8 @@ abstract class Request {
 	 */
 	protected function get_replicast_info() {
 
-		$replicast_ids = \get_metadata( $this->object->post_type, $this->object->ID, Plugin::REPLICAST_IDS, true );
+		// FIXME: this should update term meta also...
+		$replicast_ids = \get_metadata( $this->get_object_type(), $this->get_object_id(), Plugin::REPLICAST_IDS, true );
 
 		if ( ! $replicast_ids ) {
 			return array();
@@ -609,7 +650,7 @@ abstract class Request {
 			unset( $replicast_ids[ $site_id ] );
 		}
 
-		return \update_metadata( $this->object->post_type, $this->object->ID, Plugin::REPLICAST_IDS, $replicast_ids );
+		return \update_metadata( $this->get_object_type(), $this->get_object_id(), Plugin::REPLICAST_IDS, $replicast_ids );
 	}
 
 }
