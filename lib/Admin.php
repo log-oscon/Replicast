@@ -117,8 +117,8 @@ class Admin {
 		}
 
 		// Prepares post data for replication
-		$data = new Request\Post( $post );
-		$data->handle_save( $sites );
+		$request = new Request\Post( $post );
+		$request->handle_save( $sites );
 
 	}
 
@@ -151,8 +151,8 @@ class Admin {
 		}
 
 		// Prepares data for replication
-		$data = new Request\Post( $post );
-		$data->handle_delete( $sites );
+		$request = new Request\Post( $post );
+		$request->handle_delete( $sites );
 
 	}
 
