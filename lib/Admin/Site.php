@@ -192,6 +192,13 @@ class Site {
 			'view_item'         => \__( 'View Site', 'replicast' ),
 		);
 
+		$capabilities = array(
+			'manage_terms' => 'manage_sites',
+			'edit_terms'   => 'manage_sites',
+			'delete_terms' => 'manage_sites',
+			'assign_terms' => 'edit_posts',
+		);
+
 		$this->taxonomy = \register_taxonomy(
 			$this->name,
 			static::get_object_types(),
@@ -206,6 +213,7 @@ class Site {
 				'show_in_quick_edit' => false,
 				'show_admin_column'  => true,
 				'hierarchical'       => true,
+				'capabilities'       => $capabilities,
 			)
 		);
 
