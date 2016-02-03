@@ -67,7 +67,7 @@ class Post extends Request {
 
 			if ( $replicated_data ) {
 
-				// Update data with replicast info
+				// Add replicast info
 				$this->update_replicast_info( $site, $replicated_data->id );
 
 				$result = array(
@@ -128,7 +128,7 @@ class Post extends Request {
 
 			if ( $replicated_data ) {
 
-				// Update data with replicast info
+				// Update replicast info
 				$this->update_replicast_info( $site, $replicated_data->id );
 
 
@@ -190,8 +190,9 @@ class Post extends Request {
 
 			if ( $replicated_data ) {
 
-				// Update data with replicast info
-				$this->update_replicast_info( $site );
+				// Clear replicast info
+				// FIXME: this only should be done on permanent delete
+				// $this->update_replicast_info( $site );
 
 				$result = array(
 					'status_code'   => $response->getStatusCode(),
