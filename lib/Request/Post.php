@@ -55,7 +55,7 @@ class Post extends Request {
 		try {
 
 			// Do request
-			$response = $this->do_request( Request::CREATABLE, $site );
+			$response = $this->do_request( Request::CREATABLE, 'posts', $site );
 
 			// Get the replicated post data
 			$replicated_post = json_decode( $response->getBody()->getContents() );
@@ -113,7 +113,7 @@ class Post extends Request {
 		try {
 
 			// Do request
-			$response = $this->do_request( Request::EDITABLE, $site );
+			$response = $this->do_request( Request::EDITABLE, 'posts', $site );
 
 			// Get the replicated post data
 			$replicated_post = json_decode( $response->getBody()->getContents() );
@@ -171,7 +171,7 @@ class Post extends Request {
 		try {
 
 			// Do request
-			$response = $this->do_request( Request::DELETABLE, $site );
+			$response = $this->do_request( Request::DELETABLE, 'posts', $site );
 
 			// Get the replicated post data
 			$replicated_post = json_decode( $response->getBody()->getContents() );

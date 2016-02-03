@@ -376,11 +376,12 @@ abstract class Request {
 	 *
 	 * @since     1.0.0
 	 * @access    protected
-	 * @param     string    $method                      Request method.
+	 * @param     string                   $method       Request method.
+	 * @param     string                   $path         Request path.
 	 * @param     \Replicast\Model\Site    $site         Site object.
 	 * @return    \Psr\Http\Message\ResponseInterface    Response.
 	 */
-	protected function do_request( $method = 'GET', $site ) {
+	protected function do_request( $method, $path, $site ) {
 
 		// Bail out if the site is invalid
 		if ( ! $site->is_valid() ) {
@@ -407,6 +408,9 @@ abstract class Request {
 
 		// Get site config
 		$config = $site->get_config();
+
+		// Add request path to endpoint
+		$config['api_url'] = $config['api_url'] . \trailingslashit( $path );
 
 		// Build endpoint for GET, PUT and DELETE
 		// FIXME: this has to be more bulletproof!
