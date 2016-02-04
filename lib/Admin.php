@@ -80,7 +80,8 @@ class Admin {
 	}
 
 	/**
-	 * Triggered whenever a post or page is created or updated.
+	 * Triggered whenever a post is published, or if it is edited and
+	 * the status is changed to publish.
 	 *
 	 * @since    1.0.0
 	 * @param    int         $post_id    The post ID.
@@ -103,8 +104,13 @@ class Admin {
 			return;
 		}
 
+		// Posts with trash status are processed in \Request\Admin on_trash_post
+		if ( $post->post_status === 'trash' ) {
+			return;
+		}
+
 		// Double check post status
-		if ( $post->post_status !== 'publish' ) {
+		if ( ! in_array( $post->post_status, Admin\Site::get_object_status() ) ) {
 			return;
 		}
 
@@ -118,7 +124,7 @@ class Admin {
 
 		// Prepares post data for replication
 		$request = new Request\Post( $post );
-		$request->handle_save( $sites );
+		$request->handle_update( $sites );
 
 	}
 
@@ -139,6 +145,11 @@ class Admin {
 		$post = \get_post( $post_id );
 
 		if ( ! $post ) {
+			return;
+		}
+
+		// Double check post status
+		if ( $post->post_status !== 'trash' ) {
 			return;
 		}
 

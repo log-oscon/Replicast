@@ -69,6 +69,14 @@ class Site {
 	public static $object_types;
 
 	/**
+	 * Name(s) of the supported object status(es).
+	 *
+	 * @since    1.0.0
+	 * @var      string|array    The current supported status(es).
+	 */
+	public static $object_status;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since    1.0.0
@@ -88,10 +96,28 @@ class Site {
 		 * @since    1.0.0
 		 * @param    array|string    Name(s) of the object type(s) for \Replicast\Admin\Site.
 		 */
-		static::$object_types = \apply_filters( 'replicast_site_object_type', array(
+		static::$object_types = \apply_filters( 'replicast_site_object_types', array(
 			'post',
 			'page',
-			'attachment'
+			'attachment',
+		) );
+
+		/**
+		 * Filter the available object status(es) for \Replicast\Admin\Site.
+		 *
+		 * @see    https://codex.wordpress.org/Post_Status
+		 * @see    https://codex.wordpress.org/Post_Status#Custom_Status
+		 *
+		 * @since    1.0.0
+		 * @param    array|string    Name(s) of the object status(es) for \Replicast\Admin\Site.
+		 */
+		static::$object_status = \apply_filters( 'replicast_site_object_status', array(
+			'publish',
+			'future',
+			'draft',
+			'pending',
+			'private',
+			'trash',
 		) );
 
 	}
@@ -168,6 +194,16 @@ class Site {
 	 */
 	public static function get_object_types() {
 		return static::$object_types;
+	}
+
+	/**
+	 * Get the current supported object status(es).
+	 *
+	 * @since     1.0.0
+	 * @return    array    Supported object status(es).
+	 */
+	public static function get_object_status() {
+		return static::$object_status;
 	}
 
 	/**

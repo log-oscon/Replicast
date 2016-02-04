@@ -107,12 +107,12 @@ abstract class Request {
 	protected $attributes = array();
 
 	/**
-	 * Save object handler.
+	 * Create/update object handler.
 	 *
 	 * @since    1.0.0
 	 * @param    array    $sites    Array of \Replicast\Model\Site objects.
 	 */
-	public function handle_save( $sites = array() ) {
+	public function handle_update( $sites = array() ) {
 
 		$notices = array();
 
