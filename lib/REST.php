@@ -118,21 +118,12 @@ class REST {
 		$object_id = $object->ID;
 
 		// Update metadata
-		foreach ( $value as $meta_key => $meta_value ) {
-
-			// Sanitize
-			$meta_value = array_map( 'sanitize_text_field', $value[ $meta_key ] );
-
-			// Maybe serialize array of values
-			if ( sizeof( $meta_value ) > 1 ) {
-				$meta_value = \maybe_serialize( $meta_value );
+		foreach ( $value as $meta_key => $meta_values ) {
+			if ( \delete_metadata( $meta_type, $object_id, $meta_key ) ) {
+				foreach ( $meta_values as $meta_value ) {
+					\add_metadata( $meta_type, $object_id, $meta_key, \maybe_unserialize( $meta_value ) );
+				}
 			}
-			else {
-				$meta_value = $meta_value[0];
-			}
-
-			\update_metadata( $meta_type, $object_id, $meta_key, $meta_value );
-
 		}
 
 	}
