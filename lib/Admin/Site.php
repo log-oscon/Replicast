@@ -88,13 +88,13 @@ class Site {
 		$this->name   = $name;
 
 		/**
-		 * Filter the available object type(s) for \Replicast\Admin\Site.
+		 * Filter the available object type(s).
 		 *
 		 * @see    https://codex.wordpress.org/Post_Type
 		 * @see    https://codex.wordpress.org/Post_Types#Custom_Types
 		 *
 		 * @since    1.0.0
-		 * @param    array|string    Name(s) of the object type(s) for \Replicast\Admin\Site.
+		 * @param    array|string    Name(s) of the object type(s).
 		 */
 		static::$object_types = \apply_filters( 'replicast_site_object_types', array(
 			'post',
@@ -103,13 +103,13 @@ class Site {
 		) );
 
 		/**
-		 * Filter the available object status(es) for \Replicast\Admin\Site.
+		 * Filter the available object status(es).
 		 *
 		 * @see    https://codex.wordpress.org/Post_Status
 		 * @see    https://codex.wordpress.org/Post_Status#Custom_Status
 		 *
 		 * @since    1.0.0
-		 * @param    array|string    Name(s) of the object status(es) for \Replicast\Admin\Site.
+		 * @param    array|string    Name(s) of the object status(es).
 		 */
 		static::$object_status = \apply_filters( 'replicast_site_object_status', array(
 			'publish',
