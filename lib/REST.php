@@ -148,6 +148,16 @@ class REST {
 	 */
 	private static function get_metadata( $meta_type, $object_id ) {
 
+		/**
+		 * Filter the whitelist of protected meta keys.
+		 *
+		 * @since    1.0.0
+		 * @param    array|string    Name(s) of the whitelisted meta keys.
+		 */
+		$whitelist = \apply_filters( 'replicast_object_protected_meta', array(
+			'_wp_page_template',
+		) );
+
 		$metadata = \get_metadata( $meta_type, $object_id );
 
 		if ( ! $metadata ) {
@@ -161,7 +171,7 @@ class REST {
 		$prepared_metadata = array();
 		foreach ( $metadata as $meta_key => $meta_value ) {
 
-			if ( \is_protected_meta( $meta_key ) ) {
+			if ( \is_protected_meta( $meta_key ) && ! in_array( $meta_key, $whitelist ) ) {
 				continue;
 			}
 
