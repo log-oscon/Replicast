@@ -119,9 +119,10 @@ class Plugin {
 
 		$admin = new Admin( $this );
 
-		$this->loader->add_action( 'admin_notices', $admin, 'display_admin_notices' );
-		$this->loader->add_action( 'save_post',     $admin, 'on_save_post', 10, 2 );
-		$this->loader->add_action( 'wp_trash_post', $admin, 'on_trash_post' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_styles' );
+		$this->loader->add_action( 'admin_notices',         $admin, 'display_admin_notices' );
+		$this->loader->add_action( 'save_post',             $admin, 'on_save_post', 10, 2 );
+		$this->loader->add_action( 'wp_trash_post',         $admin, 'on_trash_post' );
 
 	}
 

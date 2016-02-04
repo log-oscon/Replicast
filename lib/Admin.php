@@ -44,6 +44,21 @@ class Admin {
 	}
 
 	/**
+	 * Register the stylesheets for the Dashboard.
+	 *
+	 * @since    1.0.0
+	 */
+	public function enqueue_styles() {
+		\wp_enqueue_style(
+			$this->plugin->get_name(),
+			\plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/admin.css',
+			array(),
+			$this->plugin->get_version(),
+			'all'
+		);
+	}
+
+	/**
 	 * Display admin notices.
 	 *
 	 * @since    1.0.0
