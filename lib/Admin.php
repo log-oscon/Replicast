@@ -166,7 +166,7 @@ class Admin {
 	 */
 	private function get_sites( $post ) {
 
-		$terms = \wp_get_post_terms( $post->ID, Plugin::TAXONOMY_SITE );
+		$terms = \get_the_terms( $post->ID, Plugin::TAXONOMY_SITE );
 		$sites = array();
 
 		if ( \is_wp_error( $terms ) ) {
