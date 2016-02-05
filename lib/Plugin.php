@@ -32,7 +32,7 @@ namespace Replicast;
 class Plugin {
 
 	/**
-	 * The custom taxonomy identifier.
+	 * The \Admin\Site taxonomy identifier.
 	 *
 	 * @since    1.0.0
 	 * @var      string
@@ -40,12 +40,20 @@ class Plugin {
 	const TAXONOMY_SITE = 'remote_site';
 
 	/**
-	 * The custom replicast post meta identifier.
+	 * The "to where" the object was replicated.
 	 *
 	 * @since    1.0.0
 	 * @var      string
 	 */
 	const REPLICAST_IDS = '_replicast_ids';
+
+	/**
+	 * The route for the remote object.
+	 *
+	 * @since    1.0.0
+	 * @var      string
+	 */
+	const REPLICAST_REMOTE = '_replicast_remote';
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power

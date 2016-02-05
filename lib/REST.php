@@ -72,7 +72,7 @@ class REST {
 	 */
 	public static function get_rest_fields( $object, $field_name, $request ) {
 		return array(
-			'meta' => static::get_object_meta( $object ),
+			'meta' => static::get_object_meta( $object, $request->get_route() ),
 		);
 	}
 
@@ -81,10 +81,11 @@ class REST {
 	 *
 	 * @since     1.0.0
 	 * @param     array    $object    Details of current content object.
+	 * @param     string   $route     Object REST route.
 	 * @return    array               Object metadata.
 	 */
-	public static function get_object_meta( $object ) {
-		return static::get_metadata( $object['type'], $object['id'] );
+	public static function get_object_meta( $object, $route ) {
+		return static::get_metadata( $object, $route );
 	}
 
 	/**
@@ -113,16 +114,14 @@ class REST {
 	public static function update_object_meta( $value, $object ) {
 
 		// TODO: should this be returning any kind of success/failure information?
-
 		$meta_type = $object->post_type;
 		$object_id = $object->ID;
 
 		// Update metadata
 		foreach ( $value as $meta_key => $meta_values ) {
-			if ( \delete_metadata( $meta_type, $object_id, $meta_key ) ) {
-				foreach ( $meta_values as $meta_value ) {
-					\add_metadata( $meta_type, $object_id, $meta_key, \maybe_unserialize( $meta_value ) );
-				}
+			\delete_metadata( $meta_type, $object_id, $meta_key );
+			foreach ( $meta_values as $meta_value ) {
+				\add_metadata( $meta_type, $object_id, $meta_key, \maybe_unserialize( $meta_value ) );
 			}
 		}
 
@@ -133,11 +132,14 @@ class REST {
 	 *
 	 * @access    private
 	 * @since     1.0.0
-	 * @param     string    $meta_type    Type of object metadata.
-	 * @param     int       $object_id    ID of the object metadata.
-	 * @return    array                   Object metadata.
+	 * @param     array    $object    Details of current content object.
+	 * @param     string   $route     Object REST route.
+	 * @return    array               Object metadata.
 	 */
-	private static function get_metadata( $meta_type, $object_id ) {
+	private static function get_metadata( $object, $route ) {
+
+		$meta_type = $object['type'];
+		$object_id = $object['id'];
 
 		/**
 		 * Filter the whitelist of protected meta keys.
@@ -169,6 +171,9 @@ class REST {
 			$prepared_metadata[ $meta_key ] = $meta_value;
 
 		}
+
+		// Add object REST route to meta
+		$prepared_metadata[ Plugin::REPLICAST_REMOTE ] = array( \rest_url( $route ) );
 
 		return $prepared_metadata;
 	}
