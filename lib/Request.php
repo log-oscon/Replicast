@@ -119,6 +119,14 @@ abstract class Request {
 		// Get replicast object info
 		$replicast_ids = $this->get_replicast_info();
 
+		// Verify that the current object has been "removed" (aka unchecked) from any site(s)
+		// TODO: review this later on
+		foreach ( $replicast_ids as $site_id => $replicast_post_id ) {
+			if ( ! array_key_exists( $site_id, $sites ) ) {
+				$notices[] = $this->delete( \Replicast\Admin::get_site( \get_term( $site_id ) ) );
+			}
+		}
+
 		foreach ( $sites as $site_id => $site ) {
 
 			if ( array_key_exists( $site_id, $replicast_ids ) ) {
@@ -151,15 +159,9 @@ abstract class Request {
 		$replicast_ids = $this->get_replicast_info();
 
 		foreach ( $sites as $site_id => $site ) {
-
-			if ( empty( $replicast_ids ) ) {
-				break;
-			}
-
 			if ( array_key_exists( $site_id, $replicast_ids ) ) {
 				$notices[] = $this->delete( $site );
 			}
-
 		}
 
 		// Set admin notices

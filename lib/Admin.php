@@ -296,11 +296,6 @@ class Admin {
 		// Get sites for replication
 		$sites = $this->get_sites( $post );
 
-		// If no sites were selected what I'm doing here? fail
-		if ( ! $sites ) {
-			return;
-		}
-
 		// Prepares post data for replication
 		$request = new Request\Post( $post );
 		$request->handle_update( $sites );
@@ -334,11 +329,6 @@ class Admin {
 
 		// Get sites for replication
 		$sites = $this->get_sites( $post );
-
-		// If no sites were selected what I'm doing here? fail
-		if ( ! $sites ) {
-			return;
-		}
 
 		// Prepares data for replication
 		$request = new Request\Post( $post );
