@@ -95,6 +95,44 @@ class Admin {
 	}
 
 	/**
+	 * Dynamically filter a user's capabilities.
+	 *
+	 * @since      1.0.0
+	 * @param      array       $allcaps    An array of all the user's capabilities.
+	 * @param      array       $caps       Actual capabilities for meta capability.
+	 * @param      array       $args       Optional parameters passed to has_cap(), typically object ID.
+	 * @param      \WP_User    $user       The user object.
+	 * @return     array                   Possibly-modified array of all the user's capabilities.
+	 */
+	public function hide_edit_link( $allcaps, $caps, $args, $user ) {
+
+		// Bail out if we're not asking about a post
+		if ( $args[0] !== 'edit_post' ) {
+			return $allcaps;
+		}
+
+		// Load the object data
+		// Note: index 2 only exists on 'edit_post'
+		$object = \get_post( $args[2] );
+
+		if ( ! $object ) {
+			return $allcaps;
+		}
+
+		// Check if the current object is an original or a duplicate
+		if ( ! $this->is_remote_object( $object ) ) {
+			return $allcaps;
+		}
+
+		// Disable 'edit_posts' and 'edit_others_posts'
+		foreach ( $caps as $cap ) {
+			$allcaps[ $cap ] = false;
+		}
+
+		return $allcaps;
+	}
+
+	/**
 	 * Filter the list of row action links.
 	 *
 	 * @param     array       $actions    An array of row actions.
@@ -103,13 +141,8 @@ class Admin {
 	 */
 	public function hide_row_actions( $actions, $post ) {
 
-		// If the object type is not supported, bail out
-		if ( ! in_array( $post->post_type, Admin\Site::get_object_types() ) ) {
-			return $actions;
-		}
-
-		// Check if the object is a duplicate. If not, exit
-		if ( empty( \get_metadata( $post->post_type, $post->ID, Plugin::REPLICAST_REMOTE, true ) ) ) {
+		// Check if the current object is an original or a duplicate
+		if ( ! $this->is_remote_object( $post ) ) {
 			return $actions;
 		}
 
@@ -284,6 +317,22 @@ class Admin {
 			);
 		}
 
+	}
+
+	/**
+	 * Check if the current object is an original or a duplicate.
+	 *
+	 * @since     1.0.0
+	 * @param     \WP_Post|object    $object    The current object.
+	 * @return    bool                          True if it's a duplicate. False, otherwise.
+	 */
+	private function is_remote_object( $object ) {
+
+		if ( empty( \get_metadata( $object->post_type, $object->ID, Plugin::REPLICAST_REMOTE, true ) ) ) {
+			return false;
+		}
+
+		return true;
 	}
 
 }
