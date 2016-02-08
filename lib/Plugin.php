@@ -135,8 +135,8 @@ class Plugin {
 		$this->loader->add_action( 'wp_trash_post', $admin, 'on_trash_post' );
 
 		// Admin UI
-		$this->loader->add_action( 'post_row_actions', $admin, 'hide_row_actions', 99, 2 );
-		$this->loader->add_action( 'page_row_actions', $admin, 'hide_row_actions', 99, 2 );
+		$this->loader->add_filter( 'post_row_actions', $admin, 'hide_row_actions', 99, 2 );
+		$this->loader->add_filter( 'page_row_actions', $admin, 'hide_row_actions', 99, 2 );
 
 	}
 
