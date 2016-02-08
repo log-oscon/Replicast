@@ -352,7 +352,7 @@ class Admin {
 	 * @since     1.0.0
 	 * @access    private
 	 * @param     \WP_Post    $post    The post object.
-	 * @return    array|null           List of post terms or null.
+	 * @return    array                List of sites.
 	 */
 	private function get_sites( $post ) {
 
@@ -372,25 +372,35 @@ class Admin {
 		}
 
 		foreach ( $terms as $term ) {
-
-			$term_id = $term->term_id;
-
-			$sites[ $term_id ] = \wp_cache_get( $term_id, 'replicast_sites' );
-
-			if ( ! $sites[ $term_id ] || ! $sites[ $term_id ] instanceof \Replicast\Model\Site ) {
-				$client = new \GuzzleHttp\Client( array(
-					'base_uri' => \untrailingslashit( \get_term_meta( $term_id, 'site_url', true ) ),
-					'debug'    => \apply_filters( 'replicast_client_debug', defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG )
-				) );
-
-				$sites[ $term_id ] = new Model\Site( $term, $client );
-
-				\wp_cache_set( $term_id, $sites[ $term_id ], 'replicast_sites', 600 );
-			}
-
+			$sites[ $term->term_id ] = static::get_site( $term );
 		}
 
 		return $sites;
+	}
+
+	/**
+	 * Returns a site.
+	 *
+	 * @since     1.0.0
+	 * @param     \WP_Term                 $term    The term object.
+	 * @return    \Replicast\Model\Site             A site object.
+	 */
+	public static function get_site( $term ) {
+
+		$site = \wp_cache_get( $term->term_id, 'replicast_sites' );
+
+		if ( ! $site || ! $site instanceof \Replicast\Model\Site ) {
+			$client = new \GuzzleHttp\Client( array(
+				'base_uri' => \untrailingslashit( \get_term_meta( $term->term_id, 'site_url', true ) ),
+				'debug'    => \apply_filters( 'replicast_client_debug', defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG )
+			) );
+
+			$site = new Model\Site( $term, $client );
+
+			\wp_cache_set( $term->term_id, $site, 'replicast_sites', 600 );
+		}
+
+		return $site;
 	}
 
 	/**
