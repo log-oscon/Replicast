@@ -120,7 +120,10 @@ class Admin {
 		 */
 		echo \apply_filters(
 			'manage_custom_column_html',
-			$is_remote ? \__( 'Yes', 'replicast' ) : \__( 'No', 'replicast' ),
+			sprintf(
+				'<span class="dashicons dashicons-%s"></span>',
+				$is_remote ? 'yes' : 'no'
+			),
 			$is_remote,
 			$object
 		);
