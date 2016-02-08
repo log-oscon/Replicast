@@ -173,7 +173,11 @@ class REST {
 		}
 
 		// Add object REST route to meta
-		$prepared_metadata[ Plugin::REPLICAST_REMOTE ] = array( \rest_url( $route ) );
+		$prepared_metadata[ Plugin::REPLICAST_REMOTE ] = array( \maybe_serialize( array(
+			'ID'        => $object_id,
+			'edit_link' => \get_edit_post_link( $object_id ),
+			'rest_url'  => \rest_url( $route ),
+		) ) );
 
 		return $prepared_metadata;
 	}

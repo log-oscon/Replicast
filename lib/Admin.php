@@ -135,30 +135,46 @@ class Admin {
 	/**
 	 * Filter the list of row action links.
 	 *
-	 * @param     array       $actions    An array of row actions.
-	 * @param     \WP_Post    $post       The post object.
-	 * @return    array                   Possibly-modified array of row actions.
+	 * @param     array       $defaults    An array of row actions.
+	 * @param     \WP_Post    $post        The post object.
+	 * @return    array                    Possibly-modified array of row actions.
 	 */
-	public function hide_row_actions( $actions, $post ) {
+	public function hide_row_actions( $defaults, $post ) {
 
 		// Check if the current object is an original or a duplicate
-		if ( ! $this->is_remote_object( $post ) ) {
-			return $actions;
+		if ( ! $remote_info = $this->is_remote_object( $post ) ) {
+			return $defaults;
 		}
 
 		/**
 		 * Extend the list of unsupported row action links.
 		 *
 		 * @since     1.0.0
-		 * @param     array       $actions    An array of row actions.
-		 * @param     \WP_Post    $post       The post object.
-		 * @return    array                   Possibly-modified array of row actions.
+		 * @param     array       $defaults    An array of row actions.
+		 * @param     \WP_Post    $post        The post object.
+		 * @return    array                    Possibly-modified array of row actions.
 		 */
-		$actions = \apply_filters( 'replicast_hide_row_actions', $actions, $post );
+		$defaults = \apply_filters( 'replicast_hide_row_actions', $defaults, $post );
 
-		unset( $actions['edit'] );
-		unset( $actions['inline hide-if-no-js'] );
-		unset( $actions['trash'] );
+		// Force the removal of unsupported default actions
+		unset( $defaults['edit'] );
+		unset( $defaults['inline hide-if-no-js'] );
+		unset( $defaults['trash'] );
+
+		// New set of actions
+		$actions = array();
+
+		// 'Edit link' points to the object original location
+		$actions['edit'] = sprintf(
+			'<a href="%s">%s</a>',
+			\esc_url( $remote_info['edit_link'] ),
+			\__( 'Edit', 'replicast' )
+		);
+
+		// Re-order actions
+		foreach ( $defaults as $key => $value ) {
+			$actions[ $key ] = $value;
+		}
 
 		return $actions;
 	}
@@ -324,15 +340,12 @@ class Admin {
 	 *
 	 * @since     1.0.0
 	 * @param     \WP_Post|object    $object    The current object.
-	 * @return    bool                          True if it's a duplicate. False, otherwise.
+	 * @return    mixed                         Single metadata value, or array of values.
+	 *                                          If the $meta_type or $object_id parameters are invalid, false is returned.
+	 *                                          If the meta value isn't set, an empty string or array is returned, respectively.
 	 */
 	private function is_remote_object( $object ) {
-
-		if ( empty( \get_metadata( $object->post_type, $object->ID, Plugin::REPLICAST_REMOTE, true ) ) ) {
-			return false;
-		}
-
-		return true;
+		return \get_metadata( $object->post_type, $object->ID, Plugin::REPLICAST_REMOTE, true );
 	}
 
 }
