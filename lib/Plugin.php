@@ -135,9 +135,13 @@ class Plugin {
 		$this->loader->add_action( 'wp_trash_post', $admin, 'on_trash_post' );
 
 		// Admin UI
-		$this->loader->add_filter( 'user_has_cap',     $admin, 'hide_edit_link', 10, 4 );
-		$this->loader->add_filter( 'post_row_actions', $admin, 'hide_row_actions', 99, 2 );
-		$this->loader->add_filter( 'page_row_actions', $admin, 'hide_row_actions', 99, 2 );
+		$this->loader->add_action( 'manage_posts_custom_column', $admin, 'manage_custom_column', 10, 2 );
+		$this->loader->add_action( 'manage_pages_custom_column', $admin, 'manage_custom_column', 10, 2 );
+		$this->loader->add_filter( 'manage_pages_columns',       $admin, 'manage_columns', 10, 2 );
+		$this->loader->add_filter( 'manage_posts_columns',       $admin, 'manage_columns', 10, 2 );
+		$this->loader->add_filter( 'user_has_cap',               $admin, 'hide_edit_link', 10, 4 );
+		$this->loader->add_filter( 'post_row_actions',           $admin, 'hide_row_actions', 99, 2 );
+		$this->loader->add_filter( 'page_row_actions',           $admin, 'hide_row_actions', 99, 2 );
 
 	}
 

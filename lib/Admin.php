@@ -95,6 +95,79 @@ class Admin {
 	}
 
 	/**
+	 * Show admin column contents.
+	 *
+	 * @since    1.0.0
+	 * @param    string    $column       The name of the column to display.
+	 * @param    int       $object_id    The current object ID.
+	 */
+	function manage_custom_column( $column, $object_id ) {
+
+		if ( $column !== 'replicast' ) {
+			return;
+		}
+
+		$object    = \get_post( $object_id );
+		$is_remote = $this->is_remote_object( $object );
+
+		/**
+		 * Filter the column contents.
+		 *
+		 * @since     1.0.0
+		 * @param     bool        $is_remote    True if it's a replicated post. False, otherwise.
+		 * @param     \WP_Post    $object       The current object.
+		 * @return    string                    Possibly-modified column contents.
+		 */
+		echo \apply_filters(
+			'manage_custom_column_html',
+			$is_remote ? \__( 'Yes', 'replicast' ) : \__( 'No', 'replicast' ),
+			$is_remote,
+			$object
+		);
+
+	}
+
+	/**
+	 * Show admin column.
+	 *
+	 * @since     1.0.0
+	 * @param     array     $columns        An array of column names.
+	 * @param     string    $object_type    The post type slug.
+	 * @return    array                     Possibly-modified array of column names.
+	 */
+	public function manage_columns( $columns, $object_type = 'page' ) {
+
+		if ( ! in_array( $object_type, Admin\Site::get_object_types() ) ) {
+			return $columns;
+		}
+
+		/**
+		 * Filter the columns displayed.
+		 *
+		 * @since     1.0.0
+		 * @param     array     $columns        An array of column names.
+		 * @param     string    $object_type    The object type slug.
+		 * @return    array                     Possibly-modified array of column names.
+		 */
+		return \apply_filters(
+			'replicast_manage_columns',
+			array_merge( $columns,
+				array(
+					/**
+					 * Filter the column header text.
+					 *
+					 * @since     1.0.0
+					 * @param     string    Column header text.
+					 * @return    string    Possibly-modified column header text.
+					 */
+					'replicast' => \apply_filters( 'replicast_manage_columns_html', \__( 'Replicast', 'replicast' ) )
+				)
+			),
+			$object_type
+		);
+	}
+
+	/**
 	 * Dynamically filter a user's capabilities.
 	 *
 	 * @since      1.0.0
@@ -136,13 +209,13 @@ class Admin {
 	 * Filter the list of row action links.
 	 *
 	 * @param     array       $defaults    An array of row actions.
-	 * @param     \WP_Post    $post        The post object.
+	 * @param     \WP_Post    $object      The current object.
 	 * @return    array                    Possibly-modified array of row actions.
 	 */
-	public function hide_row_actions( $defaults, $post ) {
+	public function hide_row_actions( $defaults, $object ) {
 
 		// Check if the current object is an original or a duplicate
-		if ( ! $remote_info = $this->is_remote_object( $post ) ) {
+		if ( ! $remote_info = $this->is_remote_object( $object ) ) {
 			return $defaults;
 		}
 
@@ -151,10 +224,10 @@ class Admin {
 		 *
 		 * @since     1.0.0
 		 * @param     array       $defaults    An array of row actions.
-		 * @param     \WP_Post    $post        The post object.
+		 * @param     \WP_Post    $object      The current object.
 		 * @return    array                    Possibly-modified array of row actions.
 		 */
-		$defaults = \apply_filters( 'replicast_hide_row_actions', $defaults, $post );
+		$defaults = \apply_filters( 'replicast_hide_row_actions', $defaults, $object );
 
 		// Force the removal of unsupported default actions
 		unset( $defaults['edit'] );
@@ -336,13 +409,13 @@ class Admin {
 	}
 
 	/**
-	 * Check if the current object is an original or a duplicate.
+	 * Check if the current object is original or replicated.
 	 *
 	 * @since     1.0.0
-	 * @param     \WP_Post|object    $object    The current object.
-	 * @return    mixed                         Single metadata value, or array of values.
-	 *                                          If the $meta_type or $object_id parameters are invalid, false is returned.
-	 *                                          If the meta value isn't set, an empty string or array is returned, respectively.
+	 * @param     \WP_Post    $object    The post object.
+	 * @return    mixed                  Single metadata value, or array of values.
+	 *                                   If the $meta_type or $object_id parameters are invalid, false is returned.
+	 *                                   If the meta value isn't set, an empty string or array is returned, respectively.
 	 */
 	private function is_remote_object( $object ) {
 		return \get_metadata( $object->post_type, $object->ID, Plugin::REPLICAST_REMOTE, true );
