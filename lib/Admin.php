@@ -95,6 +95,42 @@ class Admin {
 	}
 
 	/**
+	 * Filter the list of row action links.
+	 *
+	 * @param     array       $actions    An array of row actions.
+	 * @param     \WP_Post    $post       The post object.
+	 * @return    array                   Possibly-modified array of row actions.
+	 */
+	public function hide_row_actions( $actions, $post ) {
+
+		// If the object type is not supported, bail out
+		if ( ! in_array( $post->post_type, Admin\Site::get_object_types() ) ) {
+			return $actions;
+		}
+
+		// Check if the object is a duplicate. If not, exit
+		if ( empty( \get_metadata( $post->post_type, $post->ID, Plugin::REPLICAST_REMOTE, true ) ) ) {
+			return $actions;
+		}
+
+		/**
+		 * Extend the list of unsupported row action links.
+		 *
+		 * @since     1.0.0
+		 * @param     array       $actions    An array of row actions.
+		 * @param     \WP_Post    $post       The post object.
+		 * @return    array                   Possibly-modified array of row actions.
+		 */
+		$actions = \apply_filters( 'replicast_hide_row_actions', $actions, $post );
+
+		unset( $actions['edit'] );
+		unset( $actions['inline hide-if-no-js'] );
+		unset( $actions['trash'] );
+
+		return $actions;
+	}
+
+	/**
 	 * Triggered whenever a post is published, or if it is edited and
 	 * the status is changed to publish.
 	 *

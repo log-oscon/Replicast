@@ -129,8 +129,14 @@ class Plugin {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_notices',         $admin, 'display_admin_notices' );
-		$this->loader->add_action( 'save_post',             $admin, 'on_save_post', 10, 2 );
-		$this->loader->add_action( 'wp_trash_post',         $admin, 'on_trash_post' );
+
+		// Sync
+		$this->loader->add_action( 'save_post',     $admin, 'on_save_post', 10, 2 );
+		$this->loader->add_action( 'wp_trash_post', $admin, 'on_trash_post' );
+
+		// Admin UI
+		$this->loader->add_action( 'post_row_actions', $admin, 'hide_row_actions', 99, 2 );
+		$this->loader->add_action( 'page_row_actions', $admin, 'hide_row_actions', 99, 2 );
 
 	}
 
