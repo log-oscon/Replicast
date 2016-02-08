@@ -179,6 +179,12 @@ class Admin {
 	 */
 	public function hide_edit_link( $allcaps, $caps, $args, $user ) {
 
+		// Bail out if not admin.
+		// Note: this is here to bypass the REST API requests.
+		if ( ! \is_admin() ) {
+			return $allcaps;
+		}
+
 		// Bail out if we're not asking about a post
 		if ( $args[0] !== 'edit_post' ) {
 			return $allcaps;
