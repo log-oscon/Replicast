@@ -107,26 +107,32 @@ class Admin {
 			return;
 		}
 
-		$object    = \get_post( $object_id );
-		$is_remote = $this->is_remote_object( $object );
+		$remote_info = $this->get_remote_info( $object_id );
+
+		$html = sprintf(
+			'<span class="dashicons dashicons-%s"></span>',
+			$remote_info ? 'yes' : 'no'
+		);
+
+		if ( ! empty( $remote_info['edit_link'] ) ) {
+			$html = sprintf(
+				'<a href="%s" title="%s">%s</a>',
+				\esc_url( $remote_info['edit_link'] ),
+				\esc_attr__( 'Edit', 'replicast' ),
+				$html
+			);
+		}
 
 		/**
 		 * Filter the column contents.
 		 *
 		 * @since     1.0.0
-		 * @param     bool        $is_remote    True if it's a replicated post. False, otherwise.
-		 * @param     \WP_Post    $object       The current object.
-		 * @return    string                    Possibly-modified column contents.
+		 * @param     mixed       $remote_info    Single metadata value, or array of values.
+		 *                                        If the $meta_type or $object_id parameters are invalid, false is returned.
+		 * @param     \WP_Post    $object         The current object ID.
+		 * @return    string                      Possibly-modified column contents.
 		 */
-		echo \apply_filters(
-			'manage_custom_column_html',
-			sprintf(
-				'<span class="dashicons dashicons-%s"></span>',
-				$is_remote ? 'yes' : 'no'
-			),
-			$is_remote,
-			$object
-		);
+		echo \apply_filters( 'manage_custom_column_html', $html, $remote_info, $object_id );
 
 	}
 
@@ -145,6 +151,15 @@ class Admin {
 		}
 
 		/**
+		 * Filter the column header title.
+		 *
+		 * @since     1.0.0
+		 * @param     string    Column header title.
+		 * @return    string    Possibly-modified column header title.
+		 */
+		$title = \apply_filters( 'replicast_manage_columns_title', \__( 'Replicast', 'replicast' ) );
+
+		/**
 		 * Filter the columns displayed.
 		 *
 		 * @since     1.0.0
@@ -154,18 +169,7 @@ class Admin {
 		 */
 		return \apply_filters(
 			'replicast_manage_columns',
-			array_merge( $columns,
-				array(
-					/**
-					 * Filter the column header text.
-					 *
-					 * @since     1.0.0
-					 * @param     string    Column header text.
-					 * @return    string    Possibly-modified column header text.
-					 */
-					'replicast' => \apply_filters( 'replicast_manage_columns_html', \__( 'Replicast', 'replicast' ) )
-				)
-			),
+			array_merge( $columns, array( 'replicast' => $title ) ),
 			$object_type
 		);
 	}
@@ -182,31 +186,23 @@ class Admin {
 	 */
 	public function hide_edit_link( $allcaps, $caps, $args, $user ) {
 
+		// Bail out if we're not asking about a post
+		if ( $args[0] !== 'edit_post' ) {
+			return $allcaps;
+		}
+
+		// Check if the current object is an original or a duplicate
+		if ( ! $this->get_remote_info( $args[2] ) ) {
+			return $allcaps;
+		}
+
 		// Bail out if not admin.
 		// Note: this is here to bypass the REST API requests.
 		if ( ! \is_admin() ) {
 			return $allcaps;
 		}
 
-		// Bail out if we're not asking about a post
-		if ( $args[0] !== 'edit_post' ) {
-			return $allcaps;
-		}
-
-		// Load the object data
-		// Note: index 2 only exists on 'edit_post'
-		$object = \get_post( $args[2] );
-
-		if ( ! $object ) {
-			return $allcaps;
-		}
-
-		// Check if the current object is an original or a duplicate
-		if ( ! $this->is_remote_object( $object ) ) {
-			return $allcaps;
-		}
-
-		// Disable 'edit_posts' and 'edit_others_posts'
+		// Disable 'edit_posts', 'edit_published_posts' and 'edit_others_posts'
 		foreach ( $caps as $cap ) {
 			$allcaps[ $cap ] = false;
 		}
@@ -224,7 +220,7 @@ class Admin {
 	public function hide_row_actions( $defaults, $object ) {
 
 		// Check if the current object is an original or a duplicate
-		if ( ! $remote_info = $this->is_remote_object( $object ) ) {
+		if ( ! $remote_info = $this->get_remote_info( $object->ID ) ) {
 			return $defaults;
 		}
 
@@ -248,8 +244,9 @@ class Admin {
 
 		// 'Edit link' points to the object original location
 		$actions['edit'] = sprintf(
-			'<a href="%s">%s</a>',
+			'<a href="%s" title="%s">%s</a>',
 			\esc_url( $remote_info['edit_link'] ),
+			\esc_attr__( 'Edit', 'replicast' ),
 			\__( 'Edit', 'replicast' )
 		);
 
@@ -418,16 +415,15 @@ class Admin {
 	}
 
 	/**
-	 * Check if the current object is original or replicated.
+	 * Retrieve remote info from an object.
 	 *
 	 * @since     1.0.0
-	 * @param     \WP_Post    $object    The post object.
+	 * @param     \WP_Post    $object    The object ID.
 	 * @return    mixed                  Single metadata value, or array of values.
 	 *                                   If the $meta_type or $object_id parameters are invalid, false is returned.
-	 *                                   If the meta value isn't set, an empty string or array is returned, respectively.
 	 */
-	private function is_remote_object( $object ) {
-		return \get_metadata( $object->post_type, $object->ID, Plugin::REPLICAST_REMOTE, true );
+	private function get_remote_info( $object_id ) {
+		return \get_post_meta( $object_id, Plugin::REPLICAST_REMOTE, true );
 	}
 
 }
