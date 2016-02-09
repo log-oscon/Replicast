@@ -303,7 +303,7 @@ abstract class Request {
 
 		// Check for date_gmt presence
 		// Note: date_gmt is necessary for post update and it's zeroed upon deletion
-		if ( $object_type === 'post' && empty( $data['date_gmt']) ) {
+		if ( $object_type === 'post' && empty( $data['date_gmt'] ) ) {
 			$data['date_gmt'] = \mysql_to_rfc3339( $data['date'] );
 		}
 
