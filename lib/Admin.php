@@ -394,27 +394,6 @@ class Admin {
 	}
 
 	/**
-	 * Registers a new field on a set of existing object types.
-	 *
-	 * @since    1.0.0
-	 */
-	public function register_rest_fields() {
-
-		foreach ( Admin\Site::get_object_types() as $object_type ) {
-			\register_rest_field(
-				$object_type,
-				'replicast',
-				array(
-					'get_callback'    => '\Replicast\Request::get_rest_fields',
-					'update_callback' => '\Replicast\Request::update_rest_fields',
-					'schema'          => null,
-				)
-			);
-		}
-
-	}
-
-	/**
 	 * Retrieve remote info from an object.
 	 *
 	 * @since     1.0.0
