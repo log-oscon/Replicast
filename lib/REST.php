@@ -116,12 +116,15 @@ class REST {
 		// TODO: should this be returning any kind of success/failure information?
 
 		/**
-		 * Filter for suppressing specific meta keys.
+		 * Filter for suppressing specific meta keys from update.
 		 *
-		 * @since    1.0.0
-		 * @param    array    Name(s) of the suppressed meta keys.
+		 * @since     1.0.0
+		 * @param     array                Name(s) of the suppressed meta keys.
+		 * @param     array     $value     The value of the field.
+		 * @param     object    $object    The object from the response.
+		 * @return    array                Possibly-modified name(s) of the suppressed meta keys.
 		 */
-		$blacklist = \apply_filters( 'replicast_suppress_object_meta', array() );
+		$blacklist = \apply_filters( 'suppress_object_meta_from_update', array(), $value, $object );
 
 		// Update metadata
 		foreach ( $value as $meta_key => $meta_values ) {
@@ -155,12 +158,14 @@ class REST {
 		/**
 		 * Filter for exposing specific protected meta keys.
 		 *
-		 * @since    1.0.0
-		 * @param    array    Name(s) of the exposed meta keys.
+		 * @since     1.0.0
+		 * @param     array               Name(s) of the exposed meta keys.
+		 * @param     array    $object    Details of current content object.
+		 * @return    array               Possibly-modified name(s) of the exposed meta keys.
 		 */
 		$whitelist = \apply_filters( 'replicast_expose_object_protected_meta', array(
 			'_wp_page_template',
-		) );
+		), $object );
 
 		// FIXME: support for 'user' and 'comment' meta types
 		$metadata = \get_metadata( 'post', $object['id'] );
