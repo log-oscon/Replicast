@@ -117,19 +117,19 @@ abstract class Request {
 		$notices = array();
 
 		// Get replicast object info
-		$replicast_ids = $this->get_replicast_info();
+		$replicast_info = $this->get_replicast_info();
 
 		// Verify that the current object has been "removed" (aka unchecked) from any site(s)
 		// TODO: review this later on
-		foreach ( $replicast_ids as $site_id => $replicast_post_id ) {
-			if ( ! array_key_exists( $site_id, $sites ) ) {
+		foreach ( $replicast_info as $site_id => $replicast_data ) {
+			if ( ! array_key_exists( $site_id, $sites ) && $replicast_data['status'] !== 'trash' ) {
 				$notices[] = $this->delete( \Replicast\Admin::get_site( $site_id ) );
 			}
 		}
 
 		foreach ( $sites as $site_id => $site ) {
 
-			if ( array_key_exists( $site_id, $replicast_ids ) ) {
+			if ( array_key_exists( $site_id, $replicast_info ) ) {
 				$notices[] = $this->put( $site );
 			}
 			else {
@@ -156,10 +156,10 @@ abstract class Request {
 		$notices = array();
 
 		// Get replicast object info
-		$replicast_ids = $this->get_replicast_info();
+		$replicast_info = $this->get_replicast_info();
 
 		foreach ( $sites as $site_id => $site ) {
-			if ( array_key_exists( $site_id, $replicast_ids ) ) {
+			if ( array_key_exists( $site_id, $replicast_info ) ) {
 				$notices[] = $this->delete( $site );
 			}
 		}
@@ -289,16 +289,16 @@ abstract class Request {
 		}
 
 		// Get replicast object info
-		$replicast_ids = $this->get_replicast_info();
+		$replicast_info = $this->get_replicast_info();
 
-		// Get remote object ID
-		$object_id = $replicast_ids[ $site->get_id() ];
+		// Get remote object
+		$object = $replicast_info[ $site->get_id() ];
 
 		// Update object ID
 		if ( $object_type !== 'post' ) {
-			$data['term_id'] = $object_id;
+			$data['term_id'] = $object['id'];
 		} else {
-			$data['id'] = $object_id;
+			$data['id'] = $object['id'];
 		}
 
 		// Check for date_gmt presence
@@ -614,17 +614,17 @@ abstract class Request {
 
 		// FIXME: this should update term meta also...
 		// FIXME: support for 'user' and 'comment' meta types
-		$replicast_ids = \get_metadata( 'post', $this->get_object_id(), Plugin::REPLICAST_IDS, true );
+		$replicast_info = \get_metadata( 'post', $this->get_object_id(), Plugin::REPLICAST_IDS, true );
 
-		if ( ! $replicast_ids ) {
+		if ( ! $replicast_info ) {
 			return array();
 		}
 
-		if ( ! is_array( $replicast_ids ) ) {
-			$replicast_ids = (array) $replicast_ids;
+		if ( ! is_array( $replicast_info ) ) {
+			$replicast_info = (array) $replicast_info;
 		}
 
-		return $replicast_ids;
+		return $replicast_info;
 	}
 
 	/**
@@ -634,29 +634,32 @@ abstract class Request {
 	 *
 	 * @since     1.0.0
 	 * @access    protected
-	 * @param     \Replicast\Model\Site    $site                       Site object.
-	 * @param     int|false                $object_id    (optional)    Post ID on remote site. False if it's for removal (trash).
-	 * @return    mixed                                                Returns meta ID if the meta doesn't exist, otherwise
-	 *                                                                 returns true on success and false on failure.
+	 * @param     \Replicast\Model\Site    $site      Site object.
+	 * @param     object|null              $object    (optional)    Remote object data. Null if it's for permanent delete.
+	 * @return    mixed                                             Returns meta ID if the meta doesn't exist, otherwise
+	 *                                                              returns true on success and false on failure.
 	 */
-	protected function update_replicast_info( $site, $object_id = false ) {
+	protected function update_replicast_info( $site, $object = null ) {
 
 		// Get site ID
 		$site_id = $site->get_id();
 
 		// Get replicast object info
-		$replicast_ids = $this->get_replicast_info();
+		$replicast_info = $this->get_replicast_info();
 
 		// Save or delete the remote object info
-		if ( $object_id ) {
-			$replicast_ids[ $site_id ] = $object_id;
+		if ( $object ) {
+			$replicast_info[ $site_id ] = array(
+				'id'     => $object->id,
+				'status' => $object->status
+			);
 		}
 		else {
-			unset( $replicast_ids[ $site_id ] );
+			unset( $replicast_info[ $site_id ] );
 		}
 
 		// FIXME: support for 'user' and 'comment' meta types
-		return \update_metadata( 'post', $this->get_object_id(), Plugin::REPLICAST_IDS, $replicast_ids );
+		return \update_metadata( 'post', $this->get_object_id(), Plugin::REPLICAST_IDS, $replicast_info );
 	}
 
 }

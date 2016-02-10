@@ -62,13 +62,13 @@ class Post extends Request {
 			// Do request
 			$response = $this->do_request( Request::CREATABLE, $site );
 
-			// Get the replicated data
-			$replicated_data = json_decode( $response->getBody()->getContents() );
+			// Get the remote object data
+			$remote_object = json_decode( $response->getBody()->getContents() );
 
-			if ( $replicated_data ) {
+			if ( $remote_object ) {
 
-				// Add replicast info
-				$this->update_replicast_info( $site, $replicated_data->id );
+				// Update replicast info
+				$this->update_replicast_info( $site, $remote_object );
 
 				$result = array(
 					'status_code'   => $response->getStatusCode(),
@@ -81,7 +81,7 @@ class Post extends Request {
 						),
 						sprintf(
 							'<a href="%s" title="%s" target="_blank">%s</a>',
-							\esc_url( $replicated_data->link ),
+							\esc_url( $remote_object->link ),
 							\esc_attr( $site->get_name() ),
 							\__( 'View post', 'replicast' )
 						)
@@ -123,14 +123,16 @@ class Post extends Request {
 			// Do request
 			$response = $this->do_request( Request::EDITABLE, $site );
 
-			// Get the replicated data
-			$replicated_data = json_decode( $response->getBody()->getContents() );
+			// Get the remote object data
+			$remote_object = json_decode( $response->getBody()->getContents() );
 
-			if ( $replicated_data ) {
+			if ( $remote_object ) {
 
 				// Update replicast info
-				$this->update_replicast_info( $site, $replicated_data->id );
+				$this->update_replicast_info( $site, $remote_object );
 
+				// TODO
+				// $this->handle_terms( $site, $remote_object->id );
 
 				$result = array(
 					'status_code'   => $response->getStatusCode(),
@@ -143,7 +145,7 @@ class Post extends Request {
 						),
 						sprintf(
 							'<a href="%s" title="%s" target="_blank">%s</a>',
-							\esc_url( $replicated_data->link ),
+							\esc_url( $remote_object->link ),
 							\esc_attr( $site->get_name() ),
 							\__( 'View post', 'replicast' )
 						)
@@ -185,14 +187,18 @@ class Post extends Request {
 			// Do request
 			$response = $this->do_request( Request::DELETABLE, $site );
 
-			// Get the replicated data
-			$replicated_data = json_decode( $response->getBody()->getContents() );
+			// Get the remote object data
+			$remote_object = json_decode( $response->getBody()->getContents() );
 
-			if ( $replicated_data ) {
+			if ( $remote_object ) {
 
-				// Clear replicast info
-				// FIXME: this only should be done on permanent delete
-				// $this->update_replicast_info( $site );
+				// The API returns 'publish' but we force the status to be 'trash' for better
+				// management of the next actions over the object. Like, recovering (PUT request)
+				// or permanently delete the object from remote location.
+				$remote_object->status = 'trash';
+
+				// Update replicast info
+				$this->update_replicast_info( $site, $remote_object );
 
 				$result = array(
 					'status_code'   => $response->getStatusCode(),
