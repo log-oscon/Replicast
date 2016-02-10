@@ -613,7 +613,8 @@ abstract class Request {
 	protected function get_replicast_info() {
 
 		// FIXME: this should update term meta also...
-		$replicast_ids = \get_metadata( $this->get_object_type(), $this->get_object_id(), Plugin::REPLICAST_IDS, true );
+		// FIXME: support for 'user' and 'comment' meta types
+		$replicast_ids = \get_metadata( 'post', $this->get_object_id(), Plugin::REPLICAST_IDS, true );
 
 		if ( ! $replicast_ids ) {
 			return array();
@@ -654,7 +655,8 @@ abstract class Request {
 			unset( $replicast_ids[ $site_id ] );
 		}
 
-		return \update_metadata( $this->get_object_type(), $this->get_object_id(), Plugin::REPLICAST_IDS, $replicast_ids );
+		// FIXME: support for 'user' and 'comment' meta types
+		return \update_metadata( 'post', $this->get_object_id(), Plugin::REPLICAST_IDS, $replicast_ids );
 	}
 
 }

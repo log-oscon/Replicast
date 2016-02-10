@@ -52,8 +52,8 @@ class REST {
 				$object_type,
 				'replicast',
 				array(
-					'get_callback'    => '\Replicast\REST::get_rest_fields',
-					'update_callback' => '\Replicast\REST::update_rest_fields',
+					'get_callback'    => array( __CLASS__, 'get_rest_fields' ),
+					'update_callback' => array( __CLASS__, 'update_rest_fields' ),
 					'schema'          => null,
 				)
 			);
@@ -115,9 +115,6 @@ class REST {
 
 		// TODO: should this be returning any kind of success/failure information?
 
-		// FIXME: support 'user' and 'comment' meta type
-		$meta_type = 'post';
-
 		/**
 		 * Filter for suppressing specific meta keys.
 		 *
@@ -133,9 +130,11 @@ class REST {
 				continue;
 			}
 
-			\delete_metadata( $meta_type, $object->ID, $meta_key );
+			// FIXME: support for 'user' and 'comment' meta types
+			\delete_metadata( 'post', $object->ID, $meta_key );
 			foreach ( $meta_values as $meta_value ) {
-				\add_metadata( $meta_type, $object->ID, $meta_key, \maybe_unserialize( $meta_value ) );
+				// FIXME: support for 'user' and 'comment' meta types
+				\add_metadata( 'post', $object->ID, $meta_key, \maybe_unserialize( $meta_value ) );
 			}
 
 		}
@@ -153,9 +152,6 @@ class REST {
 	 */
 	private static function get_metadata( $object, $route ) {
 
-		$meta_type = $object['type'];
-		$object_id = $object['id'];
-
 		/**
 		 * Filter for exposing specific protected meta keys.
 		 *
@@ -166,7 +162,8 @@ class REST {
 			'_wp_page_template',
 		) );
 
-		$metadata = \get_metadata( $meta_type, $object_id );
+		// FIXME: support for 'user' and 'comment' meta types
+		$metadata = \get_metadata( 'post', $object['id'] );
 
 		if ( ! $metadata ) {
 			return array();
@@ -189,8 +186,8 @@ class REST {
 
 		// Add object REST route to meta
 		$prepared_metadata[ Plugin::REPLICAST_REMOTE ] = array( \maybe_serialize( array(
-			'ID'        => $object_id,
-			'edit_link' => \get_edit_post_link( $object_id ),
+			'ID'        => $object['id'],
+			'edit_link' => \get_edit_post_link( $object['id'] ),
 			'rest_url'  => \rest_url( $route ),
 		) ) );
 
