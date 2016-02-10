@@ -123,7 +123,7 @@ abstract class Request {
 		// TODO: review this later on
 		foreach ( $replicast_ids as $site_id => $replicast_post_id ) {
 			if ( ! array_key_exists( $site_id, $sites ) ) {
-				$notices[] = $this->delete( \Replicast\Admin::get_site( \get_term( $site_id ) ) );
+				$notices[] = $this->delete( \Replicast\Admin::get_site( $site_id ) );
 			}
 		}
 

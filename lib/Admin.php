@@ -372,14 +372,19 @@ class Admin {
 	 * Returns a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \WP_Term                 $term    The term object.
+	 * @param     int|\WP_Term             $term    The term ID or the term object.
 	 * @return    \Replicast\Model\Site             A site object.
 	 */
 	public static function get_site( $term ) {
 
+		if ( is_numeric( $term ) ) {
+			$term = \get_term( $term );
+		}
+
 		$site = \wp_cache_get( $term->term_id, 'replicast_sites' );
 
 		if ( ! $site || ! $site instanceof \Replicast\Model\Site ) {
+
 			$client = new \GuzzleHttp\Client( array(
 				'base_uri' => \untrailingslashit( \get_term_meta( $term->term_id, 'site_url', true ) ),
 				'debug'    => \apply_filters( 'replicast_client_debug', defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG )
