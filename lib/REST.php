@@ -114,14 +114,15 @@ class REST {
 	public static function update_object_meta( $value, $object ) {
 
 		// TODO: should this be returning any kind of success/failure information?
-		$meta_type = $object->post_type;
-		$object_id = $object->ID;
+
+		// FIXME: support 'user' and 'comment' meta type
+		$meta_type = 'post';
 
 		// Update metadata
 		foreach ( $value as $meta_key => $meta_values ) {
-			\delete_metadata( $meta_type, $object_id, $meta_key );
+			\delete_metadata( $meta_type, $object->ID, $meta_key );
 			foreach ( $meta_values as $meta_value ) {
-				\add_metadata( $meta_type, $object_id, $meta_key, \maybe_unserialize( $meta_value ) );
+				\add_metadata( $meta_type, $object->ID, $meta_key, \maybe_unserialize( $meta_value ) );
 			}
 		}
 
