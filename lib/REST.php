@@ -147,7 +147,7 @@ class REST {
 		 * @since    1.0.0
 		 * @param    array|string    Name(s) of the whitelisted meta keys.
 		 */
-		$whitelist = \apply_filters( 'replicast_object_protected_meta', array(
+		$whitelist = \apply_filters( 'replicast_expose_object_protected_meta', array(
 			'_wp_page_template',
 		) );
 
