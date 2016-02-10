@@ -47,9 +47,9 @@ class REST {
 	 */
 	public function register_rest_fields() {
 
-		foreach ( Admin\Site::get_object_types() as $object_type ) {
+		foreach ( Admin\Site::get_post_types() as $post_type ) {
 			\register_rest_field(
-				$object_type,
+				$post_type,
 				'replicast',
 				array(
 					'get_callback'    => array( __CLASS__, 'get_rest_fields' ),

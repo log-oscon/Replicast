@@ -140,13 +140,13 @@ class Admin {
 	 * Show admin column.
 	 *
 	 * @since     1.0.0
-	 * @param     array     $columns        An array of column names.
-	 * @param     string    $object_type    The post type slug.
-	 * @return    array                     Possibly-modified array of column names.
+	 * @param     array     $columns      An array of column names.
+	 * @param     string    $post_type    The post type slug.
+	 * @return    array                   Possibly-modified array of column names.
 	 */
-	public function manage_columns( $columns, $object_type = 'page' ) {
+	public function manage_columns( $columns, $post_type = 'page' ) {
 
-		if ( ! in_array( $object_type, Admin\Site::get_object_types() ) ) {
+		if ( ! in_array( $post_type, Admin\Site::get_post_types() ) ) {
 			return $columns;
 		}
 
@@ -163,14 +163,14 @@ class Admin {
 		 * Filter the columns displayed.
 		 *
 		 * @since     1.0.0
-		 * @param     array     $columns        An array of column names.
-		 * @param     string    $object_type    The object type slug.
-		 * @return    array                     Possibly-modified array of column names.
+		 * @param     array     $columns      An array of column names.
+		 * @param     string    $post_type    The object type slug.
+		 * @return    array                   Possibly-modified array of column names.
 		 */
 		return \apply_filters(
 			'replicast_manage_columns',
 			array_merge( $columns, array( 'replicast' => $title ) ),
-			$object_type
+			$post_type
 		);
 	}
 

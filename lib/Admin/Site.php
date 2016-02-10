@@ -137,27 +137,23 @@ class Site {
 	}
 
 	/**
-	 * Get the current supported object type(s).
+	 * Get the current supported post type(s).
 	 *
 	 * @since     1.0.0
-	 * @return    array    Supported object type(s).
+	 * @return    array    Supported post type(s).
 	 */
-	public static function get_object_types() {
+	public static function get_post_types() {
 
 		/**
-		 * Filter the available object type(s).
+		 * Filter the available post type(s).
 		 *
 		 * @see    https://codex.wordpress.org/Post_Type
 		 * @see    https://codex.wordpress.org/Post_Types#Custom_Types
 		 *
 		 * @since    1.0.0
-		 * @param    array|string    Name(s) of the object type(s).
+		 * @param    array|string    Name(s) of the post type(s).
 		 */
-		return \apply_filters( 'replicast_site_object_types', array(
-			'post',
-			'page',
-			'attachment',
-		) );
+		return \apply_filters( 'replicast_site_post_types', \get_post_types( array( 'public' => true ) ) );
 	}
 
 	/**
@@ -238,7 +234,7 @@ class Site {
 
 		$this->taxonomy = \register_taxonomy(
 			$this->name,
-			static::get_object_types(),
+			static::get_post_types(),
 			array(
 				'label'              => \__( 'Sites', 'replicast' ),
 				'labels'             => $labels,
