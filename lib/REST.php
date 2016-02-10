@@ -118,12 +118,26 @@ class REST {
 		// FIXME: support 'user' and 'comment' meta type
 		$meta_type = 'post';
 
+		/**
+		 * Filter for suppressing specific meta keys.
+		 *
+		 * @since    1.0.0
+		 * @param    array    Name(s) of the suppressed meta keys.
+		 */
+		$blacklist = \apply_filters( 'replicast_suppress_object_meta', array() );
+
 		// Update metadata
 		foreach ( $value as $meta_key => $meta_values ) {
+
+			if ( in_array( $meta_key, $blacklist ) ) {
+				continue;
+			}
+
 			\delete_metadata( $meta_type, $object->ID, $meta_key );
 			foreach ( $meta_values as $meta_value ) {
 				\add_metadata( $meta_type, $object->ID, $meta_key, \maybe_unserialize( $meta_value ) );
 			}
+
 		}
 
 	}
@@ -143,10 +157,10 @@ class REST {
 		$object_id = $object['id'];
 
 		/**
-		 * Filter the whitelist of protected meta keys.
+		 * Filter for exposing specific protected meta keys.
 		 *
 		 * @since    1.0.0
-		 * @param    array|string    Name(s) of the whitelisted meta keys.
+		 * @param    array    Name(s) of the exposed meta keys.
 		 */
 		$whitelist = \apply_filters( 'replicast_expose_object_protected_meta', array(
 			'_wp_page_template',
