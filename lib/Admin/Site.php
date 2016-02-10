@@ -161,30 +161,23 @@ class Site {
 	}
 
 	/**
-	 * Get the current supported object status(es).
+	 * Get the current supported post status(es).
 	 *
 	 * @since     1.0.0
-	 * @return    array    Supported object status(es).
+	 * @return    array    Supported post status(es).
 	 */
-	public static function get_object_status() {
+	public static function get_post_status() {
 
 		/**
-		 * Filter the available object status(es).
+		 * Filter the available post status(es).
 		 *
 		 * @see    https://codex.wordpress.org/Post_Status
 		 * @see    https://codex.wordpress.org/Post_Status#Custom_Status
 		 *
 		 * @since    1.0.0
-		 * @param    array|string    Name(s) of the object status(es).
+		 * @param    array|string    Name(s) of the post status(es).
 		 */
-		return \apply_filters( 'replicast_site_object_status', array(
-			'publish',
-			'future',
-			'draft',
-			'pending',
-			'private',
-			'trash',
-		) );
+		return \apply_filters( 'replicast_site_post_status', array_keys( \get_post_stati() ) );
 	}
 
 	/**

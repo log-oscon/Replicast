@@ -289,7 +289,7 @@ class Admin {
 		}
 
 		// Double check post status
-		if ( ! in_array( $post->post_status, Admin\Site::get_object_status() ) ) {
+		if ( ! in_array( $post->post_status, Admin\Site::get_post_status() ) ) {
 			return;
 		}
 
