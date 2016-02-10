@@ -153,7 +153,10 @@ class Site {
 		 * @since    1.0.0
 		 * @param    array|string    Name(s) of the post type(s).
 		 */
-		return \apply_filters( 'replicast_site_post_types', \get_post_types( array( 'public' => true ) ) );
+		return \apply_filters( 'replicast_site_post_types', \get_post_types( array(
+			'public'       => true,
+			'show_in_rest' => true,
+		) ) );
 	}
 
 	/**
