@@ -194,6 +194,33 @@ class Site {
 	 */
 	public function register() {
 
+		/**
+		 * Filter for showing the taxonomy managing UI in the admin.
+		 *
+		 * @since     1.0.0
+		 * @param     bool    True if the taxonomy managing UI is visible in the admin. False, otherwise.
+		 * @return    bool    True if the taxonomy managing UI is visible in the admin. False, otherwise.
+		 */
+		$show_ui = \apply_filters( 'replicast_site_show_ui', true );
+
+		/**
+		 * Filter for making the taxonomy available for selection in navigation menus.
+		 *
+		 * @since     1.0.0
+		 * @param     bool    True if the taxonomy is available for selection in navigation menus. False, otherwise.
+		 * @return    bool    True if the taxonomy is available for selection in navigation menus. False, otherwise.
+		 */
+		$show_in_nav_menus = \apply_filters( 'replicast_site_show_in_nav_menus', false );
+
+		/**
+		 * Filter for showing the taxonomy columns on associated post-types.
+		 *
+		 * @since     1.0.0
+		 * @param     bool    True if the taxonomy columns are visible on associated post-types. False, otherwise.
+		 * @return    bool    True if the taxonomy columns are visible on associated post-types. False, otherwise.
+		 */
+		$show_admin_column = \apply_filters( 'replicast_site_show_admin_column', true );
+
 		$labels = array(
 			'add_new_item'      => \__( 'Add New Site', 'replicast' ),
 			'all_items'         => \__( 'All Sites', 'replicast' ),
@@ -224,11 +251,11 @@ class Site {
 				'labels'             => $labels,
 				'description'        => '',
 				'public'             => false,
-				'show_ui'            => \apply_filters( 'replicast_site_show_ui', true ),
-				'show_in_nav_menus'  => \apply_filters( 'replicast_site_show_in_nav_menus', false ),
+				'show_ui'            => $show_ui,
+				'show_in_nav_menus'  => $show_in_nav_menus,
 				'show_tagcloud'      => false,
 				'show_in_quick_edit' => false,
-				'show_admin_column'  => \apply_filters( 'replicast_site_show_admin_column', true ),
+				'show_admin_column'  => $show_admin_column,
 				'hierarchical'       => true,
 				'capabilities'       => $capabilities,
 			)
