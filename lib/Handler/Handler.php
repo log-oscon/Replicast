@@ -10,7 +10,11 @@
  * @subpackage Replicast/lib
  */
 
-namespace Replicast;
+namespace Replicast\Handler;
+
+use \Replicast\Admin;
+use \Replicast\Plugin;
+use \GuzzleHttp\Psr7;
 
 /**
  * Handles object replication.
@@ -20,7 +24,7 @@ namespace Replicast;
  * @subpackage Replicast/lib
  * @author     log.OSCON, Lda. <engenharia@log.pt>
  */
-abstract class Request {
+abstract class Handler {
 
 	/**
 	 * Alias for GET method.
@@ -120,10 +124,10 @@ abstract class Request {
 		$replicast_info = $this->get_replicast_info();
 
 		// Verify that the current object has been "removed" (aka unchecked) from any site(s)
-		// TODO: review this later on
+		// FIXME: review this later on
 		foreach ( $replicast_info as $site_id => $replicast_data ) {
 			if ( ! array_key_exists( $site_id, $sites ) && $replicast_data['status'] !== 'trash' ) {
-				$notices[] = $this->delete( \Replicast\Admin::get_site( $site_id ) );
+				$notices[] = $this->delete( Admin::get_site( $site_id ) );
 			}
 		}
 
@@ -219,14 +223,14 @@ abstract class Request {
 	protected function prepare_body( $method, $site ) {
 
 		switch ( $method ) {
-			case Request::READABLE:
+			case static::READABLE:
 				return;
 
-			case Request::CREATABLE:
+			case static::CREATABLE:
 				return $this->prepare_body_for_create( $site );
 
-			case Request::EDITABLE:
-			case Request::DELETABLE:
+			case static::EDITABLE:
+			case static::DELETABLE:
 				return $this->prepare_body_for_update( $site );
 
 		}
@@ -254,9 +258,7 @@ abstract class Request {
 		}
 
 		// Remove object ID
-		if ( $object_type !== 'post' ) {
-			unset( $data['term_id'] );
-		} else {
+		if ( ! empty( $data['id'] ) ) {
 			unset( $data['id'] );
 		}
 
@@ -295,11 +297,7 @@ abstract class Request {
 		$object = $replicast_info[ $site->get_id() ];
 
 		// Update object ID
-		if ( $object_type !== 'post' ) {
-			$data['term_id'] = $object['id'];
-		} else {
-			$data['id'] = $object['id'];
-		}
+		$data['id'] = $object['id'];
 
 		// Check for date_gmt presence
 		// Note: date_gmt is necessary for post update and it's zeroed upon deletion
@@ -491,7 +489,7 @@ abstract class Request {
 		$data = $this->prepare_body( $method, $site );
 
 		// Bail out if the object ID doesn't exist
-		if ( $method !== Request::CREATABLE && empty( $data['id'] ) ) {
+		if ( $method !== static::CREATABLE && empty( $data['id'] ) ) {
 			throw new \Exception( sprintf(
 				\__( 'The %s request cannot be made for a content type without an ID.', 'replicast' ),
 				$method
@@ -510,28 +508,27 @@ abstract class Request {
 
 		// Build endpoint for GET, PUT and DELETE
 		// FIXME: this has to be more bulletproof!
-		if ( $method !== Request::CREATABLE ) {
+		if ( $method !== static::CREATABLE ) {
 			$config['api_url'] = \trailingslashit( $config['api_url'] ) . $data['id'];
 		}
 
 		// WP REST API doesn't expect a PUT
-		if ( $method === Request::EDITABLE ) {
+		if ( $method === static::EDITABLE ) {
 			$method = 'POST';
 		}
 
 		// Generate request signature
 		$signature = $this->generate_signature( $method, $config, $timestamp );
 
-		// Send a request
-		return $site->get_client()->request( $method, $config['api_url'], array(
-			'headers' => array(
-				'X-API-KEY'       => $config['apy_key'],
-				'X-API-TIMESTAMP' => $timestamp,
-				'X-API-SIGNATURE' => $signature,
-			),
-			'json' => $data
-		) );
+		// Request headers
+		$headers = array(
+			'X-API-KEY'       => $config['apy_key'],
+			'X-API-TIMESTAMP' => $timestamp,
+			'X-API-SIGNATURE' => $signature,
+		);
 
+		// Send a request
+		return $site->get_client()->request( $method, $config['api_url'], array( $headers, 'json' => $data ) );
 	}
 
 	/**

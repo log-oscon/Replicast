@@ -7,23 +7,22 @@
  * @since      1.0.0
  *
  * @package    Replicast
- * @subpackage Replicast/lib/Request
+ * @subpackage Replicast/lib/Handler
  */
 
-namespace Replicast\Request;
+namespace Replicast\Handler;
 
-use Replicast\Request;
-use GuzzleHttp\Exception\RequestException;
+use \GuzzleHttp\Exception\RequestException;
 
 /**
  * Handles ´tag´ content type replication.
  *
  * @since      1.0.0
  * @package    Replicast
- * @subpackage Replicast/lib/Request
+ * @subpackage Replicast/lib/Handler
  * @author     log.OSCON, Lda. <engenharia@log.pt>
  */
-class Tag extends Request {
+class TagHandler extends Handler {
 
 	/**
 	 * Constructor.

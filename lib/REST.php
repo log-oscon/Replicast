@@ -12,6 +12,8 @@
 
 namespace Replicast;
 
+use \Replicast\Admin\Site;
+
 /**
  * Define the RESTful functionality.
  *
@@ -47,7 +49,7 @@ class REST {
 	 */
 	public function register_rest_fields() {
 
-		foreach ( Admin\Site::get_post_types() as $post_type ) {
+		foreach ( Site::get_post_types() as $post_type ) {
 			\register_rest_field(
 				$post_type,
 				'replicast',

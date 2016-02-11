@@ -12,6 +12,10 @@
 
 namespace Replicast;
 
+use \Replicast\Admin\Site;
+use \Replicast\Handler\PostHandler;
+use \GuzzleHttp\Client;
+
 /**
  * The dashboard-specific functionality of the plugin.
  *
@@ -146,7 +150,7 @@ class Admin {
 	 */
 	public function manage_columns( $columns, $post_type = 'page' ) {
 
-		if ( ! in_array( $post_type, Admin\Site::get_post_types() ) ) {
+		if ( ! in_array( $post_type, Site::get_post_types() ) ) {
 			return $columns;
 		}
 
@@ -186,6 +190,11 @@ class Admin {
 	 */
 	public function hide_edit_link( $allcaps, $caps, $args, $user ) {
 
+		// Bail out if not admin and bypass REST API requests
+		if ( ! \is_admin() ) {
+			return $allcaps;
+		}
+
 		// Bail out if we're not asking about a post
 		if ( $args[0] !== 'edit_post' ) {
 			return $allcaps;
@@ -196,14 +205,8 @@ class Admin {
 			return $allcaps;
 		}
 
-		// Bail out if not admin.
-		// Note: this is here to bypass the REST API requests.
-		if ( ! \is_admin() ) {
-			return $allcaps;
-		}
-
 		// Disable 'edit_posts', 'edit_published_posts' and 'edit_others_posts'
-		foreach ( $caps as $cap ) {
+		if ( in_array( $cap, array( 'edit_posts', 'edit_published_posts', 'edit_others_posts' ) ) ) {
 			$allcaps[ $cap ] = false;
 		}
 
@@ -268,6 +271,11 @@ class Admin {
 	 */
 	public function on_save_post( $post_id, \WP_Post $post ) {
 
+		// Bail out if not admin and bypass REST API requests
+		if ( ! \is_admin() ) {
+			return;
+		}
+
 		// If post is an autosave, return
 		if ( \wp_is_post_autosave( $post_id ) ) {
 			return;
@@ -289,7 +297,7 @@ class Admin {
 		}
 
 		// Double check post status
-		if ( ! in_array( $post->post_status, Admin\Site::get_post_status() ) ) {
+		if ( ! in_array( $post->post_status, Site::get_post_status() ) ) {
 			return;
 		}
 
@@ -297,7 +305,7 @@ class Admin {
 		$sites = $this->get_sites( $post );
 
 		// Prepares post data for replication
-		$request = new Request\Post( $post );
+		$request = new PostHandler( $post );
 		$request->handle_update( $sites );
 
 	}
@@ -309,6 +317,11 @@ class Admin {
 	 * @param    int    $post_id    The post ID.
 	 */
 	public function on_trash_post( $post_id ) {
+
+		// Bail out if not admin and bypass REST API requests
+		if ( ! \is_admin() ) {
+			return;
+		}
 
 		// If current user can't delete posts, return
 		if ( ! \current_user_can( 'delete_posts' ) ) {
@@ -331,7 +344,7 @@ class Admin {
 		$sites = $this->get_sites( $post );
 
 		// Prepares data for replication
-		$request = new Request\Post( $post );
+		$request = new PostHandler( $post );
 		$request->handle_delete( $sites );
 
 	}
@@ -347,20 +360,20 @@ class Admin {
 	private function get_sites( $post ) {
 
 		$terms = \get_the_terms( $post->ID, Plugin::TAXONOMY_SITE );
-		$sites = array();
 
 		if ( \is_wp_error( $terms ) ) {
-			return;
+			return array();
 		}
 
 		if ( empty( $terms ) ) {
-			return;
+			return array();
 		}
 
 		if ( ! is_array( $terms ) ) {
 			$terms = (array) $terms;
 		}
 
+		$sites = array();
 		foreach ( $terms as $term ) {
 			$sites[ $term->term_id ] = static::get_site( $term );
 		}
@@ -385,7 +398,7 @@ class Admin {
 
 		if ( ! $site || ! $site instanceof \Replicast\Model\Site ) {
 
-			$client = new \GuzzleHttp\Client( array(
+			$client = new Client( array(
 				'base_uri' => \untrailingslashit( \get_term_meta( $term->term_id, 'site_url', true ) ),
 				'debug'    => \apply_filters( 'replicast_client_debug', defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG )
 			) );

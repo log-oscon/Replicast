@@ -154,8 +154,7 @@ class Site {
 		 * @param    array|string    Name(s) of the post type(s).
 		 */
 		return \apply_filters( 'replicast_site_post_types', \get_post_types( array(
-			'public'       => true,
-			'show_in_rest' => true,
+			'public'=> true,
 		) ) );
 	}
 

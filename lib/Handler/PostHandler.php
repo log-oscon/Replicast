@@ -7,23 +7,24 @@
  * @since      1.0.0
  *
  * @package    Replicast
- * @subpackage Replicast/lib/Request
+ * @subpackage Replicast/lib/Handler
  */
 
-namespace Replicast\Request;
+namespace Replicast\Handler;
 
-use Replicast\Request;
-use GuzzleHttp\Exception\RequestException;
+use \Replicast\Handler\CategoryHandler;
+use \Replicast\Handler\TagHandler;
+use \GuzzleHttp\Exception\RequestException;
 
 /**
  * Handles ´post´ content type replication.
  *
  * @since      1.0.0
  * @package    Replicast
- * @subpackage Replicast/lib/Request
+ * @subpackage Replicast/lib/Handler
  * @author     log.OSCON, Lda. <engenharia@log.pt>
  */
-class Post extends Request {
+class PostHandler extends Handler {
 
 	/**
 	 * Constructor.
@@ -60,7 +61,7 @@ class Post extends Request {
 		try {
 
 			// Do request
-			$response = $this->do_request( Request::CREATABLE, $site );
+			$response = $this->do_request( Handler::CREATABLE, $site );
 
 			// Get the remote object data
 			$remote_object = json_decode( $response->getBody()->getContents() );
@@ -121,7 +122,7 @@ class Post extends Request {
 		try {
 
 			// Do request
-			$response = $this->do_request( Request::EDITABLE, $site );
+			$response = $this->do_request( Handler::EDITABLE, $site );
 
 			// Get the remote object data
 			$remote_object = json_decode( $response->getBody()->getContents() );
@@ -130,9 +131,6 @@ class Post extends Request {
 
 				// Update replicast info
 				$this->update_replicast_info( $site, $remote_object );
-
-				// TODO
-				// $this->handle_terms( $site, $remote_object->id );
 
 				$result = array(
 					'status_code'   => $response->getStatusCode(),
@@ -185,7 +183,7 @@ class Post extends Request {
 		try {
 
 			// Do request
-			$response = $this->do_request( Request::DELETABLE, $site );
+			$response = $this->do_request( Handler::DELETABLE, $site );
 
 			// Get the remote object data
 			$remote_object = json_decode( $response->getBody()->getContents() );
