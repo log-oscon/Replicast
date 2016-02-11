@@ -32,7 +32,7 @@ namespace Replicast;
 class Plugin {
 
 	/**
-	 * The custom taxonomy identifier.
+	 * The \Admin\Site taxonomy identifier.
 	 *
 	 * @since    1.0.0
 	 * @var      string
@@ -40,12 +40,20 @@ class Plugin {
 	const TAXONOMY_SITE = 'remote_site';
 
 	/**
-	 * The custom replicast post meta identifier.
+	 * The "to where" the object was replicated.
 	 *
 	 * @since    1.0.0
 	 * @var      string
 	 */
 	const REPLICAST_IDS = '_replicast_ids';
+
+	/**
+	 * The route for the remote object.
+	 *
+	 * @since    1.0.0
+	 * @var      string
+	 */
+	const REPLICAST_REMOTE = '_replicast_remote';
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -119,9 +127,36 @@ class Plugin {
 
 		$admin = new Admin( $this );
 
-		$this->loader->add_action( 'admin_notices', $admin, 'display_admin_notices' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_styles' );
+		$this->loader->add_action( 'admin_notices',         $admin, 'display_admin_notices' );
+
+		// Sync
 		$this->loader->add_action( 'save_post',     $admin, 'on_save_post', 10, 2 );
-		$this->loader->add_action( 'wp_trash_post', $admin, 'on_trash_post', 10, 1 );
+		$this->loader->add_action( 'wp_trash_post', $admin, 'on_trash_post' );
+
+		// Admin UI
+		$this->loader->add_action( 'manage_posts_custom_column', $admin, 'manage_custom_column', 10, 2 );
+		$this->loader->add_action( 'manage_pages_custom_column', $admin, 'manage_custom_column', 10, 2 );
+		$this->loader->add_filter( 'manage_pages_columns',       $admin, 'manage_columns', 10, 2 );
+		$this->loader->add_filter( 'manage_posts_columns',       $admin, 'manage_columns', 10, 2 );
+		$this->loader->add_filter( 'user_has_cap',               $admin, 'hide_edit_link', 10, 4 );
+		$this->loader->add_filter( 'post_row_actions',           $admin, 'hide_row_actions', 99, 2 );
+		$this->loader->add_filter( 'page_row_actions',           $admin, 'hide_row_actions', 99, 2 );
+
+	}
+
+	/**
+	 * Register all of the hooks related to the RESTful functionality
+	 * of the plugin.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 */
+	private function define_rest_hooks() {
+
+		$rest = new REST( $this );
+
+		$this->loader->add_action( 'rest_api_init', $rest, 'register_rest_fields' );
 
 	}
 
@@ -143,8 +178,7 @@ class Plugin {
 		$this->loader->add_action( static::TAXONOMY_SITE . '_edit_form_fields', $site, 'edit_fields' );
 		$this->loader->add_action( 'created_' . static::TAXONOMY_SITE,          $site, 'update_fields' );
 		$this->loader->add_action( 'edited_' . static::TAXONOMY_SITE,           $site, 'update_fields' );
-		$this->loader->add_action( 'deleted_term_taxonomy',                     $site, 'on_deleted_term' );
-		$this->loader->add_action( 'rest_api_init',                             $site, 'register_rest_fields' );
+		$this->loader->add_action( 'delete_' . static::TAXONOMY_SITE,           $site, 'on_deleted_term' );
 
 	}
 
@@ -159,6 +193,7 @@ class Plugin {
 	public function run() {
 		$this->set_locale();
 		$this->define_admin_hooks();
+		$this->define_rest_hooks();
 		$this->define_site_hooks();
 		$this->loader->run();
 	}

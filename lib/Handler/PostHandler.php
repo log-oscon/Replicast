@@ -7,23 +7,24 @@
  * @since      1.0.0
  *
  * @package    Replicast
- * @subpackage Replicast/lib/Request
+ * @subpackage Replicast/lib/Handler
  */
 
-namespace Replicast\Request;
+namespace Replicast\Handler;
 
-use Replicast\Request;
-use GuzzleHttp\Exception\RequestException;
+use \Replicast\Handler\CategoryHandler;
+use \Replicast\Handler\TagHandler;
+use \GuzzleHttp\Exception\RequestException;
 
 /**
  * Handles ´post´ content type replication.
  *
  * @since      1.0.0
  * @package    Replicast
- * @subpackage Replicast/lib/Request
+ * @subpackage Replicast/lib/Handler
  * @author     log.OSCON, Lda. <engenharia@log.pt>
  */
-class Post extends Request {
+class PostHandler extends Handler {
 
 	/**
 	 * Constructor.
@@ -32,38 +33,43 @@ class Post extends Request {
 	 * @param    \WP_Post    $post    Post object.
 	 */
 	public function __construct( \WP_Post $post ) {
-		$this->object = $post;
-		$this->data   = $this->get_object_data();
+		$this->rest_base = 'posts';
+		$this->object    = $post;
+		$this->data      = $this->get_object_data();
 	}
 
 	/**
 	 * Get post from a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	public function get( $site ) {}
 
 	/**
 	 * Create post on a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	public function post( $site ) {
+
+		$result = array();
 
 		try {
 
 			// Do request
-			$response = $this->do_request( Request::CREATABLE, $site );
+			$response = $this->do_request( Handler::CREATABLE, $site );
 
-			// Get the replicated post data
-			$replicated_post = json_decode( $response->getBody()->getContents() );
+			// Get the remote object data
+			$remote_object = json_decode( $response->getBody()->getContents() );
 
-			if ( $replicated_post ) {
+			if ( $remote_object ) {
 
-				// Update post with replicast info
-				$this->update_replicast_info( $site->get_id(), $replicated_post->id );
+				// Update replicast info
+				$this->update_replicast_info( $site, $remote_object );
 
 				$result = array(
 					'status_code'   => $response->getStatusCode(),
@@ -76,7 +82,7 @@ class Post extends Request {
 						),
 						sprintf(
 							'<a href="%s" title="%s" target="_blank">%s</a>',
-							\esc_url( $replicated_post->link ),
+							\esc_url( $remote_object->link ),
 							\esc_attr( $site->get_name() ),
 							\__( 'View post', 'replicast' )
 						)
@@ -105,23 +111,26 @@ class Post extends Request {
 	/**
 	 * Update post on a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	public function put( $site ) {
+
+		$result = array();
 
 		try {
 
 			// Do request
-			$response = $this->do_request( Request::EDITABLE, $site );
+			$response = $this->do_request( Handler::EDITABLE, $site );
 
-			// Get the replicated post data
-			$replicated_post = json_decode( $response->getBody()->getContents() );
+			// Get the remote object data
+			$remote_object = json_decode( $response->getBody()->getContents() );
 
-			if ( $replicated_post ) {
+			if ( $remote_object ) {
 
-				// Update post with replicast info
-				$this->update_replicast_info( $site->get_id(), $replicated_post->id );
+				// Update replicast info
+				$this->update_replicast_info( $site, $remote_object );
 
 				$result = array(
 					'status_code'   => $response->getStatusCode(),
@@ -134,7 +143,7 @@ class Post extends Request {
 						),
 						sprintf(
 							'<a href="%s" title="%s" target="_blank">%s</a>',
-							\esc_url( $replicated_post->link ),
+							\esc_url( $remote_object->link ),
 							\esc_attr( $site->get_name() ),
 							\__( 'View post', 'replicast' )
 						)
@@ -163,23 +172,31 @@ class Post extends Request {
 	/**
 	 * Delete post from a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	public function delete( $site ) {
+
+		$result = array();
 
 		try {
 
 			// Do request
-			$response = $this->do_request( Request::DELETABLE, $site );
+			$response = $this->do_request( Handler::DELETABLE, $site );
 
-			// Get the replicated post data
-			$replicated_post = json_decode( $response->getBody()->getContents() );
+			// Get the remote object data
+			$remote_object = json_decode( $response->getBody()->getContents() );
 
-			if ( $replicated_post ) {
+			if ( $remote_object ) {
 
-				// Update post with replicast info
-				$this->update_replicast_info( $site->get_id() );
+				// The API returns 'publish' but we force the status to be 'trash' for better
+				// management of the next actions over the object. Like, recovering (PUT request)
+				// or permanently delete the object from remote location.
+				$remote_object->status = 'trash';
+
+				// Update replicast info
+				$this->update_replicast_info( $site, $remote_object );
 
 				$result = array(
 					'status_code'   => $response->getStatusCode(),

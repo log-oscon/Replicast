@@ -10,7 +10,11 @@
  * @subpackage Replicast/lib
  */
 
-namespace Replicast;
+namespace Replicast\Handler;
+
+use \Replicast\Admin;
+use \Replicast\Plugin;
+use \GuzzleHttp\Psr7;
 
 /**
  * Handles object replication.
@@ -20,7 +24,7 @@ namespace Replicast;
  * @subpackage Replicast/lib
  * @author     log.OSCON, Lda. <engenharia@log.pt>
  */
-abstract class Request {
+abstract class Handler {
 
 	/**
 	 * Alias for GET method.
@@ -82,13 +86,20 @@ abstract class Request {
 	protected $method = 'GET';
 
 	/**
-	 * Request path.
+	 * The namespace of the request route.
+	 *
+	 * @var string
+	 */
+	protected $namespace = 'wp/v2';
+
+	/**
+	 * The base of the request route.
 	 *
 	 * @since     1.0.0
 	 * @access    protected
 	 * @var       string
 	 */
-	protected $path = '/wp/v2/posts/';
+	protected $rest_base = 'posts';
 
 	/**
 	 * Attributes for the request.
@@ -100,21 +111,29 @@ abstract class Request {
 	protected $attributes = array();
 
 	/**
-	 * Save object handler.
+	 * Create/update object handler.
 	 *
 	 * @since    1.0.0
 	 * @param    array    $sites    Array of \Replicast\Model\Site objects.
 	 */
-	public function handle_save( $sites = array() ) {
+	public function handle_update( $sites = array() ) {
 
 		$notices = array();
 
 		// Get replicast object info
-		$replicast_ids = $this->get_replicast_info();
+		$replicast_info = $this->get_replicast_info();
+
+		// Verify that the current object has been "removed" (aka unchecked) from any site(s)
+		// FIXME: review this later on
+		foreach ( $replicast_info as $site_id => $replicast_data ) {
+			if ( ! array_key_exists( $site_id, $sites ) && $replicast_data['status'] !== 'trash' ) {
+				$notices[] = $this->delete( Admin::get_site( $site_id ) );
+			}
+		}
 
 		foreach ( $sites as $site_id => $site ) {
 
-			if ( array_key_exists( $site_id, $replicast_ids ) ) {
+			if ( array_key_exists( $site_id, $replicast_info ) ) {
 				$notices[] = $this->put( $site );
 			}
 			else {
@@ -141,18 +160,12 @@ abstract class Request {
 		$notices = array();
 
 		// Get replicast object info
-		$replicast_ids = $this->get_replicast_info();
+		$replicast_info = $this->get_replicast_info();
 
 		foreach ( $sites as $site_id => $site ) {
-
-			if ( empty( $replicast_ids ) ) {
-				break;
-			}
-
-			if ( array_key_exists( $site_id, $replicast_ids ) ) {
+			if ( array_key_exists( $site_id, $replicast_info ) ) {
 				$notices[] = $this->delete( $site );
 			}
-
 		}
 
 		// Set admin notices
@@ -165,32 +178,36 @@ abstract class Request {
 	/**
 	 * Get object from a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	abstract public function get( $site );
 
 	/**
 	 * Create object on a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	abstract public function post( $site );
 
 	/**
 	 * Update object on a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	abstract public function put( $site );
 
 	/**
 	 * Delete object from a site.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
 	 */
 	abstract public function delete( $site );
 
@@ -206,14 +223,14 @@ abstract class Request {
 	protected function prepare_body( $method, $site ) {
 
 		switch ( $method ) {
-			case Request::READABLE:
+			case static::READABLE:
 				return;
 
-			case Request::CREATABLE:
+			case static::CREATABLE:
 				return $this->prepare_body_for_create( $site );
 
-			case Request::EDITABLE:
-			case Request::DELETABLE:
+			case static::EDITABLE:
+			case static::DELETABLE:
 				return $this->prepare_body_for_update( $site );
 
 		}
@@ -231,13 +248,27 @@ abstract class Request {
 	 */
 	protected function prepare_body_for_create( $site ) {
 
+		$object_type = $this->get_object_type();
+
 		// Get object data
 		$data = $this->data;
 
-		// Remove object ID
-		unset( $data['id'] );
+		if ( \is_wp_error( $data ) ) {
+			return array();
+		}
 
-		return \apply_filters( "replicast_prepare_{$data['type']}_for_create", $data );
+		// Remove object ID
+		if ( ! empty( $data['id'] ) ) {
+			unset( $data['id'] );
+		}
+
+		/**
+		 * Filter the prepared object data for creation.
+		 *
+		 * @since    1.0.0
+		 * @param    array    Prepared object data.
+		 */
+		return \apply_filters( "replicast_prepare_{$object_type}_for_create", $data );
 	}
 
 	/**
@@ -250,19 +281,69 @@ abstract class Request {
 	 */
 	protected function prepare_body_for_update( $site ) {
 
+		$object_type = $this->get_object_type();
+
 		// Get object data
 		$data = $this->data;
 
-		// Get replicast object info
-		$replicast_ids = $this->get_replicast_info();
+		if ( \is_wp_error( $data ) ) {
+			return array();
+		}
 
-		// Get remote object ID
-		$object_id = $replicast_ids[ $site->get_id() ];
+		// Get replicast object info
+		$replicast_info = $this->get_replicast_info();
+
+		// Get remote object
+		$object = $replicast_info[ $site->get_id() ];
 
 		// Update object ID
-		$data['id'] = $object_id;
+		$data['id'] = $object['id'];
 
-		return \apply_filters( "replicast_prepare_{$data['type']}_for_update", $data );
+		// Check for date_gmt presence
+		// Note: date_gmt is necessary for post update and it's zeroed upon deletion
+		if ( $object_type === 'post' && empty( $data['date_gmt'] ) ) {
+			$data['date_gmt'] = \mysql_to_rfc3339( $data['date'] );
+		}
+
+		/**
+		 * Filter the prepared object data for update.
+		 *
+		 * @since    1.0.0
+		 * @param    array    Prepared object data.
+		 */
+		return \apply_filters( "replicast_prepare_{$object_type}_for_update", $data );
+	}
+
+	/**
+	 * Get object ID.
+	 *
+	 * @since     1.0.0
+	 * @access    protected
+	 * @return    string    The object ID.
+	 */
+	protected function get_object_id() {
+
+		if ( $this->object instanceof \WP_Term ) {
+			return $this->object->term_id;
+		}
+
+		return $this->object->ID;
+	}
+
+	/**
+	 * Get object type.
+	 *
+	 * @since     1.0.0
+	 * @access    protected
+	 * @return    string    The object type.
+	 */
+	protected function get_object_type() {
+
+		if ( $this->object instanceof \WP_Term ) {
+			return $this->object->taxonomy;
+		}
+
+		return $this->object->post_type;
 	}
 
 	/**
@@ -270,7 +351,7 @@ abstract class Request {
 	 *
 	 * @since     1.0.0
 	 * @access    protected
-	 * @return    array    Post data.
+	 * @return    array    The object data.
 	 */
 	protected function get_object_data() {
 		return $this->rest_do_request();
@@ -313,14 +394,22 @@ abstract class Request {
 		// Request attributes
 		$attributes = array_merge(
 			array(
-				'context' => 'edit',
+				'context' => $this->get_object_type() === 'post' ? 'edit' : 'embed',
 				'_embed'  => true,
 			),
 			$this->attributes
 		);
 
 		// Build request
-		$request = new \WP_REST_Request( $this->method, \trailingslashit( $this->path ) . $this->object->ID );
+		$request = new \WP_REST_Request(
+			$this->method,
+			sprintf(
+				'/%s/%s',
+				$this->namespace,
+				\trailingslashit( $this->rest_base ) . $this->get_object_id()
+			)
+		);
+
 		foreach ( $attributes as $k => $v ) {
 			$request->set_param( $k, $v );
 		}
@@ -368,6 +457,12 @@ abstract class Request {
 			unset( $args['ip'] );
 		}
 
+		/**
+		 * Filter the name of the selected hashing algorithm (e.g. "md5", "sha256", "haval160,4", etc..).
+		 *
+		 * @since    1.0.0
+		 * @param    string    Name of the selected hashing algorithm.
+		 */
 		return hash( \apply_filters( 'replicast_key_auth_signature_algo', 'sha256' ), json_encode( $args ) . $config['api_secret'] );
 	}
 
@@ -376,11 +471,11 @@ abstract class Request {
 	 *
 	 * @since     1.0.0
 	 * @access    protected
-	 * @param     string    $method                      Request method.
+	 * @param     string                   $method       Request method.
 	 * @param     \Replicast\Model\Site    $site         Site object.
 	 * @return    \Psr\Http\Message\ResponseInterface    Response.
 	 */
-	protected function do_request( $method = 'GET', $site ) {
+	protected function do_request( $method, $site ) {
 
 		// Bail out if the site is invalid
 		if ( ! $site->is_valid() ) {
@@ -394,7 +489,7 @@ abstract class Request {
 		$data = $this->prepare_body( $method, $site );
 
 		// Bail out if the object ID doesn't exist
-		if ( $method !== Request::CREATABLE && empty( $data['id'] ) ) {
+		if ( $method !== static::CREATABLE && empty( $data['id'] ) ) {
 			throw new \Exception( sprintf(
 				\__( 'The %s request cannot be made for a content type without an ID.', 'replicast' ),
 				$method
@@ -408,30 +503,32 @@ abstract class Request {
 		// Get site config
 		$config = $site->get_config();
 
+		// Add request path to endpoint
+		$config['api_url'] = $config['api_url'] . \trailingslashit( $this->rest_base );
+
 		// Build endpoint for GET, PUT and DELETE
 		// FIXME: this has to be more bulletproof!
-		if ( $method !== Request::CREATABLE ) {
+		if ( $method !== static::CREATABLE ) {
 			$config['api_url'] = \trailingslashit( $config['api_url'] ) . $data['id'];
 		}
 
 		// WP REST API doesn't expect a PUT
-		if ( $method === Request::EDITABLE ) {
+		if ( $method === static::EDITABLE ) {
 			$method = 'POST';
 		}
 
 		// Generate request signature
 		$signature = $this->generate_signature( $method, $config, $timestamp );
 
-		// Send a request
-		return $site->get_client()->request( $method, $config['api_url'], array(
-			'headers' => array(
-				'X-API-KEY'       => $config['apy_key'],
-				'X-API-TIMESTAMP' => $timestamp,
-				'X-API-SIGNATURE' => $signature,
-			),
-			'json' => $data
-		) );
+		// Request headers
+		$headers = array(
+			'X-API-KEY'       => $config['apy_key'],
+			'X-API-TIMESTAMP' => $timestamp,
+			'X-API-SIGNATURE' => $signature,
+		);
 
+		// Send a request
+		return $site->get_client()->request( $method, $config['api_url'], array( $headers, 'json' => $data ) );
 	}
 
 	/**
@@ -508,10 +605,23 @@ abstract class Request {
 	 *
 	 * @since     1.0.0
 	 * @access    protected
-	 * @return    array|bool    The replicast info meta field.
+	 * @return    array    The replicast info meta field.
 	 */
 	protected function get_replicast_info() {
-		return \get_metadata( $this->object->post_type, $this->object->ID, Plugin::REPLICAST_IDS, true );
+
+		// FIXME: this should update term meta also...
+		// FIXME: support for 'user' and 'comment' meta types
+		$replicast_info = \get_metadata( 'post', $this->get_object_id(), Plugin::REPLICAST_IDS, true );
+
+		if ( ! $replicast_info ) {
+			return array();
+		}
+
+		if ( ! is_array( $replicast_info ) ) {
+			$replicast_info = (array) $replicast_info;
+		}
+
+		return $replicast_info;
 	}
 
 	/**
@@ -521,25 +631,32 @@ abstract class Request {
 	 *
 	 * @since     1.0.0
 	 * @access    protected
-	 * @param     int          $site_id                    Site term ID to where the object was replicated.
-	 * @param     int|false    $object_id    (optional)    Post ID on remote site. False if it's for removal (trash).
-	 * @return    mixed                                    Returns meta ID if the meta doesn't exist, otherwise
-	 *                                                     returns true on success and false on failure.
+	 * @param     \Replicast\Model\Site    $site      Site object.
+	 * @param     object|null              $object    (optional)    Remote object data. Null if it's for permanent delete.
+	 * @return    mixed                                             Returns meta ID if the meta doesn't exist, otherwise
+	 *                                                              returns true on success and false on failure.
 	 */
-	protected function update_replicast_info( $site_id, $object_id = false ) {
+	protected function update_replicast_info( $site, $object = null ) {
+
+		// Get site ID
+		$site_id = $site->get_id();
 
 		// Get replicast object info
-		$replicast_ids = $this->get_replicast_info();
+		$replicast_info = $this->get_replicast_info();
 
 		// Save or delete the remote object info
-		if ( $object_id ) {
-			$replicast_ids[ $site_id ] = $object_id;
+		if ( $object ) {
+			$replicast_info[ $site_id ] = array(
+				'id'     => $object->id,
+				'status' => $object->status
+			);
 		}
 		else {
-			unset( $replicast_ids[ $site_id ] );
+			unset( $replicast_info[ $site_id ] );
 		}
 
-		return \update_metadata( $this->object->post_type, $this->object->ID, Plugin::REPLICAST_IDS, $replicast_ids );
+		// FIXME: support for 'user' and 'comment' meta types
+		return \update_metadata( 'post', $this->get_object_id(), Plugin::REPLICAST_IDS, $replicast_info );
 	}
 
 }

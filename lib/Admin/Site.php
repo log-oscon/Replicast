@@ -61,15 +61,6 @@ class Site {
 	private $fields = array();
 
 	/**
-	 * Name(s) of the supported object type(s).
-	 *
-	 * @since     1.0.0
-	 * @access    protected
-	 * @var       string|array    The current supported object type(s).
-	 */
-	protected $object_types;
-
-	/**
 	 * Constructor.
 	 *
 	 * @since    1.0.0
@@ -79,22 +70,6 @@ class Site {
 	public function __construct( $plugin, $name ) {
 		$this->plugin = $plugin;
 		$this->name   = $name;
-
-		/**
-		 * Filter the available object type(s) for \Replicast\Admin\Site.
-		 *
-		 * @see    https://codex.wordpress.org/Post_Type
-		 * @see    https://codex.wordpress.org/Post_Types#Custom_Types
-		 *
-		 * @since    1.0.0
-		 * @param    array|string    Name(s) of the object type(s) for \Replicast\Admin\Site.
-		 */
-		$this->object_types = \apply_filters( 'replicast_site_object_type', array(
-			'post',
-			'page',
-			'attachment'
-		) );
-
 	}
 
 	/**
@@ -162,13 +137,45 @@ class Site {
 	}
 
 	/**
-	 * Get the current supported object type(s).
+	 * Get the current supported post type(s).
 	 *
 	 * @since     1.0.0
-	 * @return    array    Supported object type(s).
+	 * @return    array    Supported post type(s).
 	 */
-	public function get_object_types() {
-		return $this->object_types;
+	public static function get_post_types() {
+
+		/**
+		 * Filter the available post type(s).
+		 *
+		 * @see    https://codex.wordpress.org/Post_Type
+		 * @see    https://codex.wordpress.org/Post_Types#Custom_Types
+		 *
+		 * @since    1.0.0
+		 * @param    array|string    Name(s) of the post type(s).
+		 */
+		return \apply_filters( 'replicast_site_post_types', \get_post_types( array(
+			'public'=> true,
+		) ) );
+	}
+
+	/**
+	 * Get the current supported post status(es).
+	 *
+	 * @since     1.0.0
+	 * @return    array    Supported post status(es).
+	 */
+	public static function get_post_status() {
+
+		/**
+		 * Filter the available post status(es).
+		 *
+		 * @see    https://codex.wordpress.org/Post_Status
+		 * @see    https://codex.wordpress.org/Post_Status#Custom_Status
+		 *
+		 * @since    1.0.0
+		 * @param    array|string    Name(s) of the post status(es).
+		 */
+		return \apply_filters( 'replicast_site_post_status', array_keys( \get_post_stati() ) );
 	}
 
 	/**
@@ -177,6 +184,33 @@ class Site {
 	 * @since    1.0.0
 	 */
 	public function register() {
+
+		/**
+		 * Filter for showing the taxonomy managing UI in the admin.
+		 *
+		 * @since     1.0.0
+		 * @param     bool    True if the taxonomy managing UI is visible in the admin. False, otherwise.
+		 * @return    bool    True if the taxonomy managing UI is visible in the admin. False, otherwise.
+		 */
+		$show_ui = \apply_filters( 'replicast_site_show_ui', true );
+
+		/**
+		 * Filter for making the taxonomy available for selection in navigation menus.
+		 *
+		 * @since     1.0.0
+		 * @param     bool    True if the taxonomy is available for selection in navigation menus. False, otherwise.
+		 * @return    bool    True if the taxonomy is available for selection in navigation menus. False, otherwise.
+		 */
+		$show_in_nav_menus = \apply_filters( 'replicast_site_show_in_nav_menus', false );
+
+		/**
+		 * Filter for showing the taxonomy columns on associated post-types.
+		 *
+		 * @since     1.0.0
+		 * @param     bool    True if the taxonomy columns are visible on associated post-types. False, otherwise.
+		 * @return    bool    True if the taxonomy columns are visible on associated post-types. False, otherwise.
+		 */
+		$show_admin_column = \apply_filters( 'replicast_site_show_admin_column', true );
 
 		$labels = array(
 			'add_new_item'      => \__( 'Add New Site', 'replicast' ),
@@ -193,20 +227,28 @@ class Site {
 			'view_item'         => \__( 'View Site', 'replicast' ),
 		);
 
+		$capabilities = array(
+			'manage_terms' => 'manage_sites',
+			'edit_terms'   => 'manage_sites',
+			'delete_terms' => 'manage_sites',
+			'assign_terms' => 'edit_posts',
+		);
+
 		$this->taxonomy = \register_taxonomy(
 			$this->name,
-			$this->get_object_types(),
+			static::get_post_types(),
 			array(
 				'label'              => \__( 'Sites', 'replicast' ),
 				'labels'             => $labels,
 				'description'        => '',
 				'public'             => false,
-				'show_ui'            => true,
-				'show_in_nav_menus'  => false,
+				'show_ui'            => $show_ui,
+				'show_in_nav_menus'  => $show_in_nav_menus,
 				'show_tagcloud'      => false,
 				'show_in_quick_edit' => false,
-				'show_admin_column'  => true,
+				'show_admin_column'  => $show_admin_column,
 				'hierarchical'       => true,
+				'capabilities'       => $capabilities,
 			)
 		);
 
@@ -378,109 +420,6 @@ class Site {
 	 */
 	private function get_nonce_key( $name ) {
 		return 'replicast_' . $name . '_nonce';
-	}
-
-	/**
-	 * Registers a new field on a set of existing object types.
-	 *
-	 * @since    1.0.0
-	 */
-	public function register_rest_fields() {
-
-		foreach ( $this->get_object_types() as $object_type ) {
-			\register_rest_field(
-				$object_type,
-				'replicast',
-				array(
-					'get_callback'    => array( $this, 'get_rest_fields' ),
-					'update_callback' => array( $this, 'update_rest_fields' ),
-					'schema'          => null,
-				)
-			);
-		}
-
-	}
-
-	/**
-	 * Get custom fields for a object type.
-	 *
-	 * @since     1.0.0
-	 * @param     array               $object        Details of current content object.
-	 * @param     string              $field_name    Name of field.
-	 * @param     \WP_REST_Request    $request       Current \WP_REST_Request request.
-	 * @return    mixed                              Custom fields.
-	 */
-	public function get_rest_fields( $object, $field_name, $request ) {
-		return array(
-			'meta' => $this->get_object_meta( $object ),
-		);
-	}
-
-	/**
-	 * Get custom fields for a post type.
-	 *
-	 * @since     1.0.0
-	 * @param     array     $value     The value of the field.
-	 * @param     object    $object    The object from the response.
-	 * @return    mixed                Returns true on success and false on failure.
-	 */
-	public function update_rest_fields( $value, $object ) {
-
-		// Update meta
-		if ( ! empty( $value['meta'] ) ) {
-			$this->update_object_meta( $value['meta'], $object );
-		}
-
-		return;
-	}
-
-	/**
-	 * Retrieve metadata for the specified object.
-	 *
-	 * @access    private
-	 * @since     1.0.0
-	 * @param     array    $object    Details of current content object.
-	 * @return    mixed               Single metadata value, or array of values. If the $meta_type
-	 *                                or $object_id parameters are invalid, false is returned.
-	 *                                If the meta value isn't set, an empty string or array is returned,
-	 *                                respectively.
-	 */
-	private function get_object_meta( $object ) {
-
-		$metadata = array();
-
-		foreach ( \get_metadata( $object['type'], $object['id'] ) as $meta_key => $meta_value ) {
-
-			if ( \is_protected_meta( $meta_key ) ) {
-				continue;
-			}
-
-			$metadata[ $meta_key ] = $meta_value;
-		}
-
-		return $metadata;
-	}
-
-	/**
-	 * Update metadata for the specified object.
-	 *
-	 * @access    private
-	 * @since     1.0.0
-	 * @param     array    $object    Details of current content object.
-	 */
-	private function update_object_meta( $values, $object ) {
-
-		// TODO: should this be returning any kind of success/failure information?
-
-		foreach ( $values as $meta_key => $meta_value ) {
-			\update_metadata(
-				$object->post_type,
-				$object->ID,
-				\sanitize_key( $meta_key ),
-				\sanitize_text_field( $meta_value[0] )
-			);
-		}
-
 	}
 
 }
