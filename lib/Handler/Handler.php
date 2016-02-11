@@ -529,6 +529,13 @@ abstract class Handler {
 
 		// Send a request
 		return $site->get_client()->request( $method, $config['api_url'], array( $headers, 'json' => $data ) );
+		// $request = new Psr7\Request( $method, $config['api_url'], $headers, json_encode( $data ) );
+		// $promise = $site->get_client()->sendAsync( $request )->then( function( $response ) {
+		// 	error_log(print_r($response,true));
+		// 	return $response;
+		// } );
+
+		// return $promise->wait();
 	}
 
 	/**
