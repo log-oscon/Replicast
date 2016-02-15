@@ -621,9 +621,7 @@ abstract class Handler {
 	 */
 	protected function get_replicast_info() {
 
-		// FIXME: this should update term meta also...
-		// FIXME: support for 'user' and 'comment' meta types
-		$replicast_info = \get_metadata( 'post', $this->get_object_id(), Plugin::REPLICAST_IDS, true );
+		$replicast_info = \get_metadata( $this->get_meta_type(), $this->get_object_id(), Plugin::REPLICAST_IDS, true );
 
 		if ( ! $replicast_info ) {
 			return array();
@@ -667,8 +665,31 @@ abstract class Handler {
 			unset( $replicast_info[ $site_id ] );
 		}
 
-		// FIXME: support for 'user' and 'comment' meta types
-		return \update_metadata( 'post', $this->get_object_id(), Plugin::REPLICAST_IDS, $replicast_info );
+		return \update_metadata( $this->get_meta_type(), $this->get_object_id(), Plugin::REPLICAST_IDS, $replicast_info );
+	}
+
+	/**
+	 * Get meta type based on the object class.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @return    string    Possible values: user, comment, post, meta
+	 */
+	private function get_meta_type() {
+
+		if ( $this->object instanceof \WP_Term ) {
+			return 'term';
+		}
+
+		if ( $this->object instanceof \WP_Comment ) {
+			return 'comment';
+		}
+
+		if ( $this->object instanceof \WP_User ) {
+			return 'user';
+		}
+
+		return 'post';
 	}
 
 }
