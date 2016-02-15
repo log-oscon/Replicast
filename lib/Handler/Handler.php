@@ -347,6 +347,30 @@ abstract class Handler {
 	}
 
 	/**
+	 * Get meta type based on the object class.
+	 *
+	 * @since     1.0.0
+	 * @access    protected
+	 * @return    string    Possible values: user, comment, post, meta
+	 */
+	protected function get_meta_type() {
+
+		if ( $this->object instanceof \WP_Term ) {
+			return 'term';
+		}
+
+		if ( $this->object instanceof \WP_Comment ) {
+			return 'comment';
+		}
+
+		if ( $this->object instanceof \WP_User ) {
+			return 'user';
+		}
+
+		return 'post';
+	}
+
+	/**
 	 * Wrap an object in a REST API compliant schema.
 	 *
 	 * @since     1.0.0
@@ -666,30 +690,6 @@ abstract class Handler {
 		}
 
 		return \update_metadata( $this->get_meta_type(), $this->get_object_id(), Plugin::REPLICAST_IDS, $replicast_info );
-	}
-
-	/**
-	 * Get meta type based on the object class.
-	 *
-	 * @since     1.0.0
-	 * @access    private
-	 * @return    string    Possible values: user, comment, post, meta
-	 */
-	private function get_meta_type() {
-
-		if ( $this->object instanceof \WP_Term ) {
-			return 'term';
-		}
-
-		if ( $this->object instanceof \WP_Comment ) {
-			return 'comment';
-		}
-
-		if ( $this->object instanceof \WP_User ) {
-			return 'user';
-		}
-
-		return 'post';
 	}
 
 }
