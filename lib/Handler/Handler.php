@@ -13,6 +13,7 @@
 namespace Replicast\Handler;
 
 use \Replicast\Admin;
+use \Replicast\Model\Site;
 use \Replicast\Plugin;
 use \GuzzleHttp\Psr7;
 
@@ -114,9 +115,14 @@ abstract class Handler {
 	 * Create/update object handler.
 	 *
 	 * @since    1.0.0
-	 * @param    array    $sites    Array of \Replicast\Model\Site objects.
+	 * @param    \Replicast\Model\Site|array    $sites    A site or an array of site objects.
 	 */
 	public function handle_update( $sites = array() ) {
+
+		// Handle single site
+		if ( ! is_array( $sites ) && $sites instanceof Site ) {
+			$sites = array( $sites->get_id() => $sites );
+		}
 
 		$notices = array();
 
