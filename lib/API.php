@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Define the RESTful functionality
+ * Extend the API functionality
  *
  * @link       http://log.pt/
  * @since      1.0.0
@@ -15,13 +15,13 @@ namespace Replicast;
 use \Replicast\Admin\Site;
 
 /**
- * Define the RESTful functionality.
+ * Extend the API functionality.
  *
  * @package    Replicast
  * @subpackage Replicast/lib
  * @author     log.OSCON, Lda. <engenharia@log.pt>
  */
-class REST {
+class API {
 
 	/**
 	 * The plugin's instance.

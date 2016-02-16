@@ -15,7 +15,7 @@ namespace Replicast\Handler;
 use \Replicast\Admin;
 use \Replicast\Model\Site;
 use \Replicast\Plugin;
-use \Replicast\REST;
+use \Replicast\API;
 use \GuzzleHttp\Psr7;
 
 /**
@@ -644,7 +644,7 @@ abstract class Handler {
 	 */
 	protected function get_replicast_info() {
 
-		$replicast_info = \get_metadata( REST::get_meta_type( $this->object ), $this->get_object_id(), Plugin::REPLICAST_IDS, true );
+		$replicast_info = \get_metadata( API::get_meta_type( $this->object ), $this->get_object_id(), Plugin::REPLICAST_IDS, true );
 
 		if ( ! $replicast_info ) {
 			return array();
@@ -688,7 +688,7 @@ abstract class Handler {
 			unset( $replicast_info[ $site_id ] );
 		}
 
-		return \update_metadata( REST::get_meta_type( $this->object ), $this->get_object_id(), Plugin::REPLICAST_IDS, $replicast_info );
+		return \update_metadata( API::get_meta_type( $this->object ), $this->get_object_id(), Plugin::REPLICAST_IDS, $replicast_info );
 	}
 
 }
