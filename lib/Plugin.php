@@ -131,8 +131,8 @@ class Plugin {
 		$this->loader->add_action( 'admin_notices',         $admin, 'display_admin_notices' );
 
 		// Sync
-		$this->loader->add_action( 'save_post',     $admin, 'on_save_post', 10, 2 );
-		$this->loader->add_action( 'wp_trash_post', $admin, 'on_trash_post' );
+		$this->loader->add_action( 'save_post',    $admin, 'on_save_post', 10, 2 );
+		$this->loader->add_action( 'trashed_post', $admin, 'on_trash_post' );
 
 		// Admin UI
 		$this->loader->add_action( 'manage_posts_custom_column', $admin, 'manage_custom_column', 10, 2 );
