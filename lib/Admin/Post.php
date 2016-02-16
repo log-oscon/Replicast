@@ -48,7 +48,7 @@ class Post {
 	 * @return    array             Prepared post data.
 	 */
 	public function prepare_page_for_create( $data ) {
-		$data = $this->page_template( $data );
+		$data = $this->fix_page_template( $data );
 		return $data;
 	}
 
