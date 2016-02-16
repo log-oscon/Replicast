@@ -205,29 +205,89 @@ class API {
 	}
 
 	/**
+	 * Get object type.
+	 *
+	 * @since     1.0.0
+	 * @param     object|array    $object    The current object.
+	 * @return    string                     The object type.
+	 */
+	public static function get_object_type( $object ) {
+
+		if ( static::is_term( $object ) ) {
+			return $object->taxonomy;
+		}
+
+		return $object->post_type;
+	}
+
+	/**
 	 * Get meta type based on the object class or array data.
 	 *
 	 * @since     1.0.0
-	 *
-	 * @return    string    Possible values: user, comment, post, meta
+	 * @param     object|array    $object    The current object.
+	 * @return    string                     Possible values: user, comment, post, meta
 	 */
 	public static function get_meta_type( $object ) {
 
 		// TODO: Support user and comment object types with an array structure
 
-		if ( $object instanceof \WP_Term || ( is_array( $object ) && isset( $object['taxonomy'] ) ) ) {
+		if ( static::is_term( $object ) ) {
 			return 'term';
 		}
 
-		if ( $object instanceof \WP_Comment ) {
+		if ( static::is_comment( $object ) ) {
 			return 'comment';
 		}
 
-		if ( $object instanceof \WP_User ) {
+		if ( static::is_user( $object ) ) {
 			return 'user';
 		}
 
 		return 'post';
+	}
+
+	/**
+	 * Check if current object is a post/page.
+	 *
+	 * @since     1.0.0
+	 * @param     object|array    $object    The current object.
+	 * @return    bool                       True if it's a post/page. False, otherwise.
+	 */
+	public static function is_post( $object ) {
+		return $object instanceof \WP_Post;
+	}
+
+	/**
+	 * Check if current object is a term.
+	 *
+	 * @since     1.0.0
+	 * @param     object|array    $object    The current object.
+	 * @return    bool                       True if it's a term. False, otherwise.
+	 */
+	public static function is_term( $object ) {
+		return $object instanceof \WP_Term || ( is_array( $object ) && isset( $object['taxonomy'] ) );
+	}
+
+	/**
+	 * Check if current object is a comment.
+	 *
+	 * @since     1.0.0
+	 * @param     object|array    $object    The current object.
+	 * @return    bool                       True if it's a comment. False, otherwise.
+	 */
+	public static function is_comment( $object ) {
+		return $object instanceof \WP_Comment;
+	}
+
+	/**
+	 * Check if current object is an user.
+	 *
+	 * @since     1.0.0
+	 * @param     object|array    $object    The current object.
+	 * @return    bool                       True if it's an user. False, otherwise.
+	 */
+	public static function is_user( $object ) {
+		return $object instanceof \WP_User;
 	}
 
 }

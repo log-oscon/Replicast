@@ -255,7 +255,7 @@ abstract class Handler {
 	 */
 	protected function prepare_body_for_create( $site ) {
 
-		$object_type = $this->get_object_type();
+		$object_type = API::get_object_type( $this->object );
 
 		// Get object data
 		$data = $this->data;
@@ -288,7 +288,7 @@ abstract class Handler {
 	 */
 	protected function prepare_body_for_update( $site ) {
 
-		$object_type = $this->get_object_type();
+		$object_type = API::get_object_type( $this->object );
 
 		// Get object data
 		$data = $this->data;
@@ -335,22 +335,6 @@ abstract class Handler {
 		}
 
 		return $this->object->ID;
-	}
-
-	/**
-	 * Get object type.
-	 *
-	 * @since     1.0.0
-	 * @access    protected
-	 * @return    string    The object type.
-	 */
-	protected function get_object_type() {
-
-		if ( $this->object instanceof \WP_Term ) {
-			return $this->object->taxonomy;
-		}
-
-		return $this->object->post_type;
 	}
 
 	/**
