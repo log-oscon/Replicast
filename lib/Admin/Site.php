@@ -15,8 +15,6 @@ namespace Replicast\Admin;
 /**
  * Site taxonomy.
  *
- * This class defines all code necessary to run during the custom taxonomy registration.
- *
  * @since      1.0.0
  * @package    Replicast
  * @subpackage Replicast/lib/Admin
