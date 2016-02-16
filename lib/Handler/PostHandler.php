@@ -122,6 +122,8 @@ class PostHandler extends Handler {
 
 		try {
 
+			$this->handle_post_terms( $site );
+
 			// Do request
 			$response = $this->do_request( Handler::EDITABLE, $site );
 
@@ -226,6 +228,47 @@ class PostHandler extends Handler {
 		}
 
 		return $result;
+
+	}
+
+	/**
+	 * [handle_post_terms description]
+	 */
+	public function handle_post_terms( $site ) {
+
+		if ( empty( $this->data['_embedded'] ) ) {
+			return;
+		}
+
+		if ( empty( $this->data['_embedded']['https://api.w.org/term'] ) ) {
+			return;
+		}
+
+		foreach ( $this->data['_embedded']['https://api.w.org/term'] as $term_link ) {
+			foreach ( $term_link as $term_data ) {
+
+				$term = \get_term( $term_data['id'], $term_data['taxonomy'] );
+
+				if ( ! $term instanceof \WP_Term ) {
+					continue;
+				}
+
+				// TODO: add filter to exclude some categories from being synced?
+				if ( in_array( $term->slug, array( 'uncategorized' ) ) ) {
+					continue;
+				}
+
+				if ( $term->taxonomy === 'category' ) {
+					$request = new CategoryHandler( $term );
+					$request->handle_update( $site );
+				}
+				elseif ( $term->taxonomy === 'post_tag' ) {
+					$request = new TagHandler( $term );
+					$request->handle_update( $site );
+				}
+
+			}
+		}
 
 	}
 

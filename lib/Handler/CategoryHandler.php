@@ -53,7 +53,41 @@ class CategoryHandler extends Handler {
 	 * @param     \Replicast\Model\Site    $site    Site object.
 	 * @return    array                             Response object.
 	 */
-	public function post( $site ) {}
+	public function post( $site ) {
+
+		$result = array();
+
+		try {
+
+			// Do request
+			$response = $this->do_request( Handler::CREATABLE, $site );
+
+			// Get the remote object data
+			$remote_object = json_decode( $response->getBody()->getContents() );
+
+			if ( $remote_object ) {
+
+				// Update replicast info
+				$this->update_replicast_info( $site, $remote_object );
+
+			}
+
+		} catch ( RequestException $ex ) {
+			if ( $ex->hasResponse() ) {
+				return array(
+					'status_code'   => $ex->getResponse()->getStatusCode(),
+					'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
+					'message'       => $ex->getMessage()
+				);
+			}
+		} catch ( \Exception $ex ) {
+			return array(
+				'message' => $ex->getMessage()
+			);
+		}
+
+		return $result;
+	}
 
 	/**
 	 * Update category on a site.
@@ -62,7 +96,41 @@ class CategoryHandler extends Handler {
 	 * @param     \Replicast\Model\Site    $site    Site object.
 	 * @return    array                             Response object.
 	 */
-	public function put( $site ) {}
+	public function put( $site ) {
+
+		$result = array();
+
+		try {
+
+			// Do request
+			$response = $this->do_request( Handler::EDITABLE, $site );
+
+			// Get the remote object data
+			$remote_object = json_decode( $response->getBody()->getContents() );
+
+			if ( $remote_object ) {
+
+				// Update replicast info
+				$this->update_replicast_info( $site, $remote_object );
+
+			}
+
+		} catch ( RequestException $ex ) {
+			if ( $ex->hasResponse() ) {
+				return array(
+					'status_code'   => $ex->getResponse()->getStatusCode(),
+					'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
+					'message'       => $ex->getMessage()
+				);
+			}
+		} catch ( \Exception $ex ) {
+			return array(
+				'message' => $ex->getMessage()
+			);
+		}
+
+		return $result;
+	}
 
 	/**
 	 * Delete category from a site.
