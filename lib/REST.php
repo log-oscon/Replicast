@@ -117,6 +117,9 @@ class REST {
 
 		// TODO: should this be returning any kind of success/failure information?
 
+		// Get object meta type
+		$meta_type = static::get_meta_type( $object );
+
 		/**
 		 * Filter for suppressing specific meta keys from update.
 		 *
@@ -135,11 +138,9 @@ class REST {
 				continue;
 			}
 
-			// FIXME: support for 'user' and 'comment' meta types
-			\delete_metadata( 'post', $object->ID, $meta_key );
+			\delete_metadata( $meta_type, $object->ID, $meta_key );
 			foreach ( $meta_values as $meta_value ) {
-				// FIXME: support for 'user' and 'comment' meta types
-				\add_metadata( 'post', $object->ID, $meta_key, \maybe_unserialize( $meta_value ) );
+				\add_metadata( $meta_type, $object->ID, $meta_key, \maybe_unserialize( $meta_value ) );
 			}
 
 		}
@@ -157,6 +158,9 @@ class REST {
 	 */
 	private static function get_metadata( $object, $route ) {
 
+		// Get object meta type
+		$meta_type = static::get_meta_type( $object );
+
 		/**
 		 * Filter for exposing specific protected meta keys.
 		 *
@@ -169,8 +173,7 @@ class REST {
 			'_wp_page_template',
 		), $object );
 
-		// FIXME: support for 'user' and 'comment' meta types
-		$metadata = \get_metadata( 'post', $object['id'] );
+		$metadata = \get_metadata( $meta_type, $object['id'] );
 
 		if ( ! $metadata ) {
 			return array();
@@ -199,6 +202,32 @@ class REST {
 		) ) );
 
 		return $prepared_metadata;
+	}
+
+	/**
+	 * Get meta type based on the object class or array data.
+	 *
+	 * @since     1.0.0
+	 *
+	 * @return    string    Possible values: user, comment, post, meta
+	 */
+	public static function get_meta_type( $object ) {
+
+		// TODO: Support user and comment object types with an array structure
+
+		if ( $object instanceof \WP_Term || ( is_array( $object ) && isset( $object['taxonomy'] ) ) ) {
+			return 'term';
+		}
+
+		if ( $object instanceof \WP_Comment ) {
+			return 'comment';
+		}
+
+		if ( $object instanceof \WP_User ) {
+			return 'user';
+		}
+
+		return 'post';
 	}
 
 }

@@ -15,6 +15,7 @@ namespace Replicast\Handler;
 use \Replicast\Admin;
 use \Replicast\Model\Site;
 use \Replicast\Plugin;
+use \Replicast\REST;
 use \GuzzleHttp\Psr7;
 
 /**
@@ -60,7 +61,7 @@ abstract class Handler {
 	const DELETABLE = 'DELETE';
 
 	/**
-	 * Post type object.
+	 * Object type.
 	 *
 	 * @since     1.0.0
 	 * @access    protected
@@ -69,7 +70,7 @@ abstract class Handler {
 	protected $object;
 
 	/**
-	 * Post with a REST API compliant schema.
+	 * Object with a REST API compliant schema.
 	 *
 	 * @since     1.0.0
 	 * @access    protected
@@ -353,30 +354,6 @@ abstract class Handler {
 	}
 
 	/**
-	 * Get meta type based on the object class.
-	 *
-	 * @since     1.0.0
-	 * @access    protected
-	 * @return    string    Possible values: user, comment, post, meta
-	 */
-	protected function get_meta_type() {
-
-		if ( $this->object instanceof \WP_Term ) {
-			return 'term';
-		}
-
-		if ( $this->object instanceof \WP_Comment ) {
-			return 'comment';
-		}
-
-		if ( $this->object instanceof \WP_User ) {
-			return 'user';
-		}
-
-		return 'post';
-	}
-
-	/**
 	 * Wrap an object in a REST API compliant schema.
 	 *
 	 * @since     1.0.0
@@ -424,7 +401,7 @@ abstract class Handler {
 		// Request attributes
 		$attributes = array_merge(
 			array(
-				'context' => $this->get_object_type() === 'post' ? 'edit' : 'embed',
+				'context' => 'edit',
 				'_embed'  => true,
 			),
 			$this->attributes
@@ -667,7 +644,7 @@ abstract class Handler {
 	 */
 	protected function get_replicast_info() {
 
-		$replicast_info = \get_metadata( $this->get_meta_type(), $this->get_object_id(), Plugin::REPLICAST_IDS, true );
+		$replicast_info = \get_metadata( REST::get_meta_type( $this->object ), $this->get_object_id(), Plugin::REPLICAST_IDS, true );
 
 		if ( ! $replicast_info ) {
 			return array();
@@ -711,7 +688,7 @@ abstract class Handler {
 			unset( $replicast_info[ $site_id ] );
 		}
 
-		return \update_metadata( $this->get_meta_type(), $this->get_object_id(), Plugin::REPLICAST_IDS, $replicast_info );
+		return \update_metadata( REST::get_meta_type( $this->object ), $this->get_object_id(), Plugin::REPLICAST_IDS, $replicast_info );
 	}
 
 }
