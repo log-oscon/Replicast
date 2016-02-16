@@ -146,17 +146,17 @@ class Plugin {
 	}
 
 	/**
-	 * Register all of the hooks related to the RESTful functionality
+	 * Register all of the hooks related to the API functionality
 	 * of the plugin.
 	 *
 	 * @since     1.0.0
 	 * @access    private
 	 */
-	private function define_rest_hooks() {
+	private function define_api_hooks() {
 
-		$rest = new REST( $this );
+		$api = new API( $this );
 
-		$this->loader->add_action( 'rest_api_init', $rest, 'register_rest_fields' );
+		$this->loader->add_action( 'rest_api_init', $api, 'register_rest_fields' );
 
 	}
 
@@ -193,7 +193,7 @@ class Plugin {
 	public function run() {
 		$this->set_locale();
 		$this->define_admin_hooks();
-		$this->define_rest_hooks();
+		$this->define_api_hooks();
 		$this->define_site_hooks();
 		$this->loader->run();
 	}
