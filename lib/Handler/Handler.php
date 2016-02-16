@@ -468,85 +468,72 @@ abstract class Handler {
 	 */
 	protected function do_request( $method, $site ) {
 
-		try {
-
-			// Bail out if the site is invalid
-			if ( ! $site->is_valid() ) {
-				throw new \Exception( sprintf(
-					\__( 'The site with ID %s is not valid. Check if all the required fields are filled.', 'replicast' ),
-					$site->get_id()
-				) );
-			}
-
-			// Prepare post for replication
-			$data = $this->prepare_body( $method, $site );
-
-			// Bail out if the object ID doesn't exist
-			if ( $method !== static::CREATABLE && empty( $data['id'] ) ) {
-				throw new \Exception( sprintf(
-					\__( 'The %s request cannot be made for a content type without an ID.', 'replicast' ),
-					$method
-				) );
-			}
-
-			// Generate an API timestamp.
-			// This timestamp is also used to generate the request signature.
-			$timestamp = time();
-
-			// Get site config
-			$config = $site->get_config();
-
-			// Add request path to endpoint
-			$config['api_url'] = $config['api_url'] . \trailingslashit( $this->rest_base );
-
-			// Build endpoint for GET, PUT and DELETE
-			// FIXME: this has to be more bulletproof!
-			if ( $method !== static::CREATABLE ) {
-				$config['api_url'] = \trailingslashit( $config['api_url'] ) . $data['id'];
-			}
-
-			// WP REST API doesn't expect a PUT
-			if ( $method === static::EDITABLE ) {
-				$method = 'POST';
-			}
-
-			// Generate request signature
-			$signature = $this->generate_signature( $method, $config, $timestamp );
-
-			// Request headers
-			$headers = array(
-				'X-API-KEY'       => $config['apy_key'],
-				'X-API-TIMESTAMP' => $timestamp,
-				'X-API-SIGNATURE' => $signature,
-			);
-
-			// TODO: Guzzle using promises
-			// $request = new Psr7\Request( $method, $config['api_url'], $headers, json_encode( $data ) );
-			// $promise = $site->get_client()->sendAsync( $request )->then( function( $response ) {
-			//   return $response;
-			// } );
-
-			// return $promise->wait();
-
-			// Send a request
-			return $site->get_client()->request( $method, $config['api_url'], array(
-				'headers' => $headers,
-				'json'    => $data
+		// Bail out if the site is invalid
+		if ( ! $site->is_valid() ) {
+			throw new \Exception( sprintf(
+				\__( 'The site with ID %s is not valid. Check if all the required fields are filled.', 'replicast' ),
+				$site->get_id()
 			) );
-
-		} catch ( RequestException $ex ) {
-			if ( $ex->hasResponse() ) {
-				return array(
-					'status_code'   => $ex->getResponse()->getStatusCode(),
-					'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-					'message'       => $ex->getMessage()
-				);
-			}
-		} catch ( \Exception $ex ) {
-			return array(
-				'message' => $ex->getMessage()
-			);
 		}
+
+		// Prepare post for replication
+		$data = $this->prepare_body( $method, $site );
+
+		// Bail out if the object ID doesn't exist
+		if ( $method !== static::CREATABLE && empty( $data['id'] ) ) {
+			throw new \Exception( sprintf(
+				\__( 'The %s request cannot be made for a content type without an ID.', 'replicast' ),
+				$method
+			) );
+		}
+
+		// Generate an API timestamp.
+		// This timestamp is also used to generate the request signature.
+		$timestamp = time();
+
+		// Get site config
+		$config = $site->get_config();
+
+		// Add request path to endpoint
+		$config['api_url'] = $config['api_url'] . \trailingslashit( $this->rest_base );
+
+		// Build endpoint for GET, PUT and DELETE
+		// FIXME: this has to be more bulletproof!
+		if ( $method !== static::CREATABLE ) {
+			$config['api_url'] = \trailingslashit( $config['api_url'] ) . $data['id'];
+		}
+
+		// WP REST API doesn't expect a PUT
+		if ( $method === static::EDITABLE ) {
+			$method = 'POST';
+		}
+
+		// Generate request signature
+		$signature = $this->generate_signature( $method, $config, $timestamp );
+
+		// Request headers
+		$headers = array(
+			'X-API-KEY'       => $config['apy_key'],
+			'X-API-TIMESTAMP' => $timestamp,
+			'X-API-SIGNATURE' => $signature,
+		);
+
+
+		// TODO: Guzzle using promises
+		// $request = new Psr7\Request( $method, $config['api_url'], $headers, json_encode( $data ) );
+		// $promise = $site->get_client()->sendAsync( $request )->then( function( $response ) {
+		// 	error_log('DONE!');
+		// 	return $response;
+		// } );
+
+		// return $promise->wait();
+
+
+		// Send a request
+		return $site->get_client()->request( $method, $config['api_url'], array(
+			'headers' => $headers,
+			'json'    => $data
+		) );
 
 	}
 
