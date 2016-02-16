@@ -308,7 +308,7 @@ abstract class Handler {
 
 		// Check for date_gmt presence
 		// Note: date_gmt is necessary for post update and it's zeroed upon deletion
-		if ( empty( $data['date_gmt'] ) ) {
+		if ( empty( $data['date_gmt'] ) && ! empty( $data['date'] ) ) {
 			$data['date_gmt'] = \mysql_to_rfc3339( $data['date'] );
 		}
 
