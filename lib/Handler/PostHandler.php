@@ -122,8 +122,6 @@ class PostHandler extends Handler {
 
 		try {
 
-			// $this->handle_post_terms( $site );
-
 			// Do request
 			$response = $this->do_request( Handler::EDITABLE, $site );
 

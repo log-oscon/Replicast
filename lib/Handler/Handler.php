@@ -528,7 +528,6 @@ abstract class Handler {
 
 		// return $promise->wait();
 
-
 		// Send a request
 		return $site->get_client()->request( $method, $config['api_url'], array(
 			'headers' => $headers,

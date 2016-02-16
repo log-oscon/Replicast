@@ -53,63 +53,7 @@ class CategoryHandler extends Handler {
 	 * @param     \Replicast\Model\Site    $site    Site object.
 	 * @return    array                             Response object.
 	 */
-	public function post( $site ) {
-
-		$result = array();
-
-		try {
-
-			// Do request
-			$response = $this->do_request( Handler::CREATABLE, $site );
-
-error_log(print_r($response,true));
-
-			error_log('2');
-
-			// Get the remote object data
-			$remote_object = json_decode( $response->getBody()->getContents() );
-
-			if ( $remote_object ) {
-
-				// Update replicast info
-				// $this->update_replicast_info( $site, $remote_object );
-
-				// $result = array(
-				// 	'status_code'   => $response->getStatusCode(),
-				// 	'reason_phrase' => $response->getReasonPhrase(),
-				// 	'message'       => sprintf(
-				// 		'%s %s',
-				// 		sprintf(
-				// 			\__( 'Post published on %s.', 'replicast' ),
-				// 			$site->get_name()
-				// 		),
-				// 		sprintf(
-				// 			'<a href="%s" title="%s" target="_blank">%s</a>',
-				// 			\esc_url( $replicated_data->link ),
-				// 			\esc_attr( $site->get_name() ),
-				// 			\__( 'View post', 'replicast' )
-				// 		)
-				// 	)
-				// );
-
-			}
-
-		} catch ( RequestException $ex ) {
-			if ( $ex->hasResponse() ) {
-				$result = array(
-					'status_code'   => $ex->getResponse()->getStatusCode(),
-					'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-					'message'       => $ex->getMessage()
-				);
-			}
-		} catch ( \Exception $ex ) {
-			$result = array(
-				'message' => $ex->getMessage()
-			);
-		}
-
-		return $result;
-	}
+	public function post( $site ) {}
 
 	/**
 	 * Update category on a site.
