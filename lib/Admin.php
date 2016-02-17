@@ -305,8 +305,8 @@ class Admin {
 		$sites = $this->get_sites( $post );
 
 		// Prepares post data for replication
-		$request = new PostHandler( $post );
-		$request->handle_update( $sites );
+		$post_handler = new PostHandler( $post );
+		$post_handler->handle_update( $sites );
 
 	}
 
@@ -344,8 +344,8 @@ class Admin {
 		$sites = $this->get_sites( $post );
 
 		// Prepares data for replication
-		$request = new PostHandler( $post );
-		$request->handle_delete( $sites );
+		$post_handler = new PostHandler( $post );
+		$post_handler->handle_delete( $sites );
 
 	}
 
