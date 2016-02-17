@@ -554,20 +554,19 @@ abstract class Handler {
 			$reason_phrase = ! empty( $notice['reason_phrase'] ) ? $notice['reason_phrase'] : '';
 			$message       = ! empty( $notice['message'] )       ? $notice['message']       : \__( 'Something went wrong.', 'replicast' );
 
-			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG &&
-				! empty( $status_code ) && ! empty( $reason_phrase ) ) {
-				$message = sprintf(
-					'%s<br>%s: %s',
-					$message,
-					$status_code,
-					$reason_phrase
-				);
-			}
-
 			$rendered[] = array(
 				'type'    => $this->get_notice_type_by_status_code( $status_code ),
 				'message' => $message
 			);
+
+			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
+				error_log( sprintf(
+					"\n%s\n%s\n%s",
+					sprintf( \__( 'Status Code: %s', 'replicast' ), $status_code ),
+					sprintf( \__( 'Reason: %s', 'replicast' ), $reason_phrase ),
+					sprintf( \__( 'Message: %s', 'replicast' ), $message )
+				) );
+			}
 
 		}
 
@@ -581,15 +580,9 @@ abstract class Handler {
 	 * @since     1.0.0
 	 * @access    private
 	 * @param     string    $status_code    HTTP request/response status code.
-	 * @return    string                   Possible values: error | success | warning.
+	 * @return    string                    Possible values: error | success | warning.
 	 */
 	private function get_notice_type_by_status_code( $status_code ) {
-
-		$type = 'error';
-
-		if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
-			error_log( 'Status code: ' . $status_code );
-		}
 
 		// FIXME
 		// Maybe this should be more simpler. For instance, all 2xx status codes should be treated as success.
@@ -598,11 +591,11 @@ abstract class Handler {
 		switch ( $status_code ) {
 			case '200': // Update
 			case '201': // Create
-				$type = 'success';
-				break;
+				return 'success';
+			default:
+				return 'error';
 		}
 
-		return $type;
 	}
 
 	/**
