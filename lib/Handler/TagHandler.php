@@ -41,8 +41,8 @@ class TagHandler extends Handler {
 	 * Get tag from a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Response object.
 	 */
 	public function get( $site ) {}
 
@@ -50,8 +50,8 @@ class TagHandler extends Handler {
 	 * Create tag on a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Response object.
 	 */
 	public function post( $site ) {}
 
@@ -59,8 +59,8 @@ class TagHandler extends Handler {
 	 * Update tag on a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Response object.
 	 */
 	public function put( $site ) {}
 
@@ -68,8 +68,8 @@ class TagHandler extends Handler {
 	 * Delete tag from a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Response object.
 	 */
 	public function delete( $site ) {}
 

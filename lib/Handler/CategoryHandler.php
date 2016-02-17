@@ -41,8 +41,8 @@ class CategoryHandler extends Handler {
 	 * Get category from a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Response object.
 	 */
 	public function get( $site ) {}
 
@@ -50,8 +50,8 @@ class CategoryHandler extends Handler {
 	 * Create category on a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Response object.
 	 */
 	public function post( $site ) {
 
@@ -93,8 +93,8 @@ class CategoryHandler extends Handler {
 	 * Update category on a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Response object.
 	 */
 	public function put( $site ) {
 
@@ -136,8 +136,8 @@ class CategoryHandler extends Handler {
 	 * Delete category from a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Response object.
 	 */
 	public function delete( $site ) {}
 

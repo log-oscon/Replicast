@@ -13,7 +13,7 @@
 namespace Replicast\Handler;
 
 use Replicast\Admin;
-use Replicast\Model\Site;
+use Replicast\Client;
 use Replicast\Plugin;
 use Replicast\API;
 use GuzzleHttp\Psr7;
@@ -116,8 +116,8 @@ abstract class Handler {
 	 * Get object from a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Response object.
 	 */
 	abstract public function get( $site );
 
@@ -125,8 +125,8 @@ abstract class Handler {
 	 * Create object on a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Response object.
 	 */
 	abstract public function post( $site );
 
@@ -134,8 +134,8 @@ abstract class Handler {
 	 * Update object on a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Response object.
 	 */
 	abstract public function put( $site );
 
@@ -143,8 +143,8 @@ abstract class Handler {
 	 * Delete object from a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Response object.
 	 */
 	abstract public function delete( $site );
 
@@ -152,12 +152,12 @@ abstract class Handler {
 	 * Create/update object handler.
 	 *
 	 * @since    1.0.0
-	 * @param    \Replicast\Model\Site|array    $sites    A site or an array of site objects.
+	 * @param    \Replicast\Client|array    $sites    A site or an array of site objects.
 	 */
 	public function handle_update( $sites = array() ) {
 
 		// Handle single site
-		if ( ! is_array( $sites ) && $sites instanceof Site ) {
+		if ( ! is_array( $sites ) && $sites instanceof Client ) {
 			$sites = array( $sites->get_id() => $sites );
 		}
 
@@ -196,7 +196,7 @@ abstract class Handler {
 	 * Delete object handler.
 	 *
 	 * @since    1.0.0
-	 * @param    array    $sites    Array of \Replicast\Model\Site objects.
+	 * @param    array    $sites    Array of \Replicast\Client objects.
 	 */
 	public function handle_delete( $sites = array() ) {
 
@@ -223,9 +223,9 @@ abstract class Handler {
 	 *
 	 * @since     1.0.0
 	 * @access    protected
-	 * @param     string                   $method    Request method.
-	 * @param     \Replicast\Model\Site    $site      Site object.
-	 * @return    array|null                          Prepared object data.
+	 * @param     string               $method    Request method.
+	 * @param     \Replicast\Client    $site      Site object.
+	 * @return    array|null                      Prepared object data.
 	 */
 	protected function prepare_body( $method, $site ) {
 
@@ -250,8 +250,8 @@ abstract class Handler {
 	 *
 	 * @since     1.0.0
 	 * @access    protected
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Prepared object data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Prepared object data.
 	 */
 	protected function prepare_body_for_create( $site ) {
 
@@ -283,8 +283,8 @@ abstract class Handler {
 	 *
 	 * @since     1.0.0
 	 * @access    protected
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Prepared object data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Prepared object data.
 	 */
 	protected function prepare_body_for_update( $site ) {
 
@@ -463,7 +463,7 @@ abstract class Handler {
 	 * @since     1.0.0
 	 * @access    protected
 	 * @param     string                   $method       Request method.
-	 * @param     \Replicast\Model\Site    $site         Site object.
+	 * @param     \Replicast\Client    $site         Site object.
 	 * @return    \Psr\Http\Message\ResponseInterface    Response.
 	 */
 	protected function do_request( $method, $site ) {
@@ -627,10 +627,10 @@ abstract class Handler {
 	 *
 	 * @since     1.0.0
 	 * @access    protected
-	 * @param     \Replicast\Model\Site    $site      Site object.
-	 * @param     object|null              $object    (optional)    Remote object data. Null if it's for permanent delete.
-	 * @return    mixed                                             Returns meta ID if the meta doesn't exist, otherwise
-	 *                                                              returns true on success and false on failure.
+	 * @param     \Replicast\Client    $site      Site object.
+	 * @param     object|null          $object    (optional)    Remote object data. Null if it's for permanent delete.
+	 * @return    mixed                                         Returns meta ID if the meta doesn't exist, otherwise
+	 *                                                          returns true on success and false on failure.
 	 */
 	protected function update_replicast_info( $site, $object = null ) {
 

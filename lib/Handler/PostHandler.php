@@ -43,8 +43,8 @@ class PostHandler extends Handler {
 	 * Get post from a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Response object.
 	 */
 	public function get( $site ) {}
 
@@ -52,8 +52,8 @@ class PostHandler extends Handler {
 	 * Create post on a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Response object.
 	 */
 	public function post( $site ) {
 
@@ -113,8 +113,8 @@ class PostHandler extends Handler {
 	 * Update post on a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Response object.
 	 */
 	public function put( $site ) {
 
@@ -177,8 +177,8 @@ class PostHandler extends Handler {
 	 * Delete post from a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Response object.
 	 */
 	public function delete( $site ) {
 

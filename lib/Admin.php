@@ -14,7 +14,7 @@ namespace Replicast;
 
 use Replicast\Admin\Site;
 use Replicast\Handler\PostHandler;
-use GuzzleHttp\Client;
+use Replicast\Client;
 
 /**
  * The dashboard-specific functionality of the plugin.
@@ -385,8 +385,8 @@ class Admin {
 	 * Returns a site.
 	 *
 	 * @since     1.0.0
-	 * @param     int|\WP_Term             $term    The term ID or the term object.
-	 * @return    \Replicast\Model\Site             A site object.
+	 * @param     int|\WP_Term    $term    The term ID or the term object.
+	 * @return    \Replicast\Client        A site object.
 	 */
 	public static function get_site( $term ) {
 
@@ -396,14 +396,14 @@ class Admin {
 
 		$site = \wp_cache_get( $term->term_id, 'replicast_sites' );
 
-		if ( ! $site || ! $site instanceof \Replicast\Model\Site ) {
+		if ( ! $site || ! $site instanceof Client ) {
 
-			$client = new Client( array(
+			$client = new \GuzzleHttp\Client( array(
 				'base_uri' => \untrailingslashit( \get_term_meta( $term->term_id, 'site_url', true ) ),
 				'debug'    => \apply_filters( 'replicast_client_debug', defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG )
 			) );
 
-			$site = new Model\Site( $term, $client );
+			$site = new Client( $term, $client );
 
 			\wp_cache_set( $term->term_id, $site, 'replicast_sites', 600 );
 		}
