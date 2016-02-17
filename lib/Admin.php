@@ -12,9 +12,9 @@
 
 namespace Replicast;
 
-use \Replicast\Admin\Site;
-use \Replicast\Handler\PostHandler;
-use \GuzzleHttp\Client;
+use Replicast\Admin\Site;
+use Replicast\Handler\PostHandler;
+use GuzzleHttp\Client;
 
 /**
  * The dashboard-specific functionality of the plugin.

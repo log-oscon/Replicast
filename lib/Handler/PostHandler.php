@@ -12,9 +12,9 @@
 
 namespace Replicast\Handler;
 
-use \Replicast\Handler\CategoryHandler;
-use \Replicast\Handler\TagHandler;
-use \GuzzleHttp\Exception\RequestException;
+use Replicast\Handler\CategoryHandler;
+use Replicast\Handler\TagHandler;
+use GuzzleHttp\Exception\RequestException;
 
 /**
  * Handles ´post´ content type replication.

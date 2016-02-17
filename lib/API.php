@@ -12,7 +12,7 @@
 
 namespace Replicast;
 
-use \Replicast\Admin\Site;
+use Replicast\Admin\Site;
 
 /**
  * Extend the API functionality.

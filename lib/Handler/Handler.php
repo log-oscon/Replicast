@@ -12,11 +12,11 @@
 
 namespace Replicast\Handler;
 
-use \Replicast\Admin;
-use \Replicast\Model\Site;
-use \Replicast\Plugin;
-use \Replicast\API;
-use \GuzzleHttp\Psr7;
+use Replicast\Admin;
+use Replicast\Model\Site;
+use Replicast\Plugin;
+use Replicast\API;
+use GuzzleHttp\Psr7;
 
 /**
  * Handles object replication.

@@ -12,7 +12,7 @@
 
 namespace Replicast\Handler;
 
-use \GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\RequestException;
 
 /**
  * Handles ´category´ content type replication.
