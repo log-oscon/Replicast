@@ -519,20 +519,15 @@ abstract class Handler {
 		);
 
 
-		// TODO: Guzzle using promises
-		// $request = new Psr7\Request( $method, $config['api_url'], $headers, json_encode( $data ) );
-		// $promise = $site->get_client()->sendAsync( $request )->then( function( $response ) {
-		// 	error_log('DONE!');
-		// 	return $response;
-		// } );
-
-		// return $promise->wait();
-
-		// Send a request
-		return $site->get_client()->request( $method, $config['api_url'], array(
-			'headers' => $headers,
-			'json'    => $data
-		) );
+		// Asynchronous request
+		return $site->get_client()->requestAsync(
+			$method,
+			$config['api_url'],
+			array(
+				'headers' => $headers,
+				'json'    => $data
+			)
+		);
 
 	}
 
