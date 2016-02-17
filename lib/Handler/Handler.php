@@ -463,7 +463,7 @@ abstract class Handler {
 	 * @since     1.0.0
 	 * @access    protected
 	 * @param     string                   $method       Request method.
-	 * @param     \Replicast\Client    $site         Site object.
+	 * @param     \Replicast\Client        $site         Site object.
 	 * @return    \Psr\Http\Message\ResponseInterface    Response.
 	 */
 	protected function do_request( $method, $site ) {
