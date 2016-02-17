@@ -415,6 +415,7 @@ class Admin {
 	 * Retrieve remote info from an object.
 	 *
 	 * @since     1.0.0
+	 * @access    private
 	 * @param     \WP_Post    $object    The object ID.
 	 * @return    mixed                  Single metadata value, or array of values.
 	 *                                   If the $meta_type or $object_id parameters are invalid, false is returned.
