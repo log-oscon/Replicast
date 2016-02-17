@@ -253,7 +253,7 @@ class PostHandler extends Handler {
 					continue;
 				}
 
-				// TODO: add filter to exclude some categories from being synced?
+				// TODO: add filter to exclude some terms from being synced?
 				if ( in_array( $term->slug, array( 'uncategorized' ) ) ) {
 					continue;
 				}
@@ -261,8 +261,7 @@ class PostHandler extends Handler {
 				if ( $term->taxonomy === 'category' ) {
 					$request = new CategoryHandler( $term );
 					$request->handle_update( $site );
-				}
-				elseif ( $term->taxonomy === 'post_tag' ) {
+				} elseif ( $term->taxonomy === 'post_tag' ) {
 					$request = new TagHandler( $term );
 					$request->handle_update( $site );
 				}
