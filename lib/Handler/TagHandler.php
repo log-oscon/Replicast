@@ -42,7 +42,7 @@ class TagHandler extends Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Response object.
+	 * @return    \GuzzleHttp\Promise
 	 */
 	public function get( $site ) {}
 
@@ -51,7 +51,7 @@ class TagHandler extends Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Response object.
+	 * @return    \GuzzleHttp\Promise
 	 */
 	public function post( $site ) {}
 
@@ -60,7 +60,7 @@ class TagHandler extends Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Response object.
+	 * @return    \GuzzleHttp\Promise
 	 */
 	public function put( $site ) {}
 
@@ -69,7 +69,7 @@ class TagHandler extends Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Response object.
+	 * @return    \GuzzleHttp\Promise
 	 */
 	public function delete( $site ) {}
 

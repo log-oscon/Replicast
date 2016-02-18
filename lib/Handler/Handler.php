@@ -597,10 +597,9 @@ abstract class Handler {
 	 * Retrieve replicast info from an object.
 	 *
 	 * @since     1.0.0
-	 * @access    protected
 	 * @return    array    The replicast info meta field.
 	 */
-	protected function get_replicast_info() {
+	public function get_replicast_info() {
 
 		$replicast_info = \get_metadata( API::get_meta_type( $this->object ), $this->get_object_id(), Plugin::REPLICAST_IDS, true );
 
@@ -621,13 +620,12 @@ abstract class Handler {
 	 * This replication info consists in a pair <site_id, remote_object_id>.
 	 *
 	 * @since     1.0.0
-	 * @access    protected
 	 * @param     \Replicast\Client    $site      Site object.
 	 * @param     object|null          $object    (optional)    Remote object data. Null if it's for permanent delete.
 	 * @return    mixed                                         Returns meta ID if the meta doesn't exist, otherwise
 	 *                                                          returns true on success and false on failure.
 	 */
-	protected function update_replicast_info( $site, $object = null ) {
+	public function update_replicast_info( $site, $object = null ) {
 
 		// Get site ID
 		$site_id = $site->get_id();

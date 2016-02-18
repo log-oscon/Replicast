@@ -44,7 +44,7 @@ class PostHandler extends Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Response object.
+	 * @return    \GuzzleHttp\Promise
 	 */
 	public function get( $site ) {}
 
@@ -53,7 +53,7 @@ class PostHandler extends Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Response object.
+	 * @return    \GuzzleHttp\Promise
 	 */
 	public function post( $site ) {
 
@@ -114,7 +114,7 @@ class PostHandler extends Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Response object.
+	 * @return    \GuzzleHttp\Promise
 	 */
 	public function put( $site ) {
 
@@ -178,7 +178,7 @@ class PostHandler extends Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Response object.
+	 * @return    \GuzzleHttp\Promise
 	 */
 	public function delete( $site ) {
 
@@ -232,43 +232,53 @@ class PostHandler extends Handler {
 	}
 
 	/**
-	 * [handle_post_terms description]
+	 * Handle object terms.
+	 *
+	 * @since     1.0.0
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    \GuzzleHttp\Promise
 	 */
-	public function handle_post_terms( $site ) {
+	public function handle_terms( $site ) {
 
 		if ( empty( $this->data['_embedded'] ) ) {
-			return;
+			// TODO: return message
+			return new FulfilledPromise( \__( '', 'replicast' ) );
 		}
 
 		if ( empty( $this->data['_embedded']['https://api.w.org/term'] ) ) {
-			return;
+			// TODO: return message
+			return new FulfilledPromise( \__( '', 'replicast' ) );
 		}
 
 		foreach ( $this->data['_embedded']['https://api.w.org/term'] as $term_link ) {
 			foreach ( $term_link as $term_data ) {
 
+				// Get term object
 				$term = \get_term( $term_data['id'], $term_data['taxonomy'] );
 
 				if ( ! $term instanceof \WP_Term ) {
 					continue;
 				}
 
-				// TODO: add filter to exclude some terms from being synced?
+				// TODO: add filter to exclude some term slugs from being synced?
 				if ( in_array( $term->slug, array( 'uncategorized' ) ) ) {
 					continue;
 				}
 
 				if ( $term->taxonomy === 'category' ) {
-					$request = new CategoryHandler( $term );
-					$request->handle_update( $site );
+					$handler = new CategoryHandler( $term );
+					return $handler->handle_update( $site );
+
 				} elseif ( $term->taxonomy === 'post_tag' ) {
-					$request = new TagHandler( $term );
-					$request->handle_update( $site );
+					$handler = new TagHandler( $term );
+					return $handler->handle_update( $site );
 				}
 
 			}
 		}
 
+		// TODO: return message
+		return new FulfilledPromise( \__( '', 'replicast' ) );
 	}
 
 }
