@@ -131,8 +131,8 @@ class Plugin {
 		$this->loader->add_action( 'admin_notices',         $admin, 'display_admin_notices' );
 
 		// Sync
-		$this->loader->add_action( 'save_post',     $admin, 'on_save_post', 10, 2 );
-		$this->loader->add_action( 'wp_trash_post', $admin, 'on_trash_post' );
+		$this->loader->add_action( 'save_post',    $admin, 'on_save_post', 10, 2 );
+		$this->loader->add_action( 'trashed_post', $admin, 'on_trash_post' );
 
 		// Admin UI
 		$this->loader->add_action( 'manage_posts_custom_column', $admin, 'manage_custom_column', 10, 2 );
@@ -146,27 +146,27 @@ class Plugin {
 	}
 
 	/**
-	 * Register all of the hooks related to the RESTful functionality
+	 * Register all of the hooks related to the ´post´ content type functionality
 	 * of the plugin.
 	 *
 	 * @since     1.0.0
 	 * @access    private
 	 */
-	private function define_rest_hooks() {
+	private function define_post_hooks() {
 
-		$rest = new REST( $this );
+		$post = new Admin\Post( $this );
 
-		$this->loader->add_action( 'rest_api_init', $rest, 'register_rest_fields' );
+		$this->loader->add_filter( 'replicast_prepare_page_for_create', $post, 'prepare_page_for_create' );
+		$this->loader->add_filter( 'replicast_prepare_page_for_update', $post, 'prepare_page_for_update' );
 
 	}
 
 	/**
-	 * Register all of the common hooks.
+	 * Register all of the hooks related to the ´Site´ taxonomy functionality
+	 * of the plugin.
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 *
-	 * @uses \get_post_types()
 	 */
 	private function define_site_hooks() {
 
@@ -183,6 +183,21 @@ class Plugin {
 	}
 
 	/**
+	 * Register all of the hooks related to the API functionality
+	 * of the plugin.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 */
+	private function define_api_hooks() {
+
+		$api = new API( $this );
+
+		$this->loader->add_action( 'rest_api_init', $api, 'register_rest_fields' );
+
+	}
+
+	/**
 	 * Run the loader to execute all of the hooks with WordPress.
 	 *
 	 * Load the dependencies, define the locale, and set the hooks for the Dashboard and
@@ -193,8 +208,9 @@ class Plugin {
 	public function run() {
 		$this->set_locale();
 		$this->define_admin_hooks();
-		$this->define_rest_hooks();
+		$this->define_post_hooks();
 		$this->define_site_hooks();
+		$this->define_api_hooks();
 		$this->loader->run();
 	}
 

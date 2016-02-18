@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Define the RESTful functionality
+ * Extend the API functionality
  *
  * @link       http://log.pt/
  * @since      1.0.0
@@ -15,13 +15,13 @@ namespace Replicast;
 use \Replicast\Admin\Site;
 
 /**
- * Define the RESTful functionality.
+ * Extend the API functionality.
  *
  * @package    Replicast
  * @subpackage Replicast/lib
  * @author     log.OSCON, Lda. <engenharia@log.pt>
  */
-class REST {
+class API {
 
 	/**
 	 * The plugin's instance.
@@ -117,6 +117,9 @@ class REST {
 
 		// TODO: should this be returning any kind of success/failure information?
 
+		// Get object meta type
+		$meta_type = static::get_meta_type( $object );
+
 		/**
 		 * Filter for suppressing specific meta keys from update.
 		 *
@@ -135,11 +138,9 @@ class REST {
 				continue;
 			}
 
-			// FIXME: support for 'user' and 'comment' meta types
-			\delete_metadata( 'post', $object->ID, $meta_key );
+			\delete_metadata( $meta_type, $object->ID, $meta_key );
 			foreach ( $meta_values as $meta_value ) {
-				// FIXME: support for 'user' and 'comment' meta types
-				\add_metadata( 'post', $object->ID, $meta_key, \maybe_unserialize( $meta_value ) );
+				\add_metadata( $meta_type, $object->ID, $meta_key, \maybe_unserialize( $meta_value ) );
 			}
 
 		}
@@ -157,6 +158,9 @@ class REST {
 	 */
 	private static function get_metadata( $object, $route ) {
 
+		// Get object meta type
+		$meta_type = static::get_meta_type( $object );
+
 		/**
 		 * Filter for exposing specific protected meta keys.
 		 *
@@ -169,8 +173,7 @@ class REST {
 			'_wp_page_template',
 		), $object );
 
-		// FIXME: support for 'user' and 'comment' meta types
-		$metadata = \get_metadata( 'post', $object['id'] );
+		$metadata = \get_metadata( $meta_type, $object['id'] );
 
 		if ( ! $metadata ) {
 			return array();
@@ -199,6 +202,92 @@ class REST {
 		) ) );
 
 		return $prepared_metadata;
+	}
+
+	/**
+	 * Get object type.
+	 *
+	 * @since     1.0.0
+	 * @param     object|array    $object    The current object.
+	 * @return    string                     The object type.
+	 */
+	public static function get_object_type( $object ) {
+
+		if ( static::is_term( $object ) ) {
+			return $object->taxonomy;
+		}
+
+		return $object->post_type;
+	}
+
+	/**
+	 * Get meta type based on the object class or array data.
+	 *
+	 * @since     1.0.0
+	 * @param     object|array    $object    The current object.
+	 * @return    string                     Possible values: user, comment, post, meta
+	 */
+	public static function get_meta_type( $object ) {
+
+		// TODO: Support user and comment object types with an array structure
+
+		if ( static::is_term( $object ) ) {
+			return 'term';
+		}
+
+		if ( static::is_comment( $object ) ) {
+			return 'comment';
+		}
+
+		if ( static::is_user( $object ) ) {
+			return 'user';
+		}
+
+		return 'post';
+	}
+
+	/**
+	 * Check if current object is a post/page.
+	 *
+	 * @since     1.0.0
+	 * @param     object|array    $object    The current object.
+	 * @return    bool                       True if it's a post/page. False, otherwise.
+	 */
+	public static function is_post( $object ) {
+		return $object instanceof \WP_Post;
+	}
+
+	/**
+	 * Check if current object is a term.
+	 *
+	 * @since     1.0.0
+	 * @param     object|array    $object    The current object.
+	 * @return    bool                       True if it's a term. False, otherwise.
+	 */
+	public static function is_term( $object ) {
+		return $object instanceof \WP_Term || ( is_array( $object ) && isset( $object['taxonomy'] ) );
+	}
+
+	/**
+	 * Check if current object is a comment.
+	 *
+	 * @since     1.0.0
+	 * @param     object|array    $object    The current object.
+	 * @return    bool                       True if it's a comment. False, otherwise.
+	 */
+	public static function is_comment( $object ) {
+		return $object instanceof \WP_Comment;
+	}
+
+	/**
+	 * Check if current object is an user.
+	 *
+	 * @since     1.0.0
+	 * @param     object|array    $object    The current object.
+	 * @return    bool                       True if it's an user. False, otherwise.
+	 */
+	public static function is_user( $object ) {
+		return $object instanceof \WP_User;
 	}
 
 }

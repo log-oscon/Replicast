@@ -33,7 +33,8 @@ class PostHandler extends Handler {
 	 * @param    \WP_Post    $post    Post object.
 	 */
 	public function __construct( \WP_Post $post ) {
-		$this->rest_base = 'posts';
+		$post_type       = \get_post_type_object( $post->post_type );
+		$this->rest_base = ! empty( $post_type->rest_base ) ? $post_type->rest_base : $post_type->name;
 		$this->object    = $post;
 		$this->data      = $this->get_object_data();
 	}
@@ -93,14 +94,14 @@ class PostHandler extends Handler {
 
 		} catch ( RequestException $ex ) {
 			if ( $ex->hasResponse() ) {
-				$result = array(
+				return array(
 					'status_code'   => $ex->getResponse()->getStatusCode(),
 					'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
 					'message'       => $ex->getMessage()
 				);
 			}
 		} catch ( \Exception $ex ) {
-			$result = array(
+			return array(
 				'message' => $ex->getMessage()
 			);
 		}
@@ -154,19 +155,20 @@ class PostHandler extends Handler {
 
 		} catch ( RequestException $ex ) {
 			if ( $ex->hasResponse() ) {
-				$result = array(
+				return array(
 					'status_code'   => $ex->getResponse()->getStatusCode(),
 					'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
 					'message'       => $ex->getMessage()
 				);
 			}
 		} catch ( \Exception $ex ) {
-			$result = array(
+			return array(
 				'message' => $ex->getMessage()
 			);
 		}
 
 		return $result;
+
 	}
 
 	/**
@@ -211,14 +213,14 @@ class PostHandler extends Handler {
 
 		} catch ( RequestException $ex ) {
 			if ( $ex->hasResponse() ) {
-				$result = array(
+				return array(
 					'status_code'   => $ex->getResponse()->getStatusCode(),
 					'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
 					'message'       => $ex->getMessage()
 				);
 			}
 		} catch ( \Exception $ex ) {
-			$result = array(
+			return array(
 				'message' => $ex->getMessage()
 			);
 		}

@@ -13,7 +13,9 @@
 namespace Replicast\Handler;
 
 use \Replicast\Admin;
+use \Replicast\Model\Site;
 use \Replicast\Plugin;
+use \Replicast\API;
 use \GuzzleHttp\Psr7;
 
 /**
@@ -59,7 +61,7 @@ abstract class Handler {
 	const DELETABLE = 'DELETE';
 
 	/**
-	 * Post type object.
+	 * Object type.
 	 *
 	 * @since     1.0.0
 	 * @access    protected
@@ -68,7 +70,7 @@ abstract class Handler {
 	protected $object;
 
 	/**
-	 * Post with a REST API compliant schema.
+	 * Object with a REST API compliant schema.
 	 *
 	 * @since     1.0.0
 	 * @access    protected
@@ -111,12 +113,53 @@ abstract class Handler {
 	protected $attributes = array();
 
 	/**
+	 * Get object from a site.
+	 *
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
+	 */
+	abstract public function get( $site );
+
+	/**
+	 * Create object on a site.
+	 *
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
+	 */
+	abstract public function post( $site );
+
+	/**
+	 * Update object on a site.
+	 *
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
+	 */
+	abstract public function put( $site );
+
+	/**
+	 * Delete object from a site.
+	 *
+	 * @since     1.0.0
+	 * @param     \Replicast\Model\Site    $site    Site object.
+	 * @return    array                             Response object.
+	 */
+	abstract public function delete( $site );
+
+	/**
 	 * Create/update object handler.
 	 *
 	 * @since    1.0.0
-	 * @param    array    $sites    Array of \Replicast\Model\Site objects.
+	 * @param    \Replicast\Model\Site|array    $sites    A site or an array of site objects.
 	 */
 	public function handle_update( $sites = array() ) {
+
+		// Handle single site
+		if ( ! is_array( $sites ) && $sites instanceof Site ) {
+			$sites = array( $sites->get_id() => $sites );
+		}
 
 		$notices = array();
 
@@ -176,42 +219,6 @@ abstract class Handler {
 	}
 
 	/**
-	 * Get object from a site.
-	 *
-	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
-	 */
-	abstract public function get( $site );
-
-	/**
-	 * Create object on a site.
-	 *
-	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
-	 */
-	abstract public function post( $site );
-
-	/**
-	 * Update object on a site.
-	 *
-	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
-	 */
-	abstract public function put( $site );
-
-	/**
-	 * Delete object from a site.
-	 *
-	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
-	 */
-	abstract public function delete( $site );
-
-	/**
 	 * Prepares a object for a given method.
 	 *
 	 * @since     1.0.0
@@ -248,7 +255,7 @@ abstract class Handler {
 	 */
 	protected function prepare_body_for_create( $site ) {
 
-		$object_type = $this->get_object_type();
+		$object_type = API::get_object_type( $this->object );
 
 		// Get object data
 		$data = $this->data;
@@ -281,7 +288,7 @@ abstract class Handler {
 	 */
 	protected function prepare_body_for_update( $site ) {
 
-		$object_type = $this->get_object_type();
+		$object_type = API::get_object_type( $this->object );
 
 		// Get object data
 		$data = $this->data;
@@ -301,7 +308,7 @@ abstract class Handler {
 
 		// Check for date_gmt presence
 		// Note: date_gmt is necessary for post update and it's zeroed upon deletion
-		if ( $object_type === 'post' && empty( $data['date_gmt'] ) ) {
+		if ( empty( $data['date_gmt'] ) && ! empty( $data['date'] ) ) {
 			$data['date_gmt'] = \mysql_to_rfc3339( $data['date'] );
 		}
 
@@ -328,22 +335,6 @@ abstract class Handler {
 		}
 
 		return $this->object->ID;
-	}
-
-	/**
-	 * Get object type.
-	 *
-	 * @since     1.0.0
-	 * @access    protected
-	 * @return    string    The object type.
-	 */
-	protected function get_object_type() {
-
-		if ( $this->object instanceof \WP_Term ) {
-			return $this->object->taxonomy;
-		}
-
-		return $this->object->post_type;
 	}
 
 	/**
@@ -394,7 +385,7 @@ abstract class Handler {
 		// Request attributes
 		$attributes = array_merge(
 			array(
-				'context' => $this->get_object_type() === 'post' ? 'edit' : 'embed',
+				'context' => 'edit',
 				'_embed'  => true,
 			),
 			$this->attributes
@@ -527,8 +518,22 @@ abstract class Handler {
 			'X-API-SIGNATURE' => $signature,
 		);
 
+
+		// TODO: Guzzle using promises
+		// $request = new Psr7\Request( $method, $config['api_url'], $headers, json_encode( $data ) );
+		// $promise = $site->get_client()->sendAsync( $request )->then( function( $response ) {
+		// 	error_log('DONE!');
+		// 	return $response;
+		// } );
+
+		// return $promise->wait();
+
 		// Send a request
-		return $site->get_client()->request( $method, $config['api_url'], array( $headers, 'json' => $data ) );
+		return $site->get_client()->request( $method, $config['api_url'], array(
+			'headers' => $headers,
+			'json'    => $data
+		) );
+
 	}
 
 	/**
@@ -609,9 +614,7 @@ abstract class Handler {
 	 */
 	protected function get_replicast_info() {
 
-		// FIXME: this should update term meta also...
-		// FIXME: support for 'user' and 'comment' meta types
-		$replicast_info = \get_metadata( 'post', $this->get_object_id(), Plugin::REPLICAST_IDS, true );
+		$replicast_info = \get_metadata( API::get_meta_type( $this->object ), $this->get_object_id(), Plugin::REPLICAST_IDS, true );
 
 		if ( ! $replicast_info ) {
 			return array();
@@ -648,15 +651,14 @@ abstract class Handler {
 		if ( $object ) {
 			$replicast_info[ $site_id ] = array(
 				'id'     => $object->id,
-				'status' => $object->status
+				'status' => isset( $object->status ) ? $object->status : ''
 			);
 		}
 		else {
 			unset( $replicast_info[ $site_id ] );
 		}
 
-		// FIXME: support for 'user' and 'comment' meta types
-		return \update_metadata( 'post', $this->get_object_id(), Plugin::REPLICAST_IDS, $replicast_info );
+		return \update_metadata( API::get_meta_type( $this->object ), $this->get_object_id(), Plugin::REPLICAST_IDS, $replicast_info );
 	}
 
 }
