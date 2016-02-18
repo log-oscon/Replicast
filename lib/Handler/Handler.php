@@ -16,7 +16,7 @@ use Replicast\Admin;
 use Replicast\Client;
 use Replicast\Plugin;
 use Replicast\API;
-use GuzzleHttp\Psr7;
+use GuzzleHttp\Promise\FulfilledPromise;
 
 /**
  * Handles object replication.
@@ -117,7 +117,7 @@ abstract class Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Response object.
+	 * @return    \GuzzleHttp\Promise
 	 */
 	abstract public function get( $site );
 
@@ -126,7 +126,7 @@ abstract class Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Response object.
+	 * @return    \GuzzleHttp\Promise
 	 */
 	abstract public function post( $site );
 
@@ -135,7 +135,7 @@ abstract class Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Response object.
+	 * @return    \GuzzleHttp\Promise
 	 */
 	abstract public function put( $site );
 
@@ -144,78 +144,55 @@ abstract class Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Response object.
+	 * @return    \GuzzleHttp\Promise
 	 */
 	abstract public function delete( $site );
 
 	/**
 	 * Create/update object handler.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Client|array    $sites    A site or an array of site objects.
+	 * @since     1.0.0
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    \GuzzleHttp\Promise
 	 */
-	public function handle_update( $sites = array() ) {
-
-		// Handle single site
-		if ( ! is_array( $sites ) && $sites instanceof Client ) {
-			$sites = array( $sites->get_id() => $sites );
-		}
-
-		$notices = array();
+	public function handle_update( $site ) {
 
 		// Get replicast object info
 		$replicast_info = $this->get_replicast_info();
 
 		// Verify that the current object has been "removed" (aka unchecked) from any site(s)
 		// FIXME: review this later on
-		foreach ( $replicast_info as $site_id => $replicast_data ) {
-			if ( ! array_key_exists( $site_id, $sites ) && $replicast_data['status'] !== 'trash' ) {
-				$notices[] = $this->delete( Admin::get_site( $site_id ) );
-			}
+		// foreach ( $replicast_info as $site_id => $replicast_data ) {
+		// 	if ( ! array_key_exists( $site_id, $sites ) && $replicast_data['status'] !== 'trash' ) {
+		// 		$notices[] = $this->delete( Admin::get_site( $site_id ) );
+		// 	}
+		// }
+
+		if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
+			return $this->put( $site );
 		}
 
-		foreach ( $sites as $site_id => $site ) {
-
-			if ( array_key_exists( $site_id, $replicast_info ) ) {
-				$notices[] = $this->put( $site );
-			}
-			else {
-				$notices[] = $this->post( $site );
-			}
-
-		}
-
-		// Set admin notices
-		if ( ! empty( $notices ) ) {
-			$this->set_admin_notice( $notices );
-		}
-
+		return $this->post( $site );
 	}
 
 	/**
 	 * Delete object handler.
 	 *
 	 * @since    1.0.0
-	 * @param    array    $sites    Array of \Replicast\Client objects.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    \GuzzleHttp\Promise
 	 */
-	public function handle_delete( $sites = array() ) {
-
-		$notices = array();
+	public function handle_delete( $site ) {
 
 		// Get replicast object info
 		$replicast_info = $this->get_replicast_info();
 
-		foreach ( $sites as $site_id => $site ) {
-			if ( array_key_exists( $site_id, $replicast_info ) ) {
-				$notices[] = $this->delete( $site );
-			}
+		if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
+			return $this->delete( $site );
 		}
 
-		// Set admin notices
-		if ( ! empty( $notices ) ) {
-			$this->set_admin_notice( $notices );
-		}
-
+		// TODO: return message
+		return new FulfilledPromise( \__( '', 'replicast' ) );
 	}
 
 	/**
@@ -528,68 +505,6 @@ abstract class Handler {
 				'json'    => $data
 			)
 		);
-
-	}
-
-	/**
-	 * Set admin notices.
-	 *
-	 * @since     1.0.0
-	 * @access    protected
-	 * @param     array    $notices    Array of notices.
-	 */
-	protected function set_admin_notice( $notices ) {
-
-		$current_user = \wp_get_current_user();
-		$rendered     = array();
-
-		foreach ( $notices as $notice ) {
-
-			$status_code   = ! empty( $notice['status_code'] )   ? $notice['status_code']   : '';
-			$reason_phrase = ! empty( $notice['reason_phrase'] ) ? $notice['reason_phrase'] : '';
-			$message       = ! empty( $notice['message'] )       ? $notice['message']       : \__( 'Something went wrong.', 'replicast' );
-
-			$rendered[] = array(
-				'type'    => $this->get_notice_type_by_status_code( $status_code ),
-				'message' => $message
-			);
-
-			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
-				error_log( sprintf(
-					"\n%s\n%s\n%s",
-					sprintf( \__( 'Status Code: %s', 'replicast' ), $status_code ),
-					sprintf( \__( 'Reason: %s', 'replicast' ), $reason_phrase ),
-					sprintf( \__( 'Message: %s', 'replicast' ), $message )
-				) );
-			}
-
-		}
-
-		\set_transient( 'replicast_notices_' . $current_user->ID, $rendered, 180 );
-
-	}
-
-	/**
-	 * Get the admin notice type based on a HTTP request/response status code.
-	 *
-	 * @since     1.0.0
-	 * @access    private
-	 * @param     string    $status_code    HTTP request/response status code.
-	 * @return    string                    Possible values: error | success | warning.
-	 */
-	private function get_notice_type_by_status_code( $status_code ) {
-
-		// FIXME
-		// Maybe this should be more simpler. For instance, all 2xx status codes should be treated as success.
-		// What happens with a 3xx status code?
-
-		switch ( $status_code ) {
-			case '200': // Update
-			case '201': // Create
-				return 'success';
-			default:
-				return 'error';
-		}
 
 	}
 

@@ -14,7 +14,7 @@ namespace Replicast\Handler;
 
 use Replicast\Handler\CategoryHandler;
 use Replicast\Handler\TagHandler;
-use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Promise\FulfilledPromise;
 
 /**
  * Handles ´post´ content type replication.
@@ -56,57 +56,7 @@ class PostHandler extends Handler {
 	 * @return    \GuzzleHttp\Promise
 	 */
 	public function post( $site ) {
-
-		$result = array();
-
-		try {
-
-			// Do request
-			$response = $this->do_request( Handler::CREATABLE, $site );
-
-			// Get the remote object data
-			$remote_object = json_decode( $response->getBody()->getContents() );
-
-			if ( $remote_object ) {
-
-				// Update replicast info
-				$this->update_replicast_info( $site, $remote_object );
-
-				$result = array(
-					'status_code'   => $response->getStatusCode(),
-					'reason_phrase' => $response->getReasonPhrase(),
-					'message'       => sprintf(
-						'%s %s',
-						sprintf(
-							\__( 'Post published on %s.', 'replicast' ),
-							$site->get_name()
-						),
-						sprintf(
-							'<a href="%s" title="%s" target="_blank">%s</a>',
-							\esc_url( $remote_object->link ),
-							\esc_attr( $site->get_name() ),
-							\__( 'View post', 'replicast' )
-						)
-					)
-				);
-
-			}
-
-		} catch ( RequestException $ex ) {
-			if ( $ex->hasResponse() ) {
-				return array(
-					'status_code'   => $ex->getResponse()->getStatusCode(),
-					'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-					'message'       => $ex->getMessage()
-				);
-			}
-		} catch ( \Exception $ex ) {
-			return array(
-				'message' => $ex->getMessage()
-			);
-		}
-
-		return $result;
+		return $this->do_request( Handler::CREATABLE, $site );
 	}
 
 	/**
@@ -117,60 +67,7 @@ class PostHandler extends Handler {
 	 * @return    \GuzzleHttp\Promise
 	 */
 	public function put( $site ) {
-
-		$result = array();
-
-		try {
-
-			$this->handle_post_terms( $site );
-
-			// Do request
-			$response = $this->do_request( Handler::EDITABLE, $site );
-
-			// Get the remote object data
-			$remote_object = json_decode( $response->getBody()->getContents() );
-
-			if ( $remote_object ) {
-
-				// Update replicast info
-				$this->update_replicast_info( $site, $remote_object );
-
-				$result = array(
-					'status_code'   => $response->getStatusCode(),
-					'reason_phrase' => $response->getReasonPhrase(),
-					'message'       => sprintf(
-						'%s %s',
-						sprintf(
-							\__( 'Post updated on %s.', 'replicast' ),
-							$site->get_name()
-						),
-						sprintf(
-							'<a href="%s" title="%s" target="_blank">%s</a>',
-							\esc_url( $remote_object->link ),
-							\esc_attr( $site->get_name() ),
-							\__( 'View post', 'replicast' )
-						)
-					)
-				);
-
-			}
-
-		} catch ( RequestException $ex ) {
-			if ( $ex->hasResponse() ) {
-				return array(
-					'status_code'   => $ex->getResponse()->getStatusCode(),
-					'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-					'message'       => $ex->getMessage()
-				);
-			}
-		} catch ( \Exception $ex ) {
-			return array(
-				'message' => $ex->getMessage()
-			);
-		}
-
-		return $result;
-
+		return $this->do_request( Handler::EDITABLE, $site );
 	}
 
 	/**
@@ -181,53 +78,50 @@ class PostHandler extends Handler {
 	 * @return    \GuzzleHttp\Promise
 	 */
 	public function delete( $site ) {
+		return $this->do_request( Handler::DELETABLE, $site );
 
-		$result = array();
+		// try {
 
-		try {
+		// 	// Do request
+		// 	$response = $this->do_request( Handler::DELETABLE, $site );
 
-			// Do request
-			$response = $this->do_request( Handler::DELETABLE, $site );
+		// 	// Get the remote object data
+		// 	$remote_object = json_decode( $response->getBody()->getContents() );
 
-			// Get the remote object data
-			$remote_object = json_decode( $response->getBody()->getContents() );
+		// 	if ( $remote_object ) {
 
-			if ( $remote_object ) {
+		// 		// The API returns 'publish' but we force the status to be 'trash' for better
+		// 		// management of the next actions over the object. Like, recovering (PUT request)
+		// 		// or permanently delete the object from remote location.
+		// 		$remote_object->status = 'trash';
 
-				// The API returns 'publish' but we force the status to be 'trash' for better
-				// management of the next actions over the object. Like, recovering (PUT request)
-				// or permanently delete the object from remote location.
-				$remote_object->status = 'trash';
+		// 		// Update replicast info
+		// 		$this->update_replicast_info( $site, $remote_object );
 
-				// Update replicast info
-				$this->update_replicast_info( $site, $remote_object );
+		// 		return array(
+		// 			'status_code'   => $response->getStatusCode(),
+		// 			'reason_phrase' => $response->getReasonPhrase(),
+		// 			'message'       => sprintf(
+		// 				\__( 'Post trashed on %s.', 'replicast' ),
+		// 				$site->get_name()
+		// 			)
+		// 		);
 
-				$result = array(
-					'status_code'   => $response->getStatusCode(),
-					'reason_phrase' => $response->getReasonPhrase(),
-					'message'       => sprintf(
-						\__( 'Post trashed on %s.', 'replicast' ),
-						$site->get_name()
-					)
-				);
+		// 	}
 
-			}
-
-		} catch ( RequestException $ex ) {
-			if ( $ex->hasResponse() ) {
-				return array(
-					'status_code'   => $ex->getResponse()->getStatusCode(),
-					'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-					'message'       => $ex->getMessage()
-				);
-			}
-		} catch ( \Exception $ex ) {
-			return array(
-				'message' => $ex->getMessage()
-			);
-		}
-
-		return $result;
+		// } catch ( RequestException $ex ) {
+		// 	if ( $ex->hasResponse() ) {
+		// 		return array(
+		// 			'status_code'   => $ex->getResponse()->getStatusCode(),
+		// 			'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
+		// 			'message'       => $ex->getMessage()
+		// 		);
+		// 	}
+		// } catch ( \Exception $ex ) {
+		// 	return array(
+		// 		'message' => $ex->getMessage()
+		// 	);
+		// }
 
 	}
 

@@ -15,6 +15,8 @@ namespace Replicast;
 use Replicast\Admin\Site;
 use Replicast\Handler\PostHandler;
 use Replicast\Client;
+use Psr\Http\Message\ResponseInterface;
+use GuzzleHttp\Exception\RequestException;
 
 /**
  * The dashboard-specific functionality of the plugin.
@@ -306,7 +308,73 @@ class Admin {
 
 		// Prepares post data for replication
 		$post_handler = new PostHandler( $post );
-		$post_handler->handle_update( $sites );
+
+		$notices = array();
+
+		foreach ( $sites as $site ) {
+
+			try {
+
+				$response = $post_handler->handle_terms( $site )->then(
+					function( $response ) use ( $post_handler, $site ) {
+
+						// TODO
+						// - handle terms created
+						$remote_term = json_decode( $response->getBody()->getContents() );
+
+						error_log(print_r($remote_term,true));
+
+						return $post_handler->handle_update( $site );
+					}
+				)
+				->wait();
+
+				// Get the remote object data
+				$remote_post = json_decode( $response->getBody()->getContents() );
+
+				if ( $remote_post ) {
+
+					$status_code = $response->getStatusCode();
+
+					// Update replicast info
+					$post_handler->update_replicast_info( $site, $remote_post );
+
+					$notices[] = array(
+						'status_code'   => $status_code,
+						'reason_phrase' => $response->getReasonPhrase(),
+						'message'       => sprintf(
+							'%s %s',
+							sprintf(
+								$status_code === 201 ? \__( 'Post published on %s.', 'replicast' ) : \__( 'Post updated on %s.', 'replicast' ),
+								$site->get_name()
+							),
+							sprintf(
+								'<a href="%s" title="%s" target="_blank">%s</a>',
+								\esc_url( $remote_post->link ),
+								\esc_attr( $site->get_name() ),
+								\__( 'View post', 'replicast' )
+							)
+						)
+					);
+
+				}
+
+			} catch ( \Exception $ex ) {
+				if ( $ex->hasResponse() ) {
+					$notices[] = array(
+						'status_code'   => $ex->getResponse()->getStatusCode(),
+						'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
+						'message'       => $ex->getMessage()
+					);
+				}
+			}
+
+		}
+
+		// Set admin notices
+		if ( ! empty( $notices ) ) {
+			$this->set_admin_notice( $notices );
+		}
 
 	}
 
@@ -344,8 +412,8 @@ class Admin {
 		$sites = $this->get_sites( $post );
 
 		// Prepares data for replication
-		$post_handler = new PostHandler( $post );
-		$post_handler->handle_delete( $sites );
+		// $post_handler = new PostHandler( $post );
+		// $post_handler->handle_delete( $sites );
 
 	}
 
@@ -422,6 +490,68 @@ class Admin {
 	 */
 	private function get_remote_info( $object_id ) {
 		return \get_post_meta( $object_id, Plugin::REPLICAST_REMOTE, true );
+	}
+
+	/**
+	 * Set admin notices.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     array    $notices    Array of notices.
+	 */
+	private function set_admin_notice( $notices ) {
+
+		$current_user = \wp_get_current_user();
+		$rendered     = array();
+
+		foreach ( $notices as $notice ) {
+
+			$status_code   = ! empty( $notice['status_code'] )   ? $notice['status_code']   : '';
+			$reason_phrase = ! empty( $notice['reason_phrase'] ) ? $notice['reason_phrase'] : '';
+			$message       = ! empty( $notice['message'] )       ? $notice['message']       : \__( 'Something went wrong.', 'replicast' );
+
+			$rendered[] = array(
+				'type'    => $this->get_notice_type_by_status_code( $status_code ),
+				'message' => $message
+			);
+
+			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
+				error_log( sprintf(
+					"\n%s\n%s\n%s",
+					sprintf( \__( 'Status Code: %s', 'replicast' ), $status_code ),
+					sprintf( \__( 'Reason: %s', 'replicast' ), $reason_phrase ),
+					sprintf( \__( 'Message: %s', 'replicast' ), $message )
+				) );
+			}
+
+		}
+
+		\set_transient( 'replicast_notices_' . $current_user->ID, $rendered, 180 );
+
+	}
+
+	/**
+	 * Get the admin notice type based on a HTTP request/response status code.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     string    $status_code    HTTP request/response status code.
+	 * @return    string                    Possible values: error | success | warning.
+	 */
+	private function get_notice_type_by_status_code( $status_code ) {
+
+		// FIXME
+		// Maybe this should be more simpler. For instance, all 2xx status codes should be treated as success.
+		// What happens with a 3xx status code?
+
+		switch ( $status_code ) {
+			case '200': // Update
+			case '201': // Create
+				return 'success';
+			default:
+				return 'error';
+		}
+
 	}
 
 }
