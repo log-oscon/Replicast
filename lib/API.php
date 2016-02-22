@@ -169,9 +169,7 @@ class API {
 		 * @param     array    $object    Details of current content object.
 		 * @return    array               Possibly-modified name(s) of the exposed meta keys.
 		 */
-		$whitelist = \apply_filters( 'replicast_expose_object_protected_meta', array(
-			'_wp_page_template',
-		), $object );
+		$whitelist = \apply_filters( 'replicast_expose_object_protected_meta', array(), $object );
 
 		$metadata = \get_metadata( $meta_type, $object['id'] );
 
