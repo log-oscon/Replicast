@@ -397,11 +397,66 @@ class Admin {
 		// Get sites for replication
 		$sites = $this->get_sites( $post );
 
-		// Prepares data for replication
+		// Prepares post data for replication
+		$handler = new PostHandler( $post );
 
-		// FIXME: convert delete to use requestAsync
-		// $handler = new PostHandler( $post );
-		// $handler->handle_delete( $sites );
+		$notices = array();
+
+		foreach ( $sites as $site ) {
+
+			try {
+
+				$response = $handler->handle_delete( $site )->wait();
+
+				// Get the remote object data
+				$remote_post = json_decode( $response->getBody()->getContents() );
+
+				if ( $remote_post ) {
+
+					// The API returns 'publish' but we force the status to be 'trash' for better
+					// management of the next actions over the object. Like, recovering (PUT request)
+					// or permanently delete the object from remote location.
+					$remote_post->status = 'trash';
+
+					// Update post replicast info
+					$handler->update_replicast_info( $site, $remote_post );
+
+					$notices[] = array(
+						'status_code'   => $response->getStatusCode(),
+						'reason_phrase' => $response->getReasonPhrase(),
+						'message'       => sprintf(
+							'%s %s',
+							sprintf(
+								\__( 'Post trashed on %s.', 'replicast' ),
+								$site->get_name()
+							),
+							sprintf(
+								'<a href="%s" title="%s" target="_blank">%s</a>',
+								\esc_url( $remote_post->link ),
+								\esc_attr( $site->get_name() ),
+								\__( 'View post', 'replicast' )
+							)
+						)
+					);
+
+				}
+
+			} catch ( \Exception $ex ) {
+				if ( $ex->hasResponse() ) {
+					$notices[] = array(
+						'status_code'   => $ex->getResponse()->getStatusCode(),
+						'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
+						'message'       => $ex->getMessage()
+					);
+				}
+			}
+
+		}
+
+		// Set admin notices
+		if ( ! empty( $notices ) ) {
+			$this->set_admin_notice( $notices );
+		}
 
 	}
 
