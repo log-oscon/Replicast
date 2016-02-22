@@ -221,24 +221,24 @@ class API {
 	 * Get custom fields for an object.
 	 *
 	 * @since     1.0.0
-	 * @param     array     $value     The value of the field.
+	 * @param     array     $values    The values of the field.
 	 * @param     object    $object    The object from the response.
 	 */
-	public static function update_rest_fields( $value, $object ) {
+	public static function update_rest_fields( $values, $object ) {
 
 		// Update Replicast info
 		if ( ! empty( $value['replicast'] ) ) {
-			static::update_object_meta( $value['replicast'], $object );
+			static::update_object_meta( $values['replicast'], $object );
 		}
 
 		// Update object meta
 		if ( ! empty( $value['meta'] ) ) {
-			static::update_object_meta( $value['meta'], $object );
+			static::update_object_meta( $values['meta'], $object );
 		}
 
 		// Update object terms
 		if ( ! empty( $value['terms'] ) ) {
-			static::update_object_terms( $value['terms'], $object );
+			static::update_object_terms( $values['terms'], $object );
 		}
 
 	}
@@ -247,10 +247,10 @@ class API {
 	 * Update object meta.
 	 *
 	 * @since     1.0.0
-	 * @param     array     $value     The value of the field.
+	 * @param     array     $values    The values of the field.
 	 * @param     object    $object    The object from the response.
 	 */
-	public static function update_object_meta( $value, $object ) {
+	public static function update_object_meta( $values, $object ) {
 
 		// TODO: should this be returning any kind of success/failure information?
 
@@ -262,14 +262,14 @@ class API {
 		 *
 		 * @since     1.0.0
 		 * @param     array                Name(s) of the suppressed meta keys.
-		 * @param     array     $value     The value of the field.
+		 * @param     array     $values    The values of the field.
 		 * @param     object    $object    The object from the response.
 		 * @return    array                Possibly-modified name(s) of the suppressed meta keys.
 		 */
-		$blacklist = \apply_filters( 'replicast_suppress_object_meta_from_update', array(), $value, $object );
+		$blacklist = \apply_filters( 'replicast_suppress_object_meta_from_update', array(), $values, $object );
 
 		// Update metadata
-		foreach ( $value as $meta_key => $meta_values ) {
+		foreach ( $values as $meta_key => $meta_values ) {
 
 			if ( in_array( $meta_key, $blacklist ) ) {
 				continue;
@@ -288,10 +288,10 @@ class API {
 	 * Update object meta.
 	 *
 	 * @since     1.0.0
-	 * @param     array     $value     The value of the field.
+	 * @param     array     $values    The values of the field.
 	 * @param     object    $object    The object from the response.
 	 */
-	public static function update_object_terms( $value, $object ) {
+	public static function update_object_terms( $values, $object ) {
 	}
 
 	/**

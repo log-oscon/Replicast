@@ -113,7 +113,7 @@ class Admin {
 			return;
 		}
 
-		$remote_info = $this->get_remote_info( $object_id );
+		$remote_info = static::get_remote_info( $object_id );
 
 		$html = sprintf(
 			'<span class="dashicons dashicons-%s"></span>',
@@ -203,7 +203,7 @@ class Admin {
 		}
 
 		// Check if the current object is an original or a duplicate
-		if ( ! $this->get_remote_info( $args[2] ) ) {
+		if ( ! static::get_remote_info( $args[2] ) ) {
 			return $allcaps;
 		}
 
@@ -225,7 +225,7 @@ class Admin {
 	public function hide_row_actions( $defaults, $object ) {
 
 		// Check if the current object is an original or a duplicate
-		if ( ! $remote_info = $this->get_remote_info( $object->ID ) ) {
+		if ( ! $remote_info = static::get_remote_info( $object->ID ) ) {
 			return $defaults;
 		}
 
@@ -526,12 +526,11 @@ class Admin {
 	 * Retrieve remote info from an object.
 	 *
 	 * @since     1.0.0
-	 * @access    private
 	 * @param     \WP_Post    $object    The object ID.
 	 * @return    mixed                  Single metadata value, or array of values.
 	 *                                   If the $meta_type or $object_id parameters are invalid, false is returned.
 	 */
-	private function get_remote_info( $object_id ) {
+	public static function get_remote_info( $object_id ) {
 		return \get_post_meta( $object_id, Plugin::REPLICAST_REMOTE, true );
 	}
 
