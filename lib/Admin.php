@@ -315,34 +315,7 @@ class Admin {
 
 			try {
 
-				$response = $handler
-					->handle_terms( $site )
-					->then(
-						function( $res ) use ( $handler, $site ) {
-
-							// $res->getStatusCode();
-
-							// TODO
-							// - handle terms created
-							$remote_term = json_decode( $res->getBody()->getContents() );
-
-							// Update term replicast info
-							if ( $remote_term ) {
-								$handler->update_replicast_info( $site, $remote_term );
-							}
-
-							return $handler->handle_update( $site );
-						}
-						// function( RequestException $ex ) {
-
-							// TODO
-							// - this should be able to continue the post handling instead of throwing an exception
-							// - when a term with the same name is already created use the returned ID for updating the post
-							//   term a continue the workflow
-
-						// }
-					)
-					->wait();
+				$response = $handler->handle_update( $site )->wait();
 
 				// Get the remote object data
 				$remote_post = json_decode( $response->getBody()->getContents() );

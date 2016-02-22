@@ -12,8 +12,6 @@
 
 namespace Replicast\Handler;
 
-use GuzzleHttp\Exception\RequestException;
-
 /**
  * Handles ´tag´ content type replication.
  *
@@ -36,41 +34,5 @@ class TagHandler extends Handler {
 		$this->attributes = array( 'context' => 'embed' );
 		$this->data       = $this->get_object_data();
 	}
-
-	/**
-	 * Get tag from a site.
-	 *
-	 * @since     1.0.0
-	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    \GuzzleHttp\Promise
-	 */
-	public function get( $site ) {}
-
-	/**
-	 * Create tag on a site.
-	 *
-	 * @since     1.0.0
-	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    \GuzzleHttp\Promise
-	 */
-	public function post( $site ) {}
-
-	/**
-	 * Update tag on a site.
-	 *
-	 * @since     1.0.0
-	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    \GuzzleHttp\Promise
-	 */
-	public function put( $site ) {}
-
-	/**
-	 * Delete tag from a site.
-	 *
-	 * @since     1.0.0
-	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    \GuzzleHttp\Promise
-	 */
-	public function delete( $site ) {}
 
 }

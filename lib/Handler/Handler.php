@@ -119,7 +119,7 @@ abstract class Handler {
 	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	abstract public function get( $site );
+	public function get( $site ) {}
 
 	/**
 	 * Create object on a site.
@@ -128,7 +128,9 @@ abstract class Handler {
 	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	abstract public function post( $site );
+	public function post( $site ) {
+		return $this->do_request( Handler::CREATABLE, $site );
+	}
 
 	/**
 	 * Update object on a site.
@@ -137,7 +139,9 @@ abstract class Handler {
 	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	abstract public function put( $site );
+	public function put( $site ) {
+		return $this->do_request( Handler::EDITABLE, $site );
+	}
 
 	/**
 	 * Delete object from a site.
@@ -146,7 +150,9 @@ abstract class Handler {
 	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	abstract public function delete( $site );
+	public function delete( $site ) {
+		return $this->do_request( Handler::DELETABLE, $site );
+	}
 
 	/**
 	 * Create/update object handler.

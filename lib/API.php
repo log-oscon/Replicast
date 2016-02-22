@@ -64,7 +64,7 @@ class API {
 	}
 
 	/**
-	 * Get custom fields for a object type.
+	 * Get custom fields for an object type.
 	 *
 	 * @since     1.0.0
 	 * @param     array               $object        Details of current content object.
@@ -74,89 +74,39 @@ class API {
 	 */
 	public static function get_rest_fields( $object, $field_name, $request ) {
 		return array(
-			'meta' => static::get_object_meta( $object, $request->get_route() ),
+			'replicast' => static::get_replicast_info( $object, $request ),
+			'meta'      => static::get_object_meta( $object ),
+			'terms'     => static::get_object_terms( $object ),
 		);
 	}
 
 	/**
-	 * Retrieve metadata for the specified object.
+	 * Retrieve Replicast info.
+	 *
+	 * @since     1.0.0
+	 * @param     array               $object     Details of current content object.
+	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
+	 * @return    array                           Object info.
+	 */
+	public static function get_replicast_info( $object, $request ) {
+		return array(
+			// Add object REST route to meta
+			Plugin::REPLICAST_REMOTE => array( \maybe_serialize( array(
+				'ID'        => $object['id'],
+				'edit_link' => \get_edit_post_link( $object['id'] ),
+				'rest_url'  => \rest_url( $request->get_route() ),
+			) ) ),
+		);
+	}
+
+	/**
+	 * Retrieve object meta.
 	 *
 	 * @since     1.0.0
 	 * @param     array    $object    Details of current content object.
-	 * @param     string   $route     Object REST route.
-	 * @return    array               Object metadata.
+	 * @return    array               Object meta.
 	 */
-	public static function get_object_meta( $object, $route ) {
-		return static::get_metadata( $object, $route );
-	}
-
-	/**
-	 * Get custom fields for a post type.
-	 *
-	 * @since     1.0.0
-	 * @param     array     $value     The value of the field.
-	 * @param     object    $object    The object from the response.
-	 */
-	public static function update_rest_fields( $value, $object ) {
-
-		// Update meta
-		if ( ! empty( $value['meta'] ) ) {
-			static::update_object_meta( $value['meta'], $object );
-		}
-
-	}
-
-	/**
-	 * Update metadata for the specified object.
-	 *
-	 * @since     1.0.0
-	 * @param     array     $value     The value of the field.
-	 * @param     object    $object    The object from the response.
-	 */
-	public static function update_object_meta( $value, $object ) {
-
-		// TODO: should this be returning any kind of success/failure information?
-
-		// Get object meta type
-		$meta_type = static::get_meta_type( $object );
-
-		/**
-		 * Filter for suppressing specific meta keys from update.
-		 *
-		 * @since     1.0.0
-		 * @param     array                Name(s) of the suppressed meta keys.
-		 * @param     array     $value     The value of the field.
-		 * @param     object    $object    The object from the response.
-		 * @return    array                Possibly-modified name(s) of the suppressed meta keys.
-		 */
-		$blacklist = \apply_filters( 'suppress_object_meta_from_update', array(), $value, $object );
-
-		// Update metadata
-		foreach ( $value as $meta_key => $meta_values ) {
-
-			if ( in_array( $meta_key, $blacklist ) ) {
-				continue;
-			}
-
-			\delete_metadata( $meta_type, $object->ID, $meta_key );
-			foreach ( $meta_values as $meta_value ) {
-				\add_metadata( $meta_type, $object->ID, $meta_key, \maybe_unserialize( $meta_value ) );
-			}
-
-		}
-
-	}
-
-	/**
-	 * Retrieve metadata for the specified object.
-	 *
-	 * @access    private
-	 * @since     1.0.0
-	 * @param     array    $object    Details of current content object.
-	 * @param     string   $route     Object REST route.
-	 * @return    array               Object metadata.
-	 */
-	private static function get_metadata( $object, $route ) {
+	public static function get_object_meta( $object ) {
 
 		// Get object meta type
 		$meta_type = static::get_meta_type( $object );
@@ -171,6 +121,7 @@ class API {
 		 */
 		$whitelist = \apply_filters( 'replicast_expose_object_protected_meta', array(), $object );
 
+		// Get object metadata
 		$metadata = \get_metadata( $meta_type, $object['id'] );
 
 		if ( ! $metadata ) {
@@ -192,14 +143,155 @@ class API {
 
 		}
 
-		// Add object REST route to meta
-		$prepared_metadata[ Plugin::REPLICAST_REMOTE ] = array( \maybe_serialize( array(
-			'ID'        => $object['id'],
-			'edit_link' => \get_edit_post_link( $object['id'] ),
-			'rest_url'  => \rest_url( $route ),
-		) ) );
-
 		return $prepared_metadata;
+	}
+
+	/**
+	 * Retrieve object terms.
+	 *
+	 * @since     1.0.0
+	 * @param     array    $object    Details of current content object.
+	 * @return    array               Object terms.
+	 */
+	public static function get_object_terms( $object ) {
+
+		// Get a list of registered taxonomies
+		$taxonomies = \get_taxonomies();
+
+		/**
+		 * Filter for suppressing taxonomies.
+		 *
+		 * @since     1.0.0
+		 * @param     array                    Name(s) of the suppressed taxonomies.
+		 * @param     array    $taxonomies     List of registered taxonomies.
+		 * @param     array    $object         The object from the response.
+		 * @return    array                    Possibly-modified name(s) of the suppressed taxonomies.
+		 */
+		$taxonomies_blacklist = \apply_filters( 'replicast_suppress_object_taxonomies', array(), $taxonomies, $object );
+
+		$prepared_taxonomies = array();
+		foreach ( $taxonomies as $taxonomy_key => $taxonomy_key ) {
+
+			if ( in_array( $taxonomy_key, array( Plugin::TAXONOMY_SITE ) ) ) {
+				continue;
+			}
+
+			if ( in_array( $taxonomy_key, $taxonomies_blacklist ) ) {
+				continue;
+			}
+
+			$prepared_taxonomies[ $taxonomy_key ] = $taxonomy_key;
+
+		}
+
+		// Get a list of object terms
+		// FIXME: we should soft cache this
+		$terms = \wp_get_object_terms( $object['id'], $prepared_taxonomies );
+
+		/**
+		 * Filter for suppressing specific object terms.
+		 *
+		 * @since     1.0.0
+		 * @param     array               Slug(s) of the suppressed terms.
+		 * @param     array    $terms     List of object terms.
+		 * @param     array    $object    The object from the response.
+		 * @return    array               Possibly-modified slug(s) of the suppressed terms.
+		 */
+		$taxonomies_blacklist = \apply_filters( 'replicast_suppress_object_taxonomy_terms', array(), $terms, $object );
+
+		$prepared_terms = array();
+		foreach ( $terms as $term ) {
+
+			if ( in_array( $term->slug, array( 'uncategorized' ) ) ) {
+				continue;
+			}
+
+			if ( in_array( $term->slug, $taxonomies_blacklist ) ) {
+				continue;
+			}
+
+			$prepared_terms[] = $term;
+
+		}
+
+		return $prepared_terms;
+	}
+
+	/**
+	 * Get custom fields for an object.
+	 *
+	 * @since     1.0.0
+	 * @param     array     $value     The value of the field.
+	 * @param     object    $object    The object from the response.
+	 */
+	public static function update_rest_fields( $value, $object ) {
+
+		// Update Replicast info
+		if ( ! empty( $value['replicast'] ) ) {
+			static::update_object_meta( $value['replicast'], $object );
+		}
+
+		// Update object meta
+		if ( ! empty( $value['meta'] ) ) {
+			static::update_object_meta( $value['meta'], $object );
+		}
+
+		// Update object terms
+		if ( ! empty( $value['terms'] ) ) {
+			static::update_object_terms( $value['terms'], $object );
+		}
+
+	}
+
+	/**
+	 * Update object meta.
+	 *
+	 * @since     1.0.0
+	 * @param     array     $value     The value of the field.
+	 * @param     object    $object    The object from the response.
+	 */
+	public static function update_object_meta( $value, $object ) {
+
+		// TODO: should this be returning any kind of success/failure information?
+
+		// Get object meta type
+		$meta_type = static::get_meta_type( $object );
+
+		/**
+		 * Filter for suppressing specific meta keys from update.
+		 *
+		 * @since     1.0.0
+		 * @param     array                Name(s) of the suppressed meta keys.
+		 * @param     array     $value     The value of the field.
+		 * @param     object    $object    The object from the response.
+		 * @return    array                Possibly-modified name(s) of the suppressed meta keys.
+		 */
+		$blacklist = \apply_filters( 'replicast_suppress_object_meta_from_update', array(), $value, $object );
+
+		// Update metadata
+		foreach ( $value as $meta_key => $meta_values ) {
+
+			if ( in_array( $meta_key, $blacklist ) ) {
+				continue;
+			}
+
+			\delete_metadata( $meta_type, $object->ID, $meta_key );
+			foreach ( $meta_values as $meta_value ) {
+				\add_metadata( $meta_type, $object->ID, $meta_key, \maybe_unserialize( $meta_value ) );
+			}
+
+		}
+
+	}
+
+	/**
+	 * Update object meta.
+	 *
+	 * @since     1.0.0
+	 * @param     array     $value     The value of the field.
+	 * @param     object    $object    The object from the response.
+	 */
+	public static function update_object_terms( $value, $object ) {
 	}
 
 	/**
@@ -227,8 +319,6 @@ class API {
 	 */
 	public static function get_meta_type( $object ) {
 
-		// TODO: Support user and comment object types with an array structure
-
 		if ( static::is_term( $object ) ) {
 			return 'term';
 		}
@@ -252,7 +342,8 @@ class API {
 	 * @return    bool                       True if it's a post/page. False, otherwise.
 	 */
 	public static function is_post( $object ) {
-		return $object instanceof \WP_Post;
+		// TODO: needs fine-tuning for array objects
+		return $object instanceof \WP_Post || ( is_array( $object ) && isset( $object['type'] ) );
 	}
 
 	/**
@@ -274,6 +365,7 @@ class API {
 	 * @return    bool                       True if it's a comment. False, otherwise.
 	 */
 	public static function is_comment( $object ) {
+		// TODO: needs fine-tuning for array objects
 		return $object instanceof \WP_Comment;
 	}
 
@@ -285,6 +377,7 @@ class API {
 	 * @return    bool                       True if it's an user. False, otherwise.
 	 */
 	public static function is_user( $object ) {
+		// TODO: needs fine-tuning for array objects
 		return $object instanceof \WP_User;
 	}
 
