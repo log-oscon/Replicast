@@ -307,7 +307,7 @@ class Admin {
 		$sites = $this->get_sites( $post );
 
 		// Prepares post data for replication
-		$post_handler = new PostHandler( $post );
+		$handler = new PostHandler( $post );
 
 		$notices = array();
 
@@ -315,37 +315,50 @@ class Admin {
 
 			try {
 
-				$response = $post_handler->handle_terms( $site )->then(
-					function( $response ) use ( $post_handler, $site ) {
+				$response = $handler
+					->handle_terms( $site )
+					->then(
+						function( $res ) use ( $handler, $site ) {
 
-						// TODO
-						// - handle terms created
-						$remote_term = json_decode( $response->getBody()->getContents() );
+							// $res->getStatusCode();
 
-						error_log(print_r($remote_term,true));
+							// TODO
+							// - handle terms created
+							$remote_term = json_decode( $res->getBody()->getContents() );
 
-						return $post_handler->handle_update( $site );
-					}
-				)
-				->wait();
+							// Update term replicast info
+							if ( $remote_term ) {
+								$handler->update_replicast_info( $site, $remote_term );
+							}
+
+							return $handler->handle_update( $site );
+						}
+						// function( RequestException $ex ) {
+
+							// TODO
+							// - this should be able to continue the post handling instead of throwing an exception
+							// - when a term with the same name is already created use the returned ID for updating the post
+							//   term a continue the workflow
+
+						// }
+					)
+					->wait();
 
 				// Get the remote object data
 				$remote_post = json_decode( $response->getBody()->getContents() );
 
 				if ( $remote_post ) {
 
-					$status_code = $response->getStatusCode();
-
-					// Update replicast info
-					$post_handler->update_replicast_info( $site, $remote_post );
+					// Update post replicast info
+					$handler->update_replicast_info( $site, $remote_post );
 
 					$notices[] = array(
-						'status_code'   => $status_code,
+						'status_code'   => $response->getStatusCode(),
 						'reason_phrase' => $response->getReasonPhrase(),
 						'message'       => sprintf(
 							'%s %s',
 							sprintf(
-								$status_code === 201 ? \__( 'Post published on %s.', 'replicast' ) : \__( 'Post updated on %s.', 'replicast' ),
+								$response->getStatusCode() === 201 ? \__( 'Post published on %s.', 'replicast' ) : \__( 'Post updated on %s.', 'replicast' ),
 								$site->get_name()
 							),
 							sprintf(
@@ -412,8 +425,10 @@ class Admin {
 		$sites = $this->get_sites( $post );
 
 		// Prepares data for replication
-		// $post_handler = new PostHandler( $post );
-		// $post_handler->handle_delete( $sites );
+
+		// FIXME: convert delete to use requestAsync
+		// $handler = new PostHandler( $post );
+		// $handler->handle_delete( $sites );
 
 	}
 
