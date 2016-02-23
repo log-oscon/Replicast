@@ -75,28 +75,8 @@ class API {
 	 */
 	public static function get_rest_fields( $object, $field_name, $request ) {
 		return array(
-			'info'  => static::get_object_info( $object, $request ),
-			'meta'  => static::get_object_meta( $object ),
-			'terms' => static::get_object_terms( $object ),
-		);
-	}
-
-	/**
-	 * Retrieve object info.
-	 *
-	 * @since     1.0.0
-	 * @param     array               $object     Details of current content object.
-	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
-	 * @return    array                           Object info.
-	 */
-	public static function get_object_info( $object, $request ) {
-		return array(
-			// Add object REST route to meta
-			Plugin::REPLICAST_REMOTE => array( \maybe_serialize( array(
-				'ID'        => $object['id'],
-				'edit_link' => \get_edit_post_link( $object['id'] ),
-				'rest_url'  => \rest_url( $request->get_route() ),
-			) ) ),
+			'meta'  => static::get_object_meta( $object, $request ),
+			'terms' => static::get_object_terms( $object, $request ),
 		);
 	}
 
@@ -104,10 +84,11 @@ class API {
 	 * Retrieve object meta.
 	 *
 	 * @since     1.0.0
-	 * @param     array    $object    Details of current content object.
+	 * @param     array               $object     Details of current content object.
+	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
 	 * @return    array               Object meta.
 	 */
-	public static function get_object_meta( $object ) {
+	public static function get_object_meta( $object, $request ) {
 
 		// Get object meta type
 		$meta_type = static::get_meta_type( $object );
@@ -144,6 +125,13 @@ class API {
 
 		}
 
+		// Add object REST route to meta
+		$prepared_metadata[ Plugin::REPLICAST_REMOTE ] = array( \maybe_serialize( array(
+			'ID'        => $object['id'],
+			'edit_link' => \get_edit_post_link( $object['id'] ),
+			'rest_url'  => \rest_url( $request->get_route() ),
+		) ) );
+
 		return $prepared_metadata;
 	}
 
@@ -151,7 +139,8 @@ class API {
 	 * Retrieve object terms.
 	 *
 	 * @since     1.0.0
-	 * @param     array    $object    Details of current content object.
+	 * @param     array               $object     Details of current content object.
+	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
 	 * @return    array               Object terms.
 	 */
 	public static function get_object_terms( $object ) {
@@ -227,11 +216,6 @@ class API {
 	 * @param     object    $object    The object from the response.
 	 */
 	public static function update_rest_fields( $values, $object ) {
-
-		// Update object info
-		if ( ! empty( $value['info'] ) ) {
-			static::update_object_meta( $values['info'], $object );
-		}
 
 		// Update object meta
 		if ( ! empty( $value['meta'] ) ) {
