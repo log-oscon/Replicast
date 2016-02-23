@@ -313,7 +313,7 @@ abstract class Handler {
 	 */
 	protected function get_object_id() {
 
-		if ( $this->object instanceof \WP_Term ) {
+		if ( API::is_term( $this->object ) ) {
 			return $this->object->term_id;
 		}
 
