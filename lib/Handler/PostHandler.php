@@ -38,4 +38,51 @@ class PostHandler extends Handler {
 		$this->data      = $this->get_object_data();
 	}
 
+	/**
+	 * Handle post terms.
+	 *
+	 * @since     1.0.0
+	 * @param     \Replicast\Client    $site           Site object.
+	 * @param     object               $remote_data    Remote object data.
+	 */
+	public function handle_terms( $site, $remote_data ) {
+
+		if ( empty( $this->data['_embedded'] ) ) {
+			return;
+		}
+
+		if ( empty( $this->data['_embedded']['https://api.w.org/term'] ) ) {
+			return;
+		}
+
+		if ( empty( $remote_data->replicast ) ) {
+			return;
+		}
+
+		if ( empty( $remote_data->replicast->terms ) ) {
+			return;
+		}
+
+		// Remote terms
+		$remote_terms = $remote_data->replicast->terms;
+
+		// TODO
+		// - compare the list of local terms with the returned terms
+		// - update the local term ids with the corresponding remote ids?
+
+		// foreach ( $this->data['_embedded']['https://api.w.org/term'] as $term_link ) {
+		// 	foreach ( $term_link as $term_data ) {
+
+		// 		// Get term object
+		// 		$term = \get_term( $term_data['id'], $term_data['taxonomy'] );
+
+		// 		if ( ! API::is_term( $term ) ) {
+		// 			continue;
+		// 		}
+
+		// 	}
+		// }
+
+	}
+
 }

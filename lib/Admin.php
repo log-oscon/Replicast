@@ -325,6 +325,9 @@ class Admin {
 					// Update post replicast info
 					$handler->update_replicast_info( $site, $remote_post );
 
+					// Handle post terms
+					// $handler->handle_terms( $site, $remote_post );
+
 					$notices[] = array(
 						'status_code'   => $response->getStatusCode(),
 						'reason_phrase' => $response->getReasonPhrase(),
