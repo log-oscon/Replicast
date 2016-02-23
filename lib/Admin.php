@@ -12,9 +12,9 @@
 
 namespace Replicast;
 
+use Replicast\Client;
 use Replicast\Admin\Site;
 use Replicast\Handler\PostHandler;
-use Replicast\Client;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\RequestException;
 
@@ -323,7 +323,7 @@ class Admin {
 				if ( $remote_post ) {
 
 					// Update post replicast info
-					$handler->update_replicast_info( $site, $remote_post );
+					$handler->handle_replicast_info( $site, $remote_post );
 
 					// Handle post terms
 					// $handler->handle_terms( $site, $remote_post );
@@ -422,7 +422,7 @@ class Admin {
 					$remote_post->status = 'trash';
 
 					// Update post replicast info
-					$handler->update_replicast_info( $site, $remote_post );
+					$handler->handle_replicast_info( $site, $remote_post );
 
 					$notices[] = array(
 						'status_code'   => $response->getStatusCode(),

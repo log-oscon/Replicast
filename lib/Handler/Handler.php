@@ -164,7 +164,7 @@ abstract class Handler {
 	public function handle_update( $site ) {
 
 		// Get replicast object info
-		$replicast_info = $this->get_replicast_info();
+		$replicast_info = API::get_replicast_info( $this->object );
 
 		// Verify that the current object has been "removed" (aka unchecked) from any site(s)
 		// FIXME: review this later on
@@ -191,7 +191,7 @@ abstract class Handler {
 	public function handle_delete( $site ) {
 
 		// Get replicast object info
-		$replicast_info = $this->get_replicast_info();
+		$replicast_info = API::get_replicast_info( $this->object );
 
 		if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
 			return $this->delete( $site );
@@ -281,7 +281,7 @@ abstract class Handler {
 		}
 
 		// Get replicast object info
-		$replicast_info = $this->get_replicast_info();
+		$replicast_info = API::get_replicast_info( $this->object );
 
 		// Get remote object
 		$object = $replicast_info[ $site->get_id() ];
@@ -302,22 +302,6 @@ abstract class Handler {
 		 * @param    array    Prepared object data.
 		 */
 		return \apply_filters( "replicast_prepare_{$object_type}_for_update", $data );
-	}
-
-	/**
-	 * Get object ID.
-	 *
-	 * @since     1.0.0
-	 * @access    protected
-	 * @return    string    The object ID.
-	 */
-	protected function get_object_id() {
-
-		if ( API::is_term( $this->object ) ) {
-			return $this->object->term_id;
-		}
-
-		return $this->object->ID;
 	}
 
 	/**
@@ -380,7 +364,7 @@ abstract class Handler {
 			sprintf(
 				'/%s/%s',
 				$this->namespace,
-				\trailingslashit( $this->rest_base ) . $this->get_object_id()
+				\trailingslashit( $this->rest_base ) . API::get_object_id( $this->object )
 			)
 		);
 
@@ -515,57 +499,16 @@ abstract class Handler {
 	}
 
 	/**
-	 * Retrieve replicast info from an object.
-	 *
-	 * @since     1.0.0
-	 * @return    array    The replicast info meta field.
-	 */
-	public function get_replicast_info() {
-
-		$replicast_info = \get_metadata( API::get_meta_type( $this->object ), $this->get_object_id(), Plugin::REPLICAST_IDS, true );
-
-		if ( ! $replicast_info ) {
-			return array();
-		}
-
-		if ( ! is_array( $replicast_info ) ) {
-			$replicast_info = (array) $replicast_info;
-		}
-
-		return $replicast_info;
-	}
-
-	/**
 	 * Update current object with replication info.
 	 *
-	 * This replication info consists in a pair <site_id, remote_object_id>.
-	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client    $site      Site object.
-	 * @param     object|null          $object    (optional)    Remote object data. Null if it's for permanent delete.
-	 * @return    mixed                                         Returns meta ID if the meta doesn't exist, otherwise
-	 *                                                          returns true on success and false on failure.
+	 * @param     \Replicast\Client    $site                         Site object.
+	 * @param     object|null          $remote_data    (optional)    Remote object data. Null if it's for permanent delete.
+	 * @return    mixed                                              Returns meta ID if the meta doesn't exist, otherwise
+	 *                                                               returns true on success and false on failure.
 	 */
-	public function update_replicast_info( $site, $object = null ) {
-
-		// Get site ID
-		$site_id = $site->get_id();
-
-		// Get replicast object info
-		$replicast_info = $this->get_replicast_info();
-
-		// Save or delete the remote object info
-		if ( $object ) {
-			$replicast_info[ $site_id ] = array(
-				'id'     => $object->id,
-				'status' => isset( $object->status ) ? $object->status : ''
-			);
-		}
-		else {
-			unset( $replicast_info[ $site_id ] );
-		}
-
-		return \update_metadata( API::get_meta_type( $this->object ), $this->get_object_id(), Plugin::REPLICAST_IDS, $replicast_info );
+	public function handle_replicast_info( $site, $remote_post ) {
+		return API::update_replicast_info( $this->object, $site, $remote_post );
 	}
 
 }

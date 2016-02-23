@@ -143,7 +143,7 @@ class API {
 	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
 	 * @return    array               Object terms.
 	 */
-	public static function get_object_terms( $object ) {
+	public static function get_object_terms( $object, $request ) {
 
 		// Get a list of registered taxonomies
 		$taxonomies = \get_taxonomies();
@@ -318,10 +318,26 @@ class API {
 	}
 
 	/**
+	 * Get object ID.
+	 *
+	 * @since     1.0.0
+	 * @param     object|array    $object    The object.
+	 * @return    string                     The object ID.
+	 */
+	public static function get_object_id( $object ) {
+
+		if ( static::is_term( $object ) ) {
+			return $object->term_id;
+		}
+
+		return $object->ID;
+	}
+
+	/**
 	 * Get object type.
 	 *
 	 * @since     1.0.0
-	 * @param     object|array    $object    The current object.
+	 * @param     object|array    $object    The object.
 	 * @return    string                     The object type.
 	 */
 	public static function get_object_type( $object ) {
@@ -337,7 +353,7 @@ class API {
 	 * Get meta type based on the object class or array data.
 	 *
 	 * @since     1.0.0
-	 * @param     object|array    $object    The current object.
+	 * @param     object|array    $object    The object.
 	 * @return    string                     Possible values: user, comment, post, meta
 	 */
 	public static function get_meta_type( $object ) {
@@ -358,10 +374,10 @@ class API {
 	}
 
 	/**
-	 * Check if current object is a post/page.
+	 * Check if object is a post/page.
 	 *
 	 * @since     1.0.0
-	 * @param     object|array    $object    The current object.
+	 * @param     object|array    $object    The object.
 	 * @return    bool                       True if it's a post/page. False, otherwise.
 	 */
 	public static function is_post( $object ) {
@@ -370,10 +386,10 @@ class API {
 	}
 
 	/**
-	 * Check if current object is a term.
+	 * Check if object is a term.
 	 *
 	 * @since     1.0.0
-	 * @param     object|array    $object    The current object.
+	 * @param     object|array    $object    The object.
 	 * @return    bool                       True if it's a term. False, otherwise.
 	 */
 	public static function is_term( $object ) {
@@ -381,10 +397,10 @@ class API {
 	}
 
 	/**
-	 * Check if current object is a comment.
+	 * Check if object is a comment.
 	 *
 	 * @since     1.0.0
-	 * @param     object|array    $object    The current object.
+	 * @param     object|array    $object    The object.
 	 * @return    bool                       True if it's a comment. False, otherwise.
 	 */
 	public static function is_comment( $object ) {
@@ -393,15 +409,71 @@ class API {
 	}
 
 	/**
-	 * Check if current object is an user.
+	 * Check if object is an user.
 	 *
 	 * @since     1.0.0
-	 * @param     object|array    $object    The current object.
+	 * @param     object|array    $object    The object.
 	 * @return    bool                       True if it's an user. False, otherwise.
 	 */
 	public static function is_user( $object ) {
 		// TODO: needs fine-tuning for array objects
 		return $object instanceof \WP_User;
+	}
+
+	/**
+	 * Retrieve replicast info from object.
+	 *
+	 * @since     1.0.0
+	 * @param     object|array    $object    The object.
+	 * @return    array                      The replicast info meta field.
+	 */
+	public static function get_replicast_info( $object ) {
+
+		$replicast_info = \get_metadata( static::get_meta_type( $object ), static::get_object_id( $object ), Plugin::REPLICAST_IDS, true );
+
+		if ( ! $replicast_info ) {
+			return array();
+		}
+
+		if ( ! is_array( $replicast_info ) ) {
+			$replicast_info = (array) $replicast_info;
+		}
+
+		return $replicast_info;
+	}
+
+	/**
+	 * Update object with replication info.
+	 *
+	 * This replication info consists in a pair <site_id, remote_object_id>.
+	 *
+	 * @since     1.0.0
+	 * @param     object|array         $object                       The object.
+	 * @param     \Replicast\Client    $site                         Site object.
+	 * @param     object|null          $remote_data    (optional)    Remote object data. Null if it's for permanent delete.
+	 * @return    mixed                                              Returns meta ID if the meta doesn't exist, otherwise
+	 *                                                               returns true on success and false on failure.
+	 */
+	public static function update_replicast_info( $object, $site, $remote_data = null ) {
+
+		// Get site ID
+		$site_id = $site->get_id();
+
+		// Get replicast object info
+		$replicast_info = static::get_replicast_info( $object );
+
+		// Save or delete the remote object info
+		if ( $remote_data ) {
+			$replicast_info[ $site_id ] = array(
+				'id'     => $remote_data->id,
+				'status' => isset( $remote_data->status ) ? $remote_data->status : ''
+			);
+		}
+		else {
+			unset( $replicast_info[ $site_id ] );
+		}
+
+		return \update_metadata( static::get_meta_type( $object ), static::get_object_id( $object ), Plugin::REPLICAST_IDS, $replicast_info );
 	}
 
 }
