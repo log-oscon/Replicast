@@ -218,12 +218,12 @@ class API {
 	public static function update_rest_fields( $values, $object ) {
 
 		// Update object meta
-		if ( ! empty( $value['meta'] ) ) {
+		if ( ! empty( $values['meta'] ) ) {
 			static::update_object_meta( $values['meta'], $object );
 		}
 
 		// Update object terms
-		if ( ! empty( $value['terms'] ) ) {
+		if ( ! empty( $values['terms'] ) ) {
 			static::update_object_terms( $values['terms'], $object );
 		}
 
