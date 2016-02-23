@@ -294,6 +294,43 @@ class API {
 	 * @param     object    $object    The object from the response.
 	 */
 	public static function update_object_terms( $values, $object ) {
+
+		$prepared_terms = array();
+
+		// Update terms
+		foreach ( $values as $value ) {
+
+			$taxonomy = $value['taxonomy'];
+			$parent   = $value['parent'];
+
+			// Check if taxonomy exists
+			if ( ! \taxonomy_exists( $taxonomy ) ) {
+				continue;
+			}
+
+			// Check if term exists
+			$term = \term_exists( $value['term_id'], $taxonomy, $parent );
+
+			if ( $term === 0 || $term === null ) {
+				$term = \wp_insert_term( $value['name'], $taxonomy, array(
+					'description' => $value['description'],
+					'parent'      => $parent,
+				) );
+			}
+
+			$prepared_terms[ $taxonomy ][] = $term['term_id'];
+		}
+
+		if ( ! empty( $prepared_terms ) ) {
+			foreach ( $prepared_terms as $taxonomy => $terms ) {
+				\wp_set_object_terms(
+					$object->ID,
+					$terms,
+					$taxonomy
+				);
+			}
+		}
+
 	}
 
 	/**
