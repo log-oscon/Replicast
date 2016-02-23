@@ -282,10 +282,10 @@ class API {
 		$prepared_terms = array();
 
 		// Update terms
-		foreach ( $values as $value ) {
+		foreach ( $values as $term_data ) {
 
-			$taxonomy = $value['taxonomy'];
-			$parent   = $value['parent'];
+			$taxonomy = $term_data['taxonomy'];
+			$parent   = $term_data['parent'];
 
 			// Check if taxonomy exists
 			if ( ! \taxonomy_exists( $taxonomy ) ) {
@@ -293,11 +293,11 @@ class API {
 			}
 
 			// Check if term exists
-			$term = \term_exists( $value['term_id'], $taxonomy, $parent );
+			$term = \term_exists( $term_data['term_id'], $taxonomy, $parent );
 
 			if ( $term === 0 || $term === null ) {
-				$term = \wp_insert_term( $value['name'], $taxonomy, array(
-					'description' => $value['description'],
+				$term = \wp_insert_term( $term_data['name'], $taxonomy, array(
+					'description' => $term_data['description'],
 					'parent'      => $parent,
 				) );
 			}
