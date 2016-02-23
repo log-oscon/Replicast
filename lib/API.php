@@ -12,6 +12,7 @@
 
 namespace Replicast;
 
+use Replicast\Admin;
 use Replicast\Admin\Site;
 
 /**
@@ -74,21 +75,21 @@ class API {
 	 */
 	public static function get_rest_fields( $object, $field_name, $request ) {
 		return array(
-			'replicast' => static::get_replicast_info( $object, $request ),
-			'meta'      => static::get_object_meta( $object ),
-			'terms'     => static::get_object_terms( $object ),
+			'info'  => static::get_object_info( $object, $request ),
+			'meta'  => static::get_object_meta( $object ),
+			'terms' => static::get_object_terms( $object ),
 		);
 	}
 
 	/**
-	 * Retrieve Replicast info.
+	 * Retrieve object info.
 	 *
 	 * @since     1.0.0
 	 * @param     array               $object     Details of current content object.
 	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
 	 * @return    array                           Object info.
 	 */
-	public static function get_replicast_info( $object, $request ) {
+	public static function get_object_info( $object, $request ) {
 		return array(
 			// Add object REST route to meta
 			Plugin::REPLICAST_REMOTE => array( \maybe_serialize( array(
@@ -197,19 +198,20 @@ class API {
 		 * @param     array    $object    The object from the response.
 		 * @return    array               Possibly-modified slug(s) of the suppressed terms.
 		 */
-		$taxonomies_blacklist = \apply_filters( 'replicast_suppress_object_taxonomy_terms', array(), $terms, $object );
+		$taxonomies_blacklist = array_merge(
+			array( 'uncategorized', 'untagged' ),
+			\apply_filters( 'replicast_suppress_object_taxonomy_terms', array(), $terms, $object )
+		);
 
 		$prepared_terms = array();
 		foreach ( $terms as $term ) {
-
-			if ( in_array( $term->slug, array( 'uncategorized' ) ) ) {
-				continue;
-			}
 
 			if ( in_array( $term->slug, $taxonomies_blacklist ) ) {
 				continue;
 			}
 
+			// Get remote ID
+			$term->term_id = Admin::get_remote_info( $term->term_id );
 			$prepared_terms[] = $term;
 
 		}
@@ -226,9 +228,9 @@ class API {
 	 */
 	public static function update_rest_fields( $values, $object ) {
 
-		// Update Replicast info
-		if ( ! empty( $value['replicast'] ) ) {
-			static::update_object_meta( $values['replicast'], $object );
+		// Update object info
+		if ( ! empty( $value['info'] ) ) {
+			static::update_object_meta( $values['info'], $object );
 		}
 
 		// Update object meta
