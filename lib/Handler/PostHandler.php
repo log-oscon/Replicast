@@ -12,8 +12,7 @@
 
 namespace Replicast\Handler;
 
-use Replicast\Handler\CategoryHandler;
-use Replicast\Handler\TagHandler;
+use Replicast\API;
 use GuzzleHttp\Promise\FulfilledPromise;
 
 /**
