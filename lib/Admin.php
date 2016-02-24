@@ -15,8 +15,6 @@ namespace Replicast;
 use Replicast\Client;
 use Replicast\Admin\Site;
 use Replicast\Handler\PostHandler;
-use Psr\Http\Message\ResponseInterface;
-use GuzzleHttp\Exception\RequestException;
 
 /**
  * The dashboard-specific functionality of the plugin.
@@ -309,61 +307,9 @@ class Admin {
 		// Get sites for replication
 		$sites = $this->get_sites( $post );
 
-		// Get replicast post info
-		$replicast_info = API::get_replicast_info( $post );
-
 		// Prepares post data for replication
 		$handler = new PostHandler( $post );
-
-
-		foreach ( $sites as $site ) {
-
-			try {
-
-				$response = $handler->handle_update( $site, $replicast_info )->wait();
-
-				// Get the remote object data
-				$remote_post = json_decode( $response->getBody()->getContents() );
-
-				if ( $remote_post ) {
-
-					// Update post replicast info
-					API::update_replicast_info( $post, $site->get_id(), $remote_post );
-
-					// Handle post terms
-					// $handler->handle_terms( $site, $remote_post );
-
-					$notices[] = array(
-						'status_code'   => $response->getStatusCode(),
-						'reason_phrase' => $response->getReasonPhrase(),
-						'message'       => sprintf(
-							'%s %s',
-							sprintf(
-								$response->getStatusCode() === 201 ? \__( 'Post published on %s.', 'replicast' ) : \__( 'Post updated on %s.', 'replicast' ),
-								$site->get_name()
-							),
-							sprintf(
-								'<a href="%s" title="%s" target="_blank">%s</a>',
-								\esc_url( $remote_post->link ),
-								\esc_attr( $site->get_name() ),
-								\__( 'View post', 'replicast' )
-							)
-						)
-					);
-
-				}
-
-			} catch ( \Exception $ex ) {
-				if ( $ex->hasResponse() ) {
-					$notices[] = array(
-						'status_code'   => $ex->getResponse()->getStatusCode(),
-						'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-						'message'       => $ex->getMessage()
-					);
-				}
-			}
-
-		}
+		$notices = $handler->handle_save( $sites );
 
 		// Set admin notices
 		if ( ! empty( $notices ) ) {
@@ -408,62 +354,9 @@ class Admin {
 		// Get sites for replication
 		$sites = $this->get_sites( $post );
 
-		// Get replicast post info
-		$replicast_info = API::get_replicast_info( $post );
-
 		// Prepares post data for replication
 		$handler = new PostHandler( $post );
-
-		foreach ( $sites as $site ) {
-
-			try {
-
-				$response = $handler->handle_delete( $site, $replicast_info )->wait();
-
-				// Get the remote object data
-				$remote_post = json_decode( $response->getBody()->getContents() );
-
-				if ( $remote_post ) {
-
-					// The API returns 'publish' but we force the status to be 'trash' for better
-					// management of the next actions over the object. Like, recovering (PUT request)
-					// or permanently delete the object from remote location.
-					$remote_post->status = 'trash';
-
-					// Update post replicast info
-					API::update_replicast_info( $post, $site->get_id(), $remote_post );
-
-					$notices[] = array(
-						'status_code'   => $response->getStatusCode(),
-						'reason_phrase' => $response->getReasonPhrase(),
-						'message'       => sprintf(
-							'%s %s',
-							sprintf(
-								\__( 'Post trashed on %s.', 'replicast' ),
-								$site->get_name()
-							),
-							sprintf(
-								'<a href="%s" title="%s" target="_blank">%s</a>',
-								\esc_url( $remote_post->link ),
-								\esc_attr( $site->get_name() ),
-								\__( 'View post', 'replicast' )
-							)
-						)
-					);
-
-				}
-
-			} catch ( \Exception $ex ) {
-				if ( $ex->hasResponse() ) {
-					$notices[] = array(
-						'status_code'   => $ex->getResponse()->getStatusCode(),
-						'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-						'message'       => $ex->getMessage()
-					);
-				}
-			}
-
-		}
+		$notices = $handler->handle_delete( $sites );
 
 		// Set admin notices
 		if ( ! empty( $notices ) ) {
