@@ -614,14 +614,37 @@ abstract class Handler {
 			'X-API-SIGNATURE' => $signature,
 		);
 
+		$body = array();
 
 		// Asynchronous request
+		if ( $method === static::CREATABLE && API::get_object_type( $this->object ) === 'attachment' ) {
+
+			$file_path = \get_attached_file( API::get_object_id( $this->object ) );
+			$file_name = basename( $file_path );
+
+			$headers = array_merge( $headers, array(
+				'Content-Type'        => $data['mime_type'],
+				'Content-Disposition' => sprintf( 'attachment; filename=%s', $file_name ),
+				'Content-MD5'         => md5_file( $file_path ),
+			) );
+
+			$body['body'] = file_get_contents( $file_path );
+
+		} else {
+			$body['json'] = $data;
+		}
+
+		error_log(print_r(array_merge(
+				array( 'headers' => $headers ),
+				$body
+			),true));
+
 		return $site->get_client()->requestAsync(
 			$method,
 			$config['api_url'],
-			array(
-				'headers' => $headers,
-				'json'    => $data
+			array_merge(
+				array( 'headers' => $headers ),
+				$body
 			)
 		);
 
