@@ -158,21 +158,11 @@ abstract class Handler {
 	 * Create/update object handler.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client    $site    Site object.
+	 * @param     \Replicast\Client    $site              Site object.
+	 * @param     array                $replicast_info    The replicast info meta field.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function handle_update( $site ) {
-
-		// Get replicast object info
-		$replicast_info = API::get_replicast_info( $this->object );
-
-		// Verify that the current object has been "removed" (aka unchecked) from any site(s)
-		// FIXME: review this later on
-		// foreach ( $replicast_info as $site_id => $replicast_data ) {
-		// 	if ( ! array_key_exists( $site_id, $sites ) && $replicast_data['status'] !== 'trash' ) {
-		// 		$notices[] = $this->delete( Admin::get_site( $site_id ) );
-		// 	}
-		// }
+	public function handle_update( $site, $replicast_info ) {
 
 		if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
 			return $this->put( $site );
@@ -184,14 +174,12 @@ abstract class Handler {
 	/**
 	 * Delete object handler.
 	 *
-	 * @since    1.0.0
-	 * @param     \Replicast\Client    $site    Site object.
+	 * @since     1.0.0
+	 * @param     \Replicast\Client    $site              Site object.
+	 * @param     array                $replicast_info    The replicast info meta field.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function handle_delete( $site ) {
-
-		// Get replicast object info
-		$replicast_info = API::get_replicast_info( $this->object );
+	public function handle_delete( $site, $replicast_info ) {
 
 		if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
 			return $this->delete( $site );
@@ -496,19 +484,6 @@ abstract class Handler {
 			)
 		);
 
-	}
-
-	/**
-	 * Update current object with replication info.
-	 *
-	 * @since     1.0.0
-	 * @param     \Replicast\Client    $site                         Site object.
-	 * @param     object|null          $remote_data    (optional)    Remote object data. Null if it's for permanent delete.
-	 * @return    mixed                                              Returns meta ID if the meta doesn't exist, otherwise
-	 *                                                               returns true on success and false on failure.
-	 */
-	public function handle_replicast_info( $site, $remote_post ) {
-		return API::update_replicast_info( $this->object, $site->get_id(), $remote_post );
 	}
 
 }

@@ -303,19 +303,24 @@ class Admin {
 			return;
 		}
 
+		// Admin notices
+		$notices = array();
+
 		// Get sites for replication
 		$sites = $this->get_sites( $post );
+
+		// Get replicast post info
+		$replicast_info = API::get_replicast_info( $post );
 
 		// Prepares post data for replication
 		$handler = new PostHandler( $post );
 
-		$notices = array();
 
 		foreach ( $sites as $site ) {
 
 			try {
 
-				$response = $handler->handle_update( $site )->wait();
+				$response = $handler->handle_update( $site, $replicast_info )->wait();
 
 				// Get the remote object data
 				$remote_post = json_decode( $response->getBody()->getContents() );
@@ -323,7 +328,7 @@ class Admin {
 				if ( $remote_post ) {
 
 					// Update post replicast info
-					$handler->handle_replicast_info( $site, $remote_post );
+					API::update_replicast_info( $post, $site->get_id(), $remote_post );
 
 					// Handle post terms
 					// $handler->handle_terms( $site, $remote_post );
@@ -397,19 +402,23 @@ class Admin {
 			return;
 		}
 
+		// Admin notices
+		$notices = array();
+
 		// Get sites for replication
 		$sites = $this->get_sites( $post );
 
+		// Get replicast post info
+		$replicast_info = API::get_replicast_info( $post );
+
 		// Prepares post data for replication
 		$handler = new PostHandler( $post );
-
-		$notices = array();
 
 		foreach ( $sites as $site ) {
 
 			try {
 
-				$response = $handler->handle_delete( $site )->wait();
+				$response = $handler->handle_delete( $site, $replicast_info )->wait();
 
 				// Get the remote object data
 				$remote_post = json_decode( $response->getBody()->getContents() );
@@ -422,7 +431,7 @@ class Admin {
 					$remote_post->status = 'trash';
 
 					// Update post replicast info
-					$handler->handle_replicast_info( $site, $remote_post );
+					API::update_replicast_info( $post, $site->get_id(), $remote_post );
 
 					$notices[] = array(
 						'status_code'   => $response->getStatusCode(),
