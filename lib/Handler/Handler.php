@@ -368,9 +368,9 @@ abstract class Handler {
 		}
 
 		if ( $object_type === 'page' ) {
-			$data = $this->prepare_page_template( $data );
+			$data = $this->prepare_page( $data );
 		} elseif ( $object_type === 'attachment' ) {
-			$data = $this->prepare_attachment_status( $data, $site );
+			$data = $this->prepare_attachment( $data, $site );
 		}
 
 		/**
@@ -418,9 +418,9 @@ abstract class Handler {
 		}
 
 		if ( $object_type === 'page' ) {
-			$data = $this->prepare_page_template( $data );
+			$data = $this->prepare_page( $data );
 		} elseif ( $object_type === 'attachment' ) {
-			$data = $this->prepare_attachment_status( $data, $site );
+			$data = $this->prepare_attachment( $data, $site );
 		}
 
 		/**
@@ -628,14 +628,14 @@ abstract class Handler {
 	}
 
 	/**
-	 * Prepare page template.
+	 * Prepare page for create, update or delete.
 	 *
 	 * @since     1.0.0
 	 * @access    private
 	 * @param     array    $data    Prepared page data.
 	 * @return    array             Possibly-modified page data.
 	 */
-	private function prepare_page_template( $data, $site ) {
+	private function prepare_page( $data, $site ) {
 
 		// Unset page template if empty
 		// @see https://github.com/WP-API/WP-API/blob/develop/lib/endpoints/class-wp-rest-posts-controller.php#L1553
@@ -647,14 +647,14 @@ abstract class Handler {
 	}
 
 	/**
-	 * Prepare attachment status.
+	 * Prepare attachment for create, update or delete.
 	 *
 	 * @since     1.0.0
 	 * @access    private
 	 * @param     array    $data    Prepared attachment data.
 	 * @return    array             Possibly-modified attachment data.
 	 */
-	private function prepare_attachment_status( $data, $site ) {
+	private function prepare_attachment( $data, $site ) {
 
 		// Update attachment status based on the "uploaded to" post status. If exists.
 		if ( ! empty( $data['status'] ) && $data['status'] === 'inherit' ) {
