@@ -508,7 +508,7 @@ abstract class Handler {
 	 *                                                               returns true on success and false on failure.
 	 */
 	public function handle_replicast_info( $site, $remote_post ) {
-		return API::update_replicast_info( $this->object, $site, $remote_post );
+		return API::update_replicast_info( $this->object, $site->get_id(), $remote_post );
 	}
 
 }

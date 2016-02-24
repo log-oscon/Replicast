@@ -449,15 +449,12 @@ class API {
 	 *
 	 * @since     1.0.0
 	 * @param     object|array         $object                       The object.
-	 * @param     \Replicast\Client    $site                         Site object.
+	 * @param     int                  $site_id                      Site ID.
 	 * @param     object|null          $remote_data    (optional)    Remote object data. Null if it's for permanent delete.
 	 * @return    mixed                                              Returns meta ID if the meta doesn't exist, otherwise
 	 *                                                               returns true on success and false on failure.
 	 */
-	public static function update_replicast_info( $object, $site, $remote_data = null ) {
-
-		// Get site ID
-		$site_id = $site->get_id();
+	public static function update_replicast_info( $object, $site_id, $remote_data = null ) {
 
 		// Get replicast object info
 		$replicast_info = static::get_replicast_info( $object );
