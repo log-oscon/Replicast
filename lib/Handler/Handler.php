@@ -599,22 +599,8 @@ abstract class Handler {
 			$config['api_url'] = \trailingslashit( $config['api_url'] ) . $data['id'];
 		}
 
-		// WP REST API doesn't expect a PUT
-		if ( $method === static::EDITABLE ) {
-			$method = 'POST';
-		}
-
-		// Generate request signature
-		$signature = $this->generate_signature( $method, $config, $timestamp );
-
-		// Request headers
-		$headers = array(
-			'X-API-KEY'       => $config['apy_key'],
-			'X-API-TIMESTAMP' => $timestamp,
-			'X-API-SIGNATURE' => $signature,
-		);
-
-		$body = array();
+		$headers = array();
+		$body    = array();
 
 		// Asynchronous request
 		if ( $method === static::CREATABLE && API::get_object_type( $this->object ) === 'attachment' ) {
@@ -622,11 +608,9 @@ abstract class Handler {
 			$file_path = \get_attached_file( API::get_object_id( $this->object ) );
 			$file_name = basename( $file_path );
 
-			$headers = array_merge( $headers, array(
-				'Content-Type'        => $data['mime_type'],
-				'Content-Disposition' => sprintf( 'attachment; filename=%s', $file_name ),
-				'Content-MD5'         => md5_file( $file_path ),
-			) );
+			$headers['Content-Type'       ] = $data['mime_type'];
+			$headers['Content-Disposition'] = sprintf( 'attachment; filename=%s', $file_name );
+			$headers['Content-MD5'        ] = md5_file( $file_path );
 
 			$body['body'] = file_get_contents( $file_path );
 
@@ -634,10 +618,18 @@ abstract class Handler {
 			$body['json'] = $data;
 		}
 
-		error_log(print_r(array_merge(
-				array( 'headers' => $headers ),
-				$body
-			),true));
+		// The WP REST API doesn't expect a PUT
+		if ( $method === static::EDITABLE ) {
+			$method = 'POST';
+		}
+
+		// Generate request signature
+		$signature = $this->generate_signature( $method, $config, $timestamp );
+
+		// Auth headers
+		$headers['X-API-KEY'      ] = $config['apy_key'];
+		$headers['X-API-TIMESTAMP'] = $timestamp;
+		$headers['X-API-SIGNATURE'] = $signature;
 
 		return $site->get_client()->requestAsync(
 			$method,
