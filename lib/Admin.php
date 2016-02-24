@@ -266,10 +266,11 @@ class Admin {
 	 * the status is changed to publish.
 	 *
 	 * @since    1.0.0
-	 * @param    int         $post_id    The post ID.
-	 * @param    \WP_Post    $post       The \WP_Post object.
+	 * @param    int         $post_id                      The post ID.
+	 * @param    \WP_Post    $post                         The \WP_Post object.
+	 * @param    \WP_Post    $post_before    (optional)    The \WP_Post object before the update. Only for attachments.
 	 */
-	public function on_save_post( $post_id, \WP_Post $post ) {
+	public function on_save_post( $post_id, \WP_Post $post, $post_before = null ) {
 
 		// Bail out if not admin and bypass REST API requests
 		if ( ! \is_admin() ) {

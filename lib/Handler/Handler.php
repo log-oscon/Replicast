@@ -367,11 +367,18 @@ abstract class Handler {
 			unset( $data['id'] );
 		}
 
+		if ( $object_type === 'page' ) {
+			$data = $this->prepare_page_template( $data );
+		} elseif ( $object_type === 'attachment' ) {
+			$data = $this->prepare_attachment_status( $data, $site );
+		}
+
 		/**
 		 * Filter the prepared object data for creation.
 		 *
-		 * @since    1.0.0
-		 * @param    array    Prepared object data.
+		 * @since     1.0.0
+		 * @param     array    $data    Prepared object data.
+		 * @return    array             Possibly-modified object data.
 		 */
 		return \apply_filters( "replicast_prepare_{$object_type}_for_create", $data );
 	}
@@ -410,11 +417,18 @@ abstract class Handler {
 			$data['date_gmt'] = \mysql_to_rfc3339( $data['date'] );
 		}
 
+		if ( $object_type === 'page' ) {
+			$data = $this->prepare_page_template( $data );
+		} elseif ( $object_type === 'attachment' ) {
+			$data = $this->prepare_attachment_status( $data, $site );
+		}
+
 		/**
 		 * Filter the prepared object data for update.
 		 *
-		 * @since    1.0.0
-		 * @param    array    Prepared object data.
+		 * @since     1.0.0
+		 * @param     array    $data    Prepared object data.
+		 * @return    array             Possibly-modified object data.
 		 */
 		return \apply_filters( "replicast_prepare_{$object_type}_for_update", $data );
 	}
@@ -611,6 +625,43 @@ abstract class Handler {
 			)
 		);
 
+	}
+
+	/**
+	 * Prepare page template.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     array    $data    Prepared page data.
+	 * @return    array             Possibly-modified page data.
+	 */
+	private function prepare_page_template( $data, $site ) {
+
+		// Unset page template if empty
+		// @see https://github.com/WP-API/WP-API/blob/develop/lib/endpoints/class-wp-rest-posts-controller.php#L1553
+		if ( empty( $data['template'] ) ) {
+			unset( $data['template'] );
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Prepare attachment status.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     array    $data    Prepared attachment data.
+	 * @return    array             Possibly-modified attachment data.
+	 */
+	private function prepare_attachment_status( $data, $site ) {
+
+		// Update attachment status based on the "uploaded to" post status. If exists.
+		if ( ! empty( $data['status'] ) && $data['status'] === 'inherit' ) {
+			$data['status'] = ! empty( $data['post'] ) ? \get_post_status( $data['post'] ) : 'publish';
+		}
+
+		return $data;
 	}
 
 }

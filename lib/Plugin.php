@@ -130,9 +130,12 @@ class Plugin {
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_notices',         $admin, 'display_admin_notices' );
 
-		// Sync
-		$this->loader->add_action( 'save_post',    $admin, 'on_save_post', 10, 2 );
+		// Sync posts
+		$this->loader->add_action( 'save_post',    $admin, 'on_save_post', 10, 3 );
 		$this->loader->add_action( 'trashed_post', $admin, 'on_trash_post' );
+
+		// Sync attachments
+		$this->loader->add_action( 'attachment_updated', $admin, 'on_save_post', 10, 3 );
 
 		// Admin UI
 		$this->loader->add_action( 'manage_posts_custom_column', $admin, 'manage_custom_column', 10, 2 );
@@ -142,22 +145,6 @@ class Plugin {
 		$this->loader->add_filter( 'user_has_cap',               $admin, 'hide_edit_link', 10, 4 );
 		$this->loader->add_filter( 'post_row_actions',           $admin, 'hide_row_actions', 99, 2 );
 		$this->loader->add_filter( 'page_row_actions',           $admin, 'hide_row_actions', 99, 2 );
-
-	}
-
-	/**
-	 * Register all of the hooks related to the ´post´ content type functionality
-	 * of the plugin.
-	 *
-	 * @since     1.0.0
-	 * @access    private
-	 */
-	private function define_post_hooks() {
-
-		$post = new Admin\Post( $this );
-
-		$this->loader->add_filter( 'replicast_prepare_page_for_create', $post, 'prepare_page_for_create' );
-		$this->loader->add_filter( 'replicast_prepare_page_for_update', $post, 'prepare_page_for_update' );
 
 	}
 
@@ -208,7 +195,6 @@ class Plugin {
 	public function run() {
 		$this->set_locale();
 		$this->define_admin_hooks();
-		$this->define_post_hooks();
 		$this->define_site_hooks();
 		$this->define_api_hooks();
 		$this->loader->run();
