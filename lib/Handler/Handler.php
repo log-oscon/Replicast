@@ -242,10 +242,11 @@ abstract class Handler {
 	 * Delete object handler.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client|array    $sites    Site object(s).
+	 * @param     \Replicast\Client|array    $sites           Site object(s).
+	 * @param     bool                       $force_delete    Whether to bypass trash and force deletion.
 	 * @return    array
 	 */
-	public function handle_delete( $sites ) {
+	public function handle_delete( $sites, $force_delete = false ) {
 
 		// Admin notices
 		$notices = array();

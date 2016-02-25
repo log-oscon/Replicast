@@ -367,6 +367,48 @@ class Admin {
 	}
 
 	/**
+	 * Fired when a post, page or attachment is permanently deleted.
+	 *
+	 * @since    1.0.0
+	 * @param    int    $post_id    The post ID.
+	 */
+	public function on_delete_post( $post_id ) {
+
+		// Bail out if not admin and bypass REST API requests
+		if ( ! \is_admin() ) {
+			return;
+		}
+
+		// If current user can't delete posts, return
+		if ( ! \current_user_can( 'delete_posts' ) ) {
+			return;
+		}
+
+		// Retrieves post data given a post ID
+		$post = \get_post( $post_id );
+
+		if ( ! $post ) {
+			return;
+		}
+
+		// Admin notices
+		$notices = array();
+
+		// Get sites for replication
+		$sites = $this->get_sites( $post );
+
+		// Prepares post data for replication
+		$handler = new PostHandler( $post );
+		$notices = $handler->handle_delete( $sites, true );
+
+		// Set admin notices
+		if ( ! empty( $notices ) ) {
+			$this->set_admin_notice( $notices );
+		}
+
+	}
+
+	/**
 	 * Returns an array of sites.
 	 *
 	 * @since     1.0.0

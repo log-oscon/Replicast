@@ -25,8 +25,9 @@ x Upload de media
 x Associação de media ao post correspondente
 
 ### Outros
-- Validar campos obrigatórios na criação de um "Site"
+- Melhorar mecanismo de gestão de mensagens de admin
 - Melhorar mecanismo de logs
+- Validar campos obrigatórios na criação de um "Site"
 
 ## Notas
 - Como lidar com posts que já foram eliminados num site remoto
