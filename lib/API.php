@@ -425,7 +425,7 @@ class API {
 	 *
 	 * @since     1.0.0
 	 * @param     object|array    $object    The object.
-	 * @return    array                      The replicast info meta field.
+	 * @return    array                      The replicast info meta data.
 	 */
 	public static function get_replicast_info( $object ) {
 

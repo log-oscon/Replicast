@@ -171,7 +171,7 @@ abstract class Handler {
 			$sites = array( $sites->get_id() => $sites );
 		}
 
-		// Get replicast post info
+		// Get replicast object info
 		$replicast_info = API::get_replicast_info( $this->object );
 
 		// Verify that the current object has been "removed" (aka unchecked) from any site(s)
@@ -255,7 +255,7 @@ abstract class Handler {
 			$sites = array( $sites->get_id() => $sites );
 		}
 
-		// Get replicast post info
+		// Get replicast object info
 		$replicast_info = API::get_replicast_info( $this->object );
 
 		foreach ( $sites as $site ) {
@@ -405,11 +405,12 @@ abstract class Handler {
 		// Get replicast object info
 		$replicast_info = API::get_replicast_info( $this->object );
 
-		// Get remote object
-		$object = $replicast_info[ $site->get_id() ];
+		if ( empty( $replicast_info ) ) {
+			return array();
+		}
 
 		// Update object ID
-		$data['id'] = $object['id'];
+		$data['id'] = $replicast_info[ $site->get_id() ]['id'];
 
 		// Check for date_gmt presence
 		// Note: date_gmt is necessary for post update and it's zeroed upon deletion
@@ -671,9 +672,21 @@ abstract class Handler {
 	 */
 	private function prepare_attachment( $data, $site ) {
 
-		// Update attachment status based on the "uploaded to" post status. If exists.
+		// Update attachment status based on the "uploaded to" post status, if exists
 		if ( ! empty( $data['status'] ) && $data['status'] === 'inherit' ) {
 			$data['status'] = ! empty( $data['post'] ) ? \get_post_status( $data['post'] ) : 'publish';
+		}
+
+		// Update the "uploaded to" post ID with the associated remote post ID, if exists
+		if ( ! empty( $data['post'] ) ) {
+
+			// Get replicast object info
+			$replicast_info = API::get_replicast_info( \get_post( $data['post'] ) );
+
+			if ( ! empty( $replicast_info ) ) {
+				$data['post'] = $replicast_info[ $site->get_id() ]['id'];
+			}
+
 		}
 
 		return $data;

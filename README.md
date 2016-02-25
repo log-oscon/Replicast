@@ -9,6 +9,7 @@ x Eliminação de posts
 - Eliminação permanente de posts
 x Sincronização de meta
 - Sincronização de termos
+- Sincronização de media (WYSIWYG)
 - Sincronização ACF
 
 ### Páginas
@@ -21,7 +22,7 @@ x Sincronização de meta
 ### Media
 x Upload de media
 - Eliminação de media (permanente)
-- Associação de media ao post correspondente
+x Associação de media ao post correspondente
 
 ### Outros
 - Validar campos obrigatórios na criação de um "Site"
