@@ -182,8 +182,6 @@ abstract class Handler {
 			}
 		}
 
-		error_log(print_r($notices,true));
-
 		foreach ( $sites as $site ) {
 
 			try {
@@ -202,9 +200,6 @@ abstract class Handler {
 
 					// Update replicast info
 					API::update_replicast_info( $this->object, $site->get_id(), $remote_data );
-
-					// Handle terms
-					$handler->handle_terms( $site, $remote_data );
 
 					$notices[] = array(
 						'status_code'   => $response->getStatusCode(),
@@ -662,8 +657,9 @@ abstract class Handler {
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @param     array    $data    Prepared page data.
-	 * @return    array             Possibly-modified page data.
+	 * @param     array                $data    Prepared page data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified page data.
 	 */
 	private function prepare_page( $data, $site ) {
 
@@ -681,8 +677,9 @@ abstract class Handler {
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @param     array    $data    Prepared attachment data.
-	 * @return    array             Possibly-modified attachment data.
+	 * @param     array                $data    Prepared attachment data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified attachment data.
 	 */
 	private function prepare_attachment( $data, $site ) {
 
