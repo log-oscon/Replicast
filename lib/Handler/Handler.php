@@ -368,6 +368,11 @@ abstract class Handler {
 			unset( $data['id'] );
 		}
 
+		// Update featured media ID
+		if ( ! empty( $data['featured_media'] ) ) {
+			// TODO: get featured media remote ID
+		}
+
 		if ( $object_type === 'page' ) {
 			$data = $this->prepare_page( $data, $site );
 		} elseif ( $object_type === 'attachment' ) {
@@ -412,6 +417,11 @@ abstract class Handler {
 
 		// Update object ID
 		$data['id'] = $replicast_info[ $site->get_id() ]['id'];
+
+		// Update featured media ID
+		if ( ! empty( $data['featured_media'] ) ) {
+			// TODO: get featured media remote ID
+		}
 
 		// Check for date_gmt presence
 		// Note: date_gmt is necessary for post update and it's zeroed upon deletion
