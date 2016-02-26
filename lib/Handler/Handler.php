@@ -171,7 +171,7 @@ abstract class Handler {
 			$sites = array( $sites->get_id() => $sites );
 		}
 
-		// Get replicast object info
+		// Get replicast info
 		$replicast_info = API::get_replicast_info( $this->object );
 
 		// Verify that the current object has been "removed" (aka unchecked) from any site(s)
@@ -259,7 +259,7 @@ abstract class Handler {
 			$sites = array( $sites->get_id() => $sites );
 		}
 
-		// Get replicast object info
+		// Get replicast info
 		$replicast_info = API::get_replicast_info( $this->object );
 
 		foreach ( $sites as $site ) {
@@ -411,7 +411,7 @@ abstract class Handler {
 			return array();
 		}
 
-		// Get replicast object info
+		// Get replicast info
 		$replicast_info = API::get_replicast_info( $this->object );
 
 		if ( empty( $replicast_info ) ) {
@@ -694,7 +694,7 @@ abstract class Handler {
 		// Update the "uploaded to" post ID with the associated remote post ID, if exists
 		if ( ! empty( $data['post'] ) ) {
 
-			// Get replicast object info
+			// Get replicast info
 			$replicast_info = API::get_replicast_info( \get_post( $data['post'] ) );
 
 			if ( ! empty( $replicast_info ) ) {
