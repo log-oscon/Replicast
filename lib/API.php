@@ -211,8 +211,8 @@ class API {
 		}
 
 		// Update object terms
-		if ( ! empty( $values['terms'] ) ) {
-			static::update_object_terms( $values['terms'], $object );
+		if ( ! empty( $values['term'] ) ) {
+			static::update_object_term( $values['term'], $object );
 		}
 
 	}
@@ -225,8 +225,6 @@ class API {
 	 * @param     object    $object    The object from the response.
 	 */
 	public static function update_object_meta( $values, $object ) {
-
-		// TODO: should this be returning any kind of success/failure information?
 
 		// Get object meta type
 		$meta_type = static::get_meta_type( $object );
@@ -265,7 +263,7 @@ class API {
 	 * @param     array     $values    The values of the field.
 	 * @param     object    $object    The object from the response.
 	 */
-	public static function update_object_terms( $values, $object ) {
+	public static function update_object_term( $values, $object ) {
 
 		$prepared_terms = array();
 
@@ -354,6 +352,10 @@ class API {
 	 */
 	public static function get_meta_type( $object ) {
 
+		if ( static::is_post( $object ) ) {
+			return 'post';
+		}
+
 		if ( static::is_term( $object ) ) {
 			return 'term';
 		}
@@ -366,7 +368,7 @@ class API {
 			return 'user';
 		}
 
-		return 'post';
+		return '';
 	}
 
 	/**
@@ -382,11 +384,11 @@ class API {
 			return true;
 		}
 
-		if ( is_object( $object ) && isset( $object->type ) ) {
+		if ( is_object( $object ) && isset( $object->post_type ) ) {
 			return true;
 		}
 
-		if ( is_array( $object ) && isset( $object['post_type'] ) ) {
+		if ( is_array( $object ) && isset( $object['type'] ) ) {
 			return true;
 		}
 
@@ -430,13 +432,15 @@ class API {
 			return true;
 		}
 
-		if ( is_object( $object ) && isset( $object->comment_author ) ) {
-			return true;
-		}
+		// TODO:
+		// if ( is_object( $object ) && isset( $object->comment_author ) ) {
+		// 	return true;
+		// }
 
-		if ( is_array( $object ) && isset( $object['author'] ) ) {
-			return true;
-		}
+		// TODO:
+		// if ( is_array( $object ) && isset( $object['author'] ) ) {
+		// 	return true;
+		// }
 
 		return false;
 	}
@@ -454,13 +458,15 @@ class API {
 			return true;
 		}
 
-		if ( is_object( $object ) && isset( $object->user_login ) ) {
-			return true;
-		}
+		// TODO:
+		// if ( is_object( $object ) && isset( $object->user_login ) ) {
+		// 	return true;
+		// }
 
-		if ( is_array( $object ) && isset( $object['login'] ) ) {
-			return true;
-		}
+		// TODO:
+		// if ( is_array( $object ) && isset( $object['login'] ) ) {
+		// 	return true;
+		// }
 
 		return false;
 	}
