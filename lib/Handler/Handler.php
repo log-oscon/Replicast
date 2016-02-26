@@ -210,6 +210,11 @@ abstract class Handler {
 					// Update replicast info
 					API::update_replicast_info( $this->object, $site->get_id(), $remote_data );
 
+					// Update post terms
+					if ( API::is_post( $this->object ) ) {
+						$this->update_post_terms( $site->get_id(), $remote_data );
+					}
+
 					$notices[] = array(
 						'status_code'   => $response->getStatusCode(),
 						'reason_phrase' => $response->getReasonPhrase(),
@@ -435,11 +440,6 @@ abstract class Handler {
 		// Note: date_gmt is necessary for post update and it's zeroed upon deletion
 		if ( empty( $data['date_gmt'] ) && ! empty( $data['date'] ) ) {
 			$data['date_gmt'] = \mysql_to_rfc3339( $data['date'] );
-		}
-
-		// Prepare post terms
-		if ( API::is_post( $this->object ) ) {
-			$data = $this->prepare_post_terms( $data, $site );
 		}
 
 		// Prepare data by object type

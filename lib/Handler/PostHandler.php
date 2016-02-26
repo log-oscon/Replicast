@@ -44,47 +44,33 @@ class PostHandler extends Handler {
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @param     array                $data    Prepared attachment data.
-	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Possibly-modified attachment data.
+	 * @param     int            $site_id        Site ID.
+	 * @param     object|null    $remote_data    Remote object data.
 	 */
-	public function prepare_post_terms( $data, $site ) {
+	public function update_post_terms( $site_id, $remote_data ) {
 
-		if ( empty( $data['_embedded'] ) ) {
-			return $data;
+		if ( empty( $remote_data->replicast ) ) {
+			return;
 		}
 
-		if ( empty( $data['_embedded']['https://api.w.org/term'] ) ) {
-			return $data;
+		if ( empty( $remote_data->replicast->terms ) ) {
+			return;
 		}
 
-		foreach ( $data['_embedded']['https://api.w.org/term'] as $term_link_key => $term_link ) {
-			foreach ( $term_link as $term_data_key => $term_data ) {
+		foreach ( $remote_data->replicast->terms as $term_data ) {
 
-				// Get term object
-				$term = \get_term( $term_data['id'], $term_data['taxonomy'] );
+			// Get term object
+			$term = \get_term_by( 'slug', $term_data->slug, $term_data->taxonomy );
 
-				if ( ! API::is_term( $term ) ) {
-					continue;
-				}
-
-				if ( in_array( $term->slug, array( 'uncategorized', 'untagged' ) ) ) {
-					unset( $data['_embedded']['https://api.w.org/term'][ $term_link_key ][ $term_data_key ] );
-				}
-
-				// Get replicast info
-				$replicast_info = API::get_replicast_info( $term );
-
-				// Update object ID
-				$data['_embedded']['https://api.w.org/term'][ $term_link_key ][ $term_data_key ]['id'] = '';
-				if ( ! empty( $replicast_info ) ) {
-					$data['_embedded']['https://api.w.org/term'][ $term_link_key ][ $term_data_key ]['id'] = $replicast_info[ $site->get_id() ]['id'];
-				}
-
+			if ( ! $term ) {
+				return;
 			}
+
+			// Update replicast info
+			API::update_replicast_info( $term, $site_id, $term_data );
+
 		}
 
-		return $data;
 	}
 
 }

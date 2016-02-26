@@ -290,16 +290,22 @@ class API {
 			}
 
 			// Check if term exists
-			$term = \term_exists( $term_data['term_id'], $taxonomy, $parent );
+			if ( $term = \get_term_by( 'slug', $term_data['slug'], $taxonomy ) ) {
+				$prepared_terms[ $taxonomy ][] = $term->term_id;
+				continue;
+			}
 
-			if ( $term === 0 || $term === null ) {
-				$term = \wp_insert_term( $term_data['name'], $taxonomy, array(
-					'description' => $term_data['description'],
-					'parent'      => $parent,
-				) );
+			$term = \wp_insert_term( $term_data['name'], $taxonomy, array(
+				'description' => $term_data['description'],
+				'parent'      => $parent,
+			) );
+
+			if ( \is_wp_error( $term ) ) {
+				continue;
 			}
 
 			$prepared_terms[ $taxonomy ][] = $term['term_id'];
+
 		}
 
 		if ( ! empty( $prepared_terms ) ) {
