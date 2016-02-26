@@ -385,7 +385,10 @@ class API {
 	 */
 	public static function is_post( $object ) {
 		// TODO: needs fine-tuning for array objects
-		return $object instanceof \WP_Post || ( is_array( $object ) && isset( $object['type'] ) );
+		return
+			$object instanceof \WP_Post ||
+			( is_object( $object ) && isset( $object->type ) ) ||
+			( is_array( $object ) && isset( $object['type'] ) );
 	}
 
 	/**
@@ -396,7 +399,10 @@ class API {
 	 * @return    bool                       True if it's a term. False, otherwise.
 	 */
 	public static function is_term( $object ) {
-		return $object instanceof \WP_Term || ( is_array( $object ) && isset( $object['taxonomy'] ) );
+		return
+			$object instanceof \WP_Term ||
+			( is_object( $object ) && isset( $object->taxonomy ) ) ||
+			( is_array( $object ) && isset( $object['taxonomy'] ) );
 	}
 
 	/**
@@ -465,7 +471,7 @@ class API {
 		// Save or delete the remote object info
 		if ( $remote_data ) {
 			$replicast_info[ $site_id ] = array(
-				'id'     => $remote_data->id,
+				'id'     => static::get_object_id( $remote_data ),
 				'status' => isset( $remote_data->status ) ? $remote_data->status : ''
 			);
 		}
