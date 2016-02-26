@@ -369,7 +369,7 @@ abstract class Handler {
 		}
 
 		if ( $object_type === 'page' ) {
-			$data = $this->prepare_page( $data );
+			$data = $this->prepare_page( $data, $site );
 		} elseif ( $object_type === 'attachment' ) {
 			$data = $this->prepare_attachment( $data, $site );
 		}
@@ -420,7 +420,7 @@ abstract class Handler {
 		}
 
 		if ( $object_type === 'page' ) {
-			$data = $this->prepare_page( $data );
+			$data = $this->prepare_page( $data, $site );
 		} elseif ( $object_type === 'attachment' ) {
 			$data = $this->prepare_attachment( $data, $site );
 		}
