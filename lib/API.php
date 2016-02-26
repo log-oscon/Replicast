@@ -507,8 +507,9 @@ class API {
 		// Save or delete the remote object info
 		if ( $remote_data ) {
 			$replicast_info[ $site_id ] = array(
-				'id'     => static::get_object_id( $remote_data ),
-				'status' => isset( $remote_data->status ) ? $remote_data->status : ''
+				'id'               => static::get_object_id( $remote_data ),
+				'status'           => isset( $remote_data->status )           ? $remote_data->status           : '',
+				'term_taxonomy_id' => isset( $remote_data->term_taxonomy_id ) ? $remote_data->term_taxonomy_id : '',
 			);
 		}
 		else {
