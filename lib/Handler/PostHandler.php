@@ -50,39 +50,31 @@ class PostHandler extends Handler {
 	 */
 	public function prepare_post_terms( $data, $site ) {
 
-		if ( empty( $data['_embedded'] ) ) {
+		if ( empty( $data['replicast'] ) ) {
 			return $data;
 		}
 
-		if ( empty( $data['_embedded']['https://api.w.org/term'] ) ) {
+		if ( empty( $data['replicast']['term'] ) ) {
 			return $data;
 		}
 
-		foreach ( $data['_embedded']['https://api.w.org/term'] as $term_link_key => $term_link ) {
-			foreach ( $term_link as $term_data_key => $term_data ) {
+		foreach ( $data['replicast']['term'] as $key => $term ) {
 
-				// Get term object
-				$term = \get_term( $term_data['id'], $term_data['taxonomy'] );
-
-				if ( ! API::is_term( $term ) ) {
-					continue;
-				}
-
-				if ( in_array( $term->slug, array( 'uncategorized', 'untagged' ) ) ) {
-					unset( $data['_embedded']['https://api.w.org/term'][ $term_link_key ][ $term_data_key ] );
-				}
-
-				// Get replicast info
-				$replicast_info = API::get_replicast_info( $term );
-
-				// Update object ID
-				$term_id = '';
-				if ( ! empty( $replicast_info ) ) {
-					$term_id = $replicast_info[ $site->get_id() ]['id'];
-				}
-
-				$data['_embedded']['https://api.w.org/term'][ $term_link_key ][ $term_data_key ]['id'] = $term_id;
+			if ( in_array( $term->slug, array( 'uncategorized', 'untagged' ) ) ) {
+				unset( $data['replicast']['term'][ $key ] );
 			}
+
+			// Get replicast info
+			$replicast_info = API::get_replicast_info( $term );
+
+			// Update object ID
+			$term->term_id = '';
+			if ( ! empty( $replicast_info ) ) {
+				$term->term_id = $replicast_info[ $site->get_id() ]['id'];
+			}
+
+			$data['replicast']['term'][ $key ] = $term;
+
 		}
 
 		return $data;

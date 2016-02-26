@@ -75,8 +75,8 @@ class API {
 	 */
 	public static function get_rest_fields( $object, $field_name, $request ) {
 		return array(
-			'meta'  => static::get_object_meta( $object, $request ),
-			// 'terms' => static::get_object_terms( $object, $request ),
+			'meta' => static::get_object_meta( $object, $request ),
+			'term' => static::get_object_term( $object, $request ),
 		);
 	}
 
@@ -143,7 +143,7 @@ class API {
 	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
 	 * @return    array               Object terms.
 	 */
-	public static function get_object_terms( $object, $request ) {
+	public static function get_object_term( $object, $request ) {
 
 		// Get a list of registered taxonomies
 		$taxonomies = \get_taxonomies();
@@ -189,15 +189,6 @@ class API {
 				continue;
 			}
 
-			// Get replicast info
-			$replicast_info = static::get_replicast_info( $term );
-
-			// Update object ID
-			$term->term_id = '';
-			// if ( ! empty( $replicast_info ) ) {
-			// 	$term->term_id = $replicast_info[ $site->get_id() ]['id'];
-			// }
-
 			$prepared_terms[] = $term;
 
 		}
@@ -220,9 +211,9 @@ class API {
 		}
 
 		// Update object terms
-		// if ( ! empty( $values['terms'] ) ) {
-		// 	static::update_object_terms( $values['terms'], $object );
-		// }
+		if ( ! empty( $values['terms'] ) ) {
+			static::update_object_terms( $values['terms'], $object );
+		}
 
 	}
 
@@ -329,11 +320,13 @@ class API {
 	 */
 	public static function get_object_id( $object ) {
 
-		if ( static::is_term( $object ) ) {
+		if ( isset( $object->term_id ) ) {
 			return $object->term_id;
+		} elseif ( isset( $object->ID ) ) {
+			return $object->ID;
 		}
 
-		return $object->ID;
+		return $object->id;
 	}
 
 	/**
@@ -384,11 +377,20 @@ class API {
 	 * @return    bool                       True if it's a post/page. False, otherwise.
 	 */
 	public static function is_post( $object ) {
-		// TODO: needs fine-tuning for array objects
-		return
-			$object instanceof \WP_Post ||
-			( is_object( $object ) && isset( $object->type ) ) ||
-			( is_array( $object ) && isset( $object['type'] ) );
+
+		if ( $object instanceof \WP_Post ) {
+			return true;
+		}
+
+		if ( is_object( $object ) && isset( $object->type ) ) {
+			return true;
+		}
+
+		if ( is_array( $object ) && isset( $object['post_type'] ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -399,10 +401,20 @@ class API {
 	 * @return    bool                       True if it's a term. False, otherwise.
 	 */
 	public static function is_term( $object ) {
-		return
-			$object instanceof \WP_Term ||
-			( is_object( $object ) && isset( $object->taxonomy ) ) ||
-			( is_array( $object ) && isset( $object['taxonomy'] ) );
+
+		if ( $object instanceof \WP_Term ) {
+			return true;
+		}
+
+		if ( is_object( $object ) && isset( $object->term_id ) ) {
+			return true;
+		}
+
+		if ( is_array( $object ) && isset( $object['term_id'] ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -413,8 +425,20 @@ class API {
 	 * @return    bool                       True if it's a comment. False, otherwise.
 	 */
 	public static function is_comment( $object ) {
-		// TODO: needs fine-tuning for array objects
-		return $object instanceof \WP_Comment;
+
+		if ( $object instanceof \WP_Comment ) {
+			return true;
+		}
+
+		if ( is_object( $object ) && isset( $object->comment_author ) ) {
+			return true;
+		}
+
+		if ( is_array( $object ) && isset( $object['author'] ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -425,8 +449,20 @@ class API {
 	 * @return    bool                       True if it's an user. False, otherwise.
 	 */
 	public static function is_user( $object ) {
-		// TODO: needs fine-tuning for array objects
-		return $object instanceof \WP_User;
+
+		if ( $object instanceof \WP_User ) {
+			return true;
+		}
+
+		if ( is_object( $object ) && isset( $object->user_login ) ) {
+			return true;
+		}
+
+		if ( is_array( $object ) && isset( $object['login'] ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
