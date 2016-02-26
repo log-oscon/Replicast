@@ -196,12 +196,15 @@ abstract class Handler {
 				}
 
 				// Get the remote object data
-				$remote_post = json_decode( $response->getBody()->getContents() );
+				$remote_data = json_decode( $response->getBody()->getContents() );
 
-				if ( $remote_post ) {
+				if ( $remote_data ) {
 
-					// Update post replicast info
-					API::update_replicast_info( $this->object, $site->get_id(), $remote_post );
+					// Update replicast info
+					API::update_replicast_info( $this->object, $site->get_id(), $remote_data );
+
+					// Handle terms
+					$handler->handle_terms( $site, $remote_data );
 
 					$notices[] = array(
 						'status_code'   => $response->getStatusCode(),
@@ -214,7 +217,7 @@ abstract class Handler {
 							),
 							sprintf(
 								'<a href="%s" title="%s" target="_blank">%s</a>',
-								\esc_url( $remote_post->link ),
+								\esc_url( $remote_data->link ),
 								\esc_attr( $site->get_name() ),
 								\__( 'View post', 'replicast' )
 							)
@@ -270,17 +273,17 @@ abstract class Handler {
 				$response = $this->delete( $site )->wait();
 
 				// Get the remote object data
-				$remote_post = json_decode( $response->getBody()->getContents() );
+				$remote_data = json_decode( $response->getBody()->getContents() );
 
-				if ( $remote_post ) {
+				if ( $remote_data ) {
 
 					// The API returns 'publish' but we force the status to be 'trash' for better
 					// management of the next actions over the object. Like, recovering (PUT request)
 					// or permanently delete the object from remote location.
-					$remote_post->status = 'trash';
+					$remote_data->status = 'trash';
 
-					// Update post replicast info
-					API::update_replicast_info( $this->object, $site->get_id(), $remote_post );
+					// Update replicast info
+					API::update_replicast_info( $this->object, $site->get_id(), $remote_data );
 
 					$notices[] = array(
 						'status_code'   => $response->getStatusCode(),
@@ -293,7 +296,7 @@ abstract class Handler {
 							),
 							sprintf(
 								'<a href="%s" title="%s" target="_blank">%s</a>',
-								\esc_url( $remote_post->link ),
+								\esc_url( $remote_data->link ),
 								\esc_attr( $site->get_name() ),
 								\__( 'View post', 'replicast' )
 							)
