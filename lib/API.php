@@ -336,6 +336,8 @@ class API {
 	 */
 	public static function get_object_type( $object ) {
 
+		// FIXME: revisit later
+
 		if ( static::is_term( $object ) ) {
 			return $object->taxonomy;
 		}
@@ -352,23 +354,13 @@ class API {
 	 */
 	public static function get_meta_type( $object ) {
 
-		if ( static::is_post( $object ) ) {
-			return 'post';
-		}
+		// FIXME: revisit later
 
 		if ( static::is_term( $object ) ) {
 			return 'term';
 		}
 
-		if ( static::is_comment( $object ) ) {
-			return 'comment';
-		}
-
-		if ( static::is_user( $object ) ) {
-			return 'user';
-		}
-
-		return '';
+		return 'post';
 	}
 
 	/**
@@ -379,6 +371,8 @@ class API {
 	 * @return    bool                       True if it's a post/page. False, otherwise.
 	 */
 	public static function is_post( $object ) {
+
+		// TODO: continuous improvement
 
 		if ( $object instanceof \WP_Post ) {
 			return true;
@@ -404,6 +398,8 @@ class API {
 	 */
 	public static function is_term( $object ) {
 
+		// TODO: continuous improvement
+
 		if ( $object instanceof \WP_Term ) {
 			return true;
 		}
@@ -415,58 +411,6 @@ class API {
 		if ( is_array( $object ) && isset( $object['term_id'] ) ) {
 			return true;
 		}
-
-		return false;
-	}
-
-	/**
-	 * Check if object is a comment.
-	 *
-	 * @since     1.0.0
-	 * @param     object|array    $object    The object.
-	 * @return    bool                       True if it's a comment. False, otherwise.
-	 */
-	public static function is_comment( $object ) {
-
-		if ( $object instanceof \WP_Comment ) {
-			return true;
-		}
-
-		// TODO:
-		// if ( is_object( $object ) && isset( $object->comment_author ) ) {
-		// 	return true;
-		// }
-
-		// TODO:
-		// if ( is_array( $object ) && isset( $object['author'] ) ) {
-		// 	return true;
-		// }
-
-		return false;
-	}
-
-	/**
-	 * Check if object is an user.
-	 *
-	 * @since     1.0.0
-	 * @param     object|array    $object    The object.
-	 * @return    bool                       True if it's an user. False, otherwise.
-	 */
-	public static function is_user( $object ) {
-
-		if ( $object instanceof \WP_User ) {
-			return true;
-		}
-
-		// TODO:
-		// if ( is_object( $object ) && isset( $object->user_login ) ) {
-		// 	return true;
-		// }
-
-		// TODO:
-		// if ( is_array( $object ) && isset( $object['login'] ) ) {
-		// 	return true;
-		// }
 
 		return false;
 	}

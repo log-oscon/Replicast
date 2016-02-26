@@ -149,11 +149,11 @@ class PostHandler extends Handler {
 			return;
 		}
 
-		if ( empty( $data->replicast->terms ) ) {
+		if ( empty( $data->replicast->term ) ) {
 			return;
 		}
 
-		foreach ( $data->replicast->terms as $term_data ) {
+		foreach ( $data->replicast->term as $term_data ) {
 
 			// Get term object
 			$term = \get_term_by( 'slug', $term_data->slug, $term_data->taxonomy );
