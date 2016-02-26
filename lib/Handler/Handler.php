@@ -65,6 +65,15 @@ abstract class Handler {
 	 *
 	 * @since     1.0.0
 	 * @access    protected
+	 * @var       string
+	 */
+	protected $object_type;
+
+	/**
+	 * Object.
+	 *
+	 * @since     1.0.0
+	 * @access    protected
 	 * @var       object
 	 */
 	protected $object;
@@ -371,6 +380,7 @@ abstract class Handler {
 			// TODO: get featured media remote ID
 		}
 
+		// Prepare data by object type
 		if ( $object_type === 'page' ) {
 			$data = $this->prepare_page( $data, $site );
 		} elseif ( $object_type === 'attachment' ) {
@@ -427,6 +437,12 @@ abstract class Handler {
 			$data['date_gmt'] = \mysql_to_rfc3339( $data['date'] );
 		}
 
+		// Prepare post terms
+		if ( API::is_post( $this->object ) ) {
+			$data = $this->prepare_post_terms( $data, $site );
+		}
+
+		// Prepare data by object type
 		if ( $object_type === 'page' ) {
 			$data = $this->prepare_page( $data, $site );
 		} elseif ( $object_type === 'attachment' ) {
