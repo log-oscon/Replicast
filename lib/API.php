@@ -65,7 +65,7 @@ class API {
 	}
 
 	/**
-	 * Get custom fields for an object type.
+	 * Retrieve the field value.
 	 *
 	 * @since     1.0.0
 	 * @param     array               $object        Details of current content object.
@@ -178,29 +178,26 @@ class API {
 		// FIXME: we should soft cache this
 		$terms = \wp_get_object_terms( $object['id'], $prepared_taxonomies );
 
-		/**
-		 * Filter for suppressing specific object terms.
-		 *
-		 * @since     1.0.0
-		 * @param     array               Slug(s) of the suppressed terms.
-		 * @param     array    $terms     List of object terms.
-		 * @param     array    $object    The object from the response.
-		 * @return    array               Possibly-modified slug(s) of the suppressed terms.
-		 */
-		$taxonomies_blacklist = array_merge(
-			array( 'uncategorized', 'untagged' ),
-			\apply_filters( 'replicast_suppress_object_taxonomy_terms', array(), $terms, $object )
-		);
-
 		$prepared_terms = array();
 		foreach ( $terms as $term ) {
 
-			if ( in_array( $term->slug, $taxonomies_blacklist ) ) {
+			if ( in_array( $term->slug, $terms ) ) {
 				continue;
 			}
 
-			// Get remote ID
-			$term->term_id = Admin::get_remote_info( $term->term_id );
+			if ( in_array( $term->slug, array( 'uncategorized', 'untagged' ) ) ) {
+				continue;
+			}
+
+			// Get replicast info
+			$replicast_info = static::get_replicast_info( $term );
+
+			// Update object ID
+			$term->term_id = '';
+			if ( ! empty( $replicast_info ) ) {
+				$term->term_id = $replicast_info[ $site->get_id() ]['id'];
+			}
+
 			$prepared_terms[] = $term;
 
 		}
@@ -209,7 +206,7 @@ class API {
 	}
 
 	/**
-	 * Get custom fields for an object.
+	 * Set and update the field value.
 	 *
 	 * @since     1.0.0
 	 * @param     array     $values    The values of the field.
