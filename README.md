@@ -9,8 +9,9 @@ x Eliminação de posts
 - Eliminação permanente de posts
 x Sincronização de meta
 - Sincronização de termos
-- Sincronização de media (WYSIWYG)
-- Sincronização ACF
+- Sincronização do featured image
+- Sincronização de media via editor WYSIWYG
+- Sincronização ACF (related fields)
 
 ### Páginas
 x Criação de páginas
@@ -20,8 +21,9 @@ x Eliminação de páginas
 x Sincronização de meta
 
 ### Media
-x Upload de media
-- Eliminação de media (permanente)
+x Upload de media (via página de edição individual)
+- Upload de media (via popup JS)
+- Eliminação permanente de media
 x Associação de media ao post correspondente
 
 ### Outros
