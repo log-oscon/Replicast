@@ -39,25 +39,74 @@ class PostHandler extends Handler {
 		$this->data        = $this->get_object_data();
 	}
 
+
 	/**
-	 * Handle post terms.
+	 * Prepare post terms.
+	 *
+	 * @since     1.0.0
+	 * @param     array                $data    Prepared page data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified page data.
+	 */
+	public function prepare_post_terms( $data, $site ) {
+
+		if ( empty( $data['_embedded'] ) ) {
+			return $data;
+		}
+
+		if ( empty( $data['_embedded']['https://api.w.org/term'] ) ) {
+			return $data;
+		}
+
+		foreach ( $data['_embedded']['https://api.w.org/term'] as $term_link_key => $term_link ) {
+			foreach ( $term_link as $term_data_key => $term_data ) {
+
+				// Get term object
+				$term = \get_term( $term_data['id'], $term_data['taxonomy'] );
+
+				if ( ! API::is_term( $term ) ) {
+					continue;
+				}
+
+				if ( in_array( $term->slug, array( 'uncategorized', 'untagged' ) ) ) {
+					unset( $data['_embedded']['https://api.w.org/term'][ $term_link_key ][ $term_data_key ] );
+				}
+
+				// Get replicast info
+				$replicast_info = API::get_replicast_info( $term );
+
+				// Update object ID
+				$term_id = '';
+				if ( ! empty( $replicast_info ) ) {
+					$term_id = $replicast_info[ $site->get_id() ]['id'];
+				}
+
+				$data['_embedded']['https://api.w.org/term'][ $term_link_key ][ $term_data_key ]['id'] = $term_id;
+			}
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Update post terms.
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @param     int            $site_id        Site ID.
-	 * @param     object|null    $remote_data    Remote object data.
+	 * @param     int            $site_id    Site ID.
+	 * @param     object|null    $data       Object data.
 	 */
-	public function update_post_terms( $site_id, $remote_data ) {
+	public function update_post_terms( $site_id, $data ) {
 
-		if ( empty( $remote_data->replicast ) ) {
+		if ( empty( $data->replicast ) ) {
 			return;
 		}
 
-		if ( empty( $remote_data->replicast->terms ) ) {
+		if ( empty( $data->replicast->terms ) ) {
 			return;
 		}
 
-		foreach ( $remote_data->replicast->terms as $term_data ) {
+		foreach ( $data->replicast->terms as $term_data ) {
 
 			// Get term object
 			$term = \get_term_by( 'slug', $term_data->slug, $term_data->taxonomy );

@@ -385,6 +385,11 @@ abstract class Handler {
 			// TODO: get featured media remote ID
 		}
 
+		// Prepare post terms
+		if ( API::is_post( $this->object ) ) {
+			$data = $this->prepare_post_terms( $data, $site );
+		}
+
 		// Prepare data by object type
 		if ( $object_type === 'page' ) {
 			$data = $this->prepare_page( $data, $site );
@@ -440,6 +445,11 @@ abstract class Handler {
 		// Note: date_gmt is necessary for post update and it's zeroed upon deletion
 		if ( empty( $data['date_gmt'] ) && ! empty( $data['date'] ) ) {
 			$data['date_gmt'] = \mysql_to_rfc3339( $data['date'] );
+		}
+
+		// Prepare post terms
+		if ( API::is_post( $this->object ) ) {
+			$data = $this->prepare_post_terms( $data, $site );
 		}
 
 		// Prepare data by object type

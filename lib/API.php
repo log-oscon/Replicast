@@ -76,7 +76,7 @@ class API {
 	public static function get_rest_fields( $object, $field_name, $request ) {
 		return array(
 			'meta'  => static::get_object_meta( $object, $request ),
-			'terms' => static::get_object_terms( $object, $request ),
+			// 'terms' => static::get_object_terms( $object, $request ),
 		);
 	}
 
@@ -194,9 +194,9 @@ class API {
 
 			// Update object ID
 			$term->term_id = '';
-			if ( ! empty( $replicast_info ) ) {
-				$term->term_id = $replicast_info[ $site->get_id() ]['id'];
-			}
+			// if ( ! empty( $replicast_info ) ) {
+			// 	$term->term_id = $replicast_info[ $site->get_id() ]['id'];
+			// }
 
 			$prepared_terms[] = $term;
 
@@ -220,9 +220,9 @@ class API {
 		}
 
 		// Update object terms
-		if ( ! empty( $values['terms'] ) ) {
-			static::update_object_terms( $values['terms'], $object );
-		}
+		// if ( ! empty( $values['terms'] ) ) {
+		// 	static::update_object_terms( $values['terms'], $object );
+		// }
 
 	}
 
