@@ -157,7 +157,7 @@ class API {
 		 * @param     array    $object         The object from the response.
 		 * @return    array                    Possibly-modified name(s) of the suppressed taxonomies.
 		 */
-		$taxonomies_blacklist = \apply_filters( 'replicast_suppress_object_taxonomies', array(), $taxonomies, $object );
+		$blacklist = \apply_filters( 'replicast_suppress_object_taxonomies', array(), $taxonomies, $object );
 
 		$prepared_taxonomies = array();
 		foreach ( $taxonomies as $taxonomy_key => $taxonomy_key ) {
@@ -166,7 +166,7 @@ class API {
 				continue;
 			}
 
-			if ( in_array( $taxonomy_key, $taxonomies_blacklist ) ) {
+			if ( in_array( $taxonomy_key, $blacklist ) ) {
 				continue;
 			}
 
