@@ -123,9 +123,23 @@ class PostHandler extends Handler {
 			// Update object ID
 			$term->term_id          = '';
 			$term->term_taxonomy_id = '';
+
 			if ( ! empty( $replicast_info ) ) {
 				$term->term_id          = $replicast_info[ $site->get_id() ]['id'];
 				$term->term_taxonomy_id = $replicast_info[ $site->get_id() ]['term_taxonomy_id'];
+			}
+
+			// Update parent ID
+			if ( $term->parent !== 0 ) {
+				$parent_term = \get_term_by( 'id', $term->parent, $term->taxonomy );
+
+				// Get replicast info
+				$replicast_info = API::get_replicast_info( $parent_term );
+
+				$term->parent = 0;
+				if ( ! empty( $replicast_info ) ) {
+					$term->parent = $replicast_info[ $site->get_id() ]['id'];
+				}
 			}
 
 			$data['replicast']['term'][ $key ] = $term;
