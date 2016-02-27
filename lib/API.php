@@ -278,6 +278,26 @@ class API {
 				continue;
 			}
 
+			// Check if parent term exists
+			// FIXME: this is not going to work with multi-level terms
+			if ( $parent !== 0 && ! empty( $term_data['parent_data'] ) ) {
+
+				$parent_data = $term_data['parent_data'];
+				if ( $parent_term = \get_term_by( 'slug', $parent_data['slug'], $taxonomy ) ) {
+					$parent = $parent_term->term_id;
+				} else {
+					// Create parent term if it does not exists
+					$parent_term = \wp_insert_term( $parent_data['name'], $taxonomy, array(
+						'description' => $parent_data['description'],
+					) );
+
+					if ( ! \is_wp_error( $term ) ) {
+						$parent = $parent_term['term_id'];
+					}
+				}
+
+			}
+
 			// Check if term exists
 			if ( $term = \get_term_by( 'slug', $term_data['slug'], $taxonomy ) ) {
 				$prepared_terms[ $taxonomy ][] = $term->term_id;
