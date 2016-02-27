@@ -138,7 +138,8 @@ class PostHandler extends Handler {
 
 				$term->parent = 0;
 				if ( ! empty( $replicast_info ) ) {
-					$term->parent = $replicast_info[ $site->get_id() ]['id'];
+					$term->parent      = $replicast_info[ $site->get_id() ]['id'];
+					$term->parent_data = $parent_term;
 				}
 			}
 
