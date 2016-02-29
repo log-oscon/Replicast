@@ -174,14 +174,39 @@ class API {
 
 		}
 
-		// Get a list of object terms
+		// Get a hierarchical list of object terms
 		// FIXME: we should soft cache this
-		$terms = \wp_get_object_terms( $object['id'], $prepared_taxonomies );
+		$terms = static::get_object_terms_hierarchical( $object['id'], $prepared_taxonomies );
 
-		$prepared_terms = array();
+		return $terms;
+	}
+
+	/**
+	 * Retrieves the terms associated with the given object in the supplied
+	 * taxonomies, hierarchically structured.
+	 *
+	 * @see \wp_get_object_terms()
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     int      $object_ids    The ID of the object to retrieve.
+	 * @param     array    $taxonomies    The taxonomies to retrieve terms from.
+	 * @return    array                   Hierarchical list of object terms
+	 */
+	private static function get_object_terms_hierarchical( $object_id, $taxonomies ) {
+
+		$hierarchical_terms = array();
+
+		// FIXME: we should soft cache this
+		$terms = \wp_get_object_terms( $object_id, $taxonomies );
+
+		if ( empty( $terms ) ) {
+			return array();
+		}
+
 		foreach ( $terms as $term ) {
 
-			if ( in_array( $term->slug, $terms ) ) {
+			if ( $term->parent > 0 ) {
 				continue;
 			}
 
@@ -189,11 +214,36 @@ class API {
 				continue;
 			}
 
-			$prepared_terms[] = $term;
-
+			$hierarchical_terms[ $term->term_id ] = $term;
+			$hierarchical_terms[ $term->term_id ]->children = static::get_child_terms( $term->term_id, $terms );
 		}
 
-		return $prepared_terms;
+		return $hierarchical_terms;
+	}
+
+	/**
+	 * Retrieves a list of child terms.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     int      $parent_id    The parent ID to retrieve the children terms of.
+	 * @param     array    $terms        The term data.
+	 * @return    array                  List of child terms.
+	 */
+	private static function get_child_terms( $parent_id, $terms ) {
+
+		$children = array();
+		foreach ( $terms as $term ) {
+
+			if ( $term->parent !== $parent_id ) {
+				continue;
+			}
+
+			$children[ $term->term_id ] = $term;
+			$children[ $term->term_id ]->children = static::get_child_terms( $term->term_id, $terms );
+		}
+
+		return $children;
 	}
 
 	/**
