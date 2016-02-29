@@ -117,33 +117,62 @@ class PostHandler extends Handler {
 			$replicast_info = API::get_replicast_info( $term );
 
 			// Update object ID
-			$term->term_id          = '';
-			$term->term_taxonomy_id = '';
+			$term->term_id = '';
 
 			if ( ! empty( $replicast_info ) ) {
-				$term->term_id          = $replicast_info[ $site->get_id() ]['id'];
-				$term->term_taxonomy_id = $replicast_info[ $site->get_id() ]['term_taxonomy_id'];
-			}
-
-			// Update parent ID
-			if ( $term->parent !== 0 ) {
-				$parent_term = \get_term_by( 'id', $term->parent, $term->taxonomy );
-
-				// Get replicast info
-				$replicast_info = API::get_replicast_info( $parent_term );
-
-				$term->parent = 0;
-				if ( ! empty( $replicast_info ) ) {
-					$term->parent      = $replicast_info[ $site->get_id() ]['id'];
-					$term->parent_data = $parent_term;
-				}
+				$term->term_id = $replicast_info[ $site->get_id() ]['id'];
 			}
 
 			$data['replicast']['term'][ $key ] = $term;
 
+			// Check if term has children
+			if ( empty( $term->children ) ) {
+				continue;
+			}
+
+			$this->prepare_post_child_terms( $term->term_id, $data['replicast']['term'][ $key ]->children, $site );
+
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Prepare post child terms.
+	 *
+	 * @since     1.0.0
+	 * @param     int                  $parent_id    The parent term ID.
+	 * @param     array                $terms        The term data.
+	 * @param     \Replicast\Client    $site         Site object.
+	 * @return    array                              Possibly-modified child terms.
+	 */
+	private function prepare_post_child_terms( $parent_id, &$terms, $site ) {
+
+		foreach ( $terms as $key => $term ) {
+
+			// Get replicast info
+			$replicast_info = API::get_replicast_info( $term );
+
+			// Update object ID's
+			$term->term_id = '';
+			$term->parent  = '';
+
+			if ( ! empty( $replicast_info ) ) {
+				$term->term_id = $replicast_info[ $site->get_id() ]['id'];
+				$term->parent  = $parent_id;
+			}
+
+			$terms[ $key ] = $term;
+
+			// Check if term has children
+			if ( empty( $term->children ) ) {
+				continue;
+			}
+
+			$this->prepare_post_child_terms( $term->term_id, $terms[ $key ]->children, $site );
+
+		}
+
 	}
 
 	/**
