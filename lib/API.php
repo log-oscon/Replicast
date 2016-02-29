@@ -564,7 +564,7 @@ class API {
 		if ( $remote_data ) {
 			$replicast_info[ $site_id ] = array(
 				'id'     => static::get_object_id( $remote_data ),
-				'status' => isset( $remote_data->status )           ? $remote_data->status           : '',
+				'status' => isset( $remote_data->status ) ? $remote_data->status : '',
 			);
 		}
 		else {
