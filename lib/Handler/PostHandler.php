@@ -96,7 +96,7 @@ class PostHandler extends Handler {
 	 * @since     1.0.0
 	 * @param     array                $data    Prepared page data.
 	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Possibly-modified page data.
+	 * @return    array                         Possibly-modified terms.
 	 */
 	public function prepare_post_terms( $data, $site ) {
 
@@ -112,10 +112,6 @@ class PostHandler extends Handler {
 		}
 
 		foreach ( $data['replicast']['term'] as $key => $term ) {
-
-			if ( in_array( $term->slug, array( 'uncategorized', 'untagged' ) ) ) {
-				unset( $data['replicast']['term'][ $key ] );
-			}
 
 			// Get replicast info
 			$replicast_info = API::get_replicast_info( $term );
