@@ -407,7 +407,7 @@ class API {
 
 			$prepared_ids = array_merge_recursive(
 				$prepared_ids,
-				static::insert_child_terms( $term['term_id'], $term_data['children'] )
+				static::update_child_terms( $term['term_id'], $term_data['children'] )
 			);
 
 		}
