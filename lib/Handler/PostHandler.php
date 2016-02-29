@@ -43,12 +43,11 @@ class PostHandler extends Handler {
 	 * Prepare page for create, update or delete.
 	 *
 	 * @since     1.0.0
-	 * @access    private
 	 * @param     array                $data    Prepared page data.
 	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    array                         Possibly-modified page data.
 	 */
-	private function prepare_page( $data, $site ) {
+	public function prepare_page( $data, $site ) {
 
 		// Unset page template if empty
 		// @see https://github.com/WP-API/WP-API/blob/develop/lib/endpoints/class-wp-rest-posts-controller.php#L1553
