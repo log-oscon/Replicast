@@ -63,12 +63,11 @@ class PostHandler extends Handler {
 	 * Prepare attachment for create, update or delete.
 	 *
 	 * @since     1.0.0
-	 * @access    private
 	 * @param     array                $data    Prepared attachment data.
 	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    array                         Possibly-modified attachment data.
 	 */
-	private function prepare_attachment( $data, $site ) {
+	public function prepare_attachment( $data, $site ) {
 
 		// Update attachment status based on the "uploaded to" post status, if exists
 		if ( ! empty( $data['status'] ) && $data['status'] === 'inherit' ) {
