@@ -194,7 +194,7 @@ class PostHandler extends Handler {
 		foreach ( $data->replicast->term as $term_data ) {
 
 			// Get term object
-			$term = \get_term_by( 'slug', $term_data->slug, $term_data->taxonomy );
+			$term = \get_term_by( 'id', $term_data->term_id, $term_data->taxonomy );
 
 			if ( ! $term ) {
 				return;

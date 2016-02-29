@@ -330,7 +330,7 @@ class API {
 			}
 
 			// Check if term exists. Create it if not exists.
-			$term = \get_term_by( 'slug', $term_data['slug'], $term_data['taxonomy'], 'ARRAY_A' );
+			$term = \get_term_by( 'id', $term_data['term_id'], $term_data['taxonomy'], 'ARRAY_A' );
 
 			if ( ! $term ) {
 				$term = \wp_insert_term( $term_data['name'], $term_data['taxonomy'], array(
@@ -385,7 +385,7 @@ class API {
 		foreach ( $terms as $term_data ) {
 
 			// Check if term exists
-			$term = \get_term_by( 'slug', $term_data['slug'], $term_data['taxonomy'], 'ARRAY_A' );
+			$term = \get_term_by( 'id', $term_data['term_id'], $term_data['taxonomy'], 'ARRAY_A' );
 
 			if ( ! $term ) {
 				$term = \wp_insert_term( $term_data['name'], $term_data['taxonomy'], array(
