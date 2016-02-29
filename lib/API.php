@@ -226,7 +226,7 @@ class API {
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @param     int      $parent_id    The parent ID to retrieve the children terms of.
+	 * @param     int      $parent_id    The parent term ID.
 	 * @param     array    $terms        The term data.
 	 * @return    array                  List of child terms.
 	 */
@@ -374,7 +374,7 @@ class API {
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @param     int      $parent_id    The parent ID to retrieve the children terms of.
+	 * @param     int      $parent_id    The parent term ID.
 	 * @param     array    $terms        The term data.
 	 * @return    array                  List of child terms.
 	 */
