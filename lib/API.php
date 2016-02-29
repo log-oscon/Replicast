@@ -189,7 +189,7 @@ class API {
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @param     int      $object_ids    The ID of the object to retrieve.
+	 * @param     int      $object_id     The ID of the object to retrieve.
 	 * @param     array    $taxonomies    The taxonomies to retrieve terms from.
 	 * @return    array                   Hierarchical list of object terms
 	 */
@@ -307,76 +307,112 @@ class API {
 	}
 
 	/**
-	 * Update object meta.
+	 * Update object terms.
 	 *
 	 * @since     1.0.0
-	 * @param     array     $values    The values of the field.
+	 * @param     array     $terms     The values of the field.
 	 * @param     object    $object    The object from the response.
 	 */
-	public static function update_object_term( $values, $object ) {
+	public static function update_object_term( $terms, $object ) {
 
-		$prepared_terms = array();
+		$prepared_ids = array();
 
 		// Update terms
-		foreach ( $values as $term_data ) {
-
-			$taxonomy = $term_data['taxonomy'];
-			$parent   = $term_data['parent'];
+		foreach ( $terms as $term_data ) {
 
 			// Check if taxonomy exists
-			if ( ! \taxonomy_exists( $taxonomy ) ) {
+			if ( ! \taxonomy_exists( $term_data['taxonomy'] ) ) {
 				continue;
 			}
 
-			// Check if parent term exists
-			// FIXME: this is not going to work with multi-level terms
-			if ( $parent !== 0 && ! empty( $term_data['parent_data'] ) ) {
-
-				$parent_data = $term_data['parent_data'];
-				if ( $parent_term = \get_term_by( 'slug', $parent_data['slug'], $taxonomy ) ) {
-					$parent = $parent_term->term_id;
-				} else {
-					// Create parent term if it does not exists
-					$parent_term = \wp_insert_term( $parent_data['name'], $taxonomy, array(
-						'description' => $parent_data['description'],
-					) );
-
-					if ( ! \is_wp_error( $term ) ) {
-						$parent = $parent_term['term_id'];
-					}
-				}
-
-			}
-
-			// Check if term exists
-			if ( $term = \get_term_by( 'slug', $term_data['slug'], $taxonomy ) ) {
-				$prepared_terms[ $taxonomy ][] = $term->term_id;
+			if ( $term_data['parent'] > 0 ) {
 				continue;
 			}
 
-			$term = \wp_insert_term( $term_data['name'], $taxonomy, array(
-				'description' => $term_data['description'],
-				'parent'      => $parent,
-			) );
+			// Check if term exists. Create it if not exists.
+			$term = \get_term_by( 'slug', $term_data['slug'], $term_data['taxonomy'], 'ARRAY_A' );
+
+			if ( ! $term ) {
+				$term = \wp_insert_term( $term_data['name'], $term_data['taxonomy'], array(
+					'description' => $term_data['description'],
+					'parent'      => 0,
+				) );
+			}
 
 			if ( \is_wp_error( $term ) ) {
 				continue;
 			}
 
-			$prepared_terms[ $taxonomy ][] = $term['term_id'];
+			$prepared_ids[ $term_data['taxonomy'] ][] = $term['term_id'];
+
+			// Check if term has children
+			if ( empty( $term_data['children'] ) ) {
+				continue;
+			}
+
+			$prepared_ids = array_merge_recursive(
+				$prepared_ids,
+				static::update_child_terms( $term['term_id'], $term_data['children'] )
+			);
 
 		}
 
-		if ( ! empty( $prepared_terms ) ) {
-			foreach ( $prepared_terms as $taxonomy => $terms ) {
+		if ( ! empty( $prepared_ids ) ) {
+			foreach ( $prepared_ids as $taxonomy => $ids ) {
 				\wp_set_object_terms(
 					$object->ID,
-					$terms,
+					$ids,
 					$taxonomy
 				);
 			}
 		}
 
+	}
+
+	/**
+	 * Updates a list of child terms.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     int      $parent_id    The parent ID to retrieve the children terms of.
+	 * @param     array    $terms        The term data.
+	 * @return    array                  List of child terms.
+	 */
+	private static function update_child_terms( $parent_id, $terms ) {
+
+		$prepared_ids = array();
+
+		foreach ( $terms as $term_data ) {
+
+			// Check if term exists
+			$term = \get_term_by( 'slug', $term_data['slug'], $term_data['taxonomy'], 'ARRAY_A' );
+
+			if ( ! $term ) {
+				$term = \wp_insert_term( $term_data['name'], $term_data['taxonomy'], array(
+					'description' => $term_data['description'],
+					'parent'      => $parent_id,
+				) );
+			}
+
+			if ( \is_wp_error( $term ) ) {
+				continue;
+			}
+
+			$prepared_ids[ $term_data['taxonomy'] ][] = $term['term_id'];
+
+			// Check if term has children
+			if ( empty( $term_data['children'] ) ) {
+				continue;
+			}
+
+			$prepared_ids = array_merge_recursive(
+				$prepared_ids,
+				static::insert_child_terms( $term['term_id'], $term_data['children'] )
+			);
+
+		}
+
+		return $prepared_ids;
 	}
 
 	/**
