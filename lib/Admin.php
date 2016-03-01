@@ -308,9 +308,17 @@ class Admin {
 		// Get sites for replication
 		$sites = $this->get_sites( $post );
 
+		//
+		if ( \has_post_thumbnail( $post_id ) ) {
+			$featured_media_id = \get_post_thumbnail_id( $post_id );
+
+			$featured_media_handler = new PostHandler( \get_post( $featured_media_id ) );
+			$featured_media_handler->handle_save( $sites );
+		}
+
 		// Prepares post data for replication
-		$handler = new PostHandler( $post );
-		$notices = $handler->handle_save( $sites );
+		$post_handler = new PostHandler( $post );
+		$notices = $post_handler->handle_save( $sites );
 
 		// Set admin notices
 		if ( ! empty( $notices ) ) {
