@@ -13,7 +13,6 @@
 namespace Replicast\Handler;
 
 use Replicast\API;
-use GuzzleHttp\Promise\FulfilledPromise;
 
 /**
  * Handles ´post´ content type replication.

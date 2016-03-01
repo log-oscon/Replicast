@@ -16,7 +16,6 @@ use Replicast\Admin;
 use Replicast\Client;
 use Replicast\Plugin;
 use Replicast\API;
-use GuzzleHttp\Promise\FulfilledPromise;
 
 /**
  * Handles object replication.
