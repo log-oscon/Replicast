@@ -382,7 +382,7 @@ abstract class Handler {
 
 		// Update featured media ID
 		if ( ! empty( $data['featured_media'] ) ) {
-			// TODO: get featured media remote ID
+			$data = $this->prepare_featured_media( $data, $site );
 		}
 
 		// Prepare post terms
@@ -438,7 +438,7 @@ abstract class Handler {
 
 		// Update featured media ID
 		if ( ! empty( $data['featured_media'] ) ) {
-			// TODO: get featured media remote ID
+			$data = $this->prepare_featured_media( $data, $site );
 		}
 
 		// Check for date_gmt presence

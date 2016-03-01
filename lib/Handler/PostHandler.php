@@ -172,6 +172,29 @@ class PostHandler extends Handler {
 	}
 
 	/**
+	 * Prepare post featured media.
+	 *
+	 * @since     1.0.0
+	 * @param     array                $data    Prepared post data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified post data.
+	 */
+	public function prepare_featured_media( $data, $site ) {
+
+		// Update the "featured image" post ID with the associated remote post ID, if exists
+		if ( ! empty( $data['featured_media'] ) ) {
+
+			// Get replicast info
+			$replicast_info = API::get_replicast_info( \get_post( $data['featured_media'] ) );
+
+			$data['featured_media'] = $replicast_info[ $site->get_id() ]['id'];
+
+		}
+
+		return $data;
+	}
+
+	/**
 	 * Update post terms.
 	 *
 	 * @since     1.0.0
