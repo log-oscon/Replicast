@@ -79,9 +79,7 @@ class PostHandler extends Handler {
 			// Get replicast info
 			$replicast_info = API::get_replicast_info( \get_post( $data['post'] ) );
 
-			if ( ! empty( $replicast_info ) ) {
-				$data['post'] = $replicast_info[ $site->get_id() ]['id'];
-			}
+			$data['post'] = $replicast_info[ $site->get_id() ]['id'];
 
 		}
 
