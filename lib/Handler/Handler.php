@@ -174,6 +174,7 @@ abstract class Handler {
 		try {
 
 			// Get replicast info
+			// FIXME: maybe this should be part of the handler to avoid multiple calls
 			$replicast_info = API::get_replicast_info( $this->object );
 
 			if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
@@ -183,7 +184,7 @@ abstract class Handler {
 			return $this->post( $site );
 
 		} catch ( \Exception $ex ) {
-			// TODO
+			// TODO: return rejected or fulfilled promise?
 		}
 
 	}
@@ -201,7 +202,7 @@ abstract class Handler {
 		try {
 			return $this->delete( $site );
 		} catch ( \Exception $ex ) {
-			// TODO
+			// TODO: return rejected or fulfilled promise?
 		}
 
 	}

@@ -326,8 +326,7 @@ class Admin {
 
 			if ( $featured_media_handler ) {
 
-				$featured_media_handler
-					->handle_save( $site )
+				$featured_media_handler->handle_save( $site )
 					->then(
 						function ( $response ) use ( $site, $featured_media_handler, $post_handler ) {
 
@@ -340,6 +339,8 @@ class Admin {
 
 								// Update replicast info
 								$featured_media_handler->update_post_info( $site_id, $remote_data );
+
+								// TODO: build notices
 
 							}
 
@@ -362,6 +363,8 @@ class Admin {
 								// Update post terms
 								$post_handler->update_post_terms( $site_id, $remote_data );
 
+								// TODO: build notices
+
 							}
 
 						}
@@ -370,8 +373,7 @@ class Admin {
 
 			} else {
 
-				$post_handler
-					->handle_save( $site )
+				$post_handler->handle_save( $site )
 					->then(
 						function ( $response ) use ( $site, $post_handler ) {
 
@@ -387,6 +389,8 @@ class Admin {
 
 								// Update post terms
 								$post_handler->update_post_terms( $site_id, $remote_data );
+
+								// TODO: build notices
 
 							}
 
@@ -426,6 +430,33 @@ class Admin {
 		// 			);
 		// 		}
 		// 	}
+
+		// Get replicast info
+		$replicast_info = API::get_replicast_info( $post );
+
+		// Verify that the current object has been "removed" (aka unchecked) from any site(s)
+		// FIXME: review this later on
+		foreach ( $replicast_info as $site_id => $replicast_data ) {
+			if ( ! array_key_exists( $site_id, $sites ) && $replicast_data['status'] !== 'trash' ) {
+
+				$post_handler->handle_delete( static::get_site( $site_id ) )
+					->then(
+						function ( $response ) {
+
+							// Get the remote object data
+							$remote_data = json_decode( $response->getBody()->getContents() );
+
+							if ( $remote_data ) {
+
+								// TODO: build notices
+
+							}
+						}
+					)
+					->wait();
+
+			}
+		}
 
 		// Set admin notices
 		if ( ! empty( $notices ) ) {
@@ -475,8 +506,7 @@ class Admin {
 
 		foreach ( $sites as $site ) {
 
-			$post_handler
-				->handle_delete( $site )
+			$post_handler->handle_delete( $site )
 				->then(
 					function ( $response ) use ( $site, $post_handler ) {
 
@@ -494,6 +524,8 @@ class Admin {
 
 							// Update replicast info
 							$post_handler->update_post_info( $site_id, $remote_data );
+
+							// TODO: build notices
 
 						}
 
@@ -576,8 +608,7 @@ class Admin {
 
 		foreach ( $sites as $site ) {
 
-			$post_handler
-				->handle_delete( $site, true )
+			$post_handler->handle_delete( $site, true )
 				->then(
 					function ( $response ) use ( $site, $post_handler ) {
 
@@ -595,6 +626,8 @@ class Admin {
 
 							// Update replicast info
 							$post_handler->update_post_info( $site_id, $remote_data );
+
+							// TODO: build notices
 
 						}
 
