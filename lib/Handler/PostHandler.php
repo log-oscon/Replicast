@@ -67,9 +67,10 @@ class PostHandler extends Handler {
 	 */
 	public function prepare_attachment( $data, $site ) {
 
-		// Update attachment status based on the "uploaded to" post status, if exists
+		// Force attachment status to be 'publish'
+		// FIXME: review this later on
 		if ( ! empty( $data['status'] ) && $data['status'] === 'inherit' ) {
-			$data['status'] = ! empty( $data['post'] ) ? \get_post_status( $data['post'] ) : 'publish';
+			$data['status'] = 'publish';
 		}
 
 		// Update the "uploaded to" post ID with the associated remote post ID, if exists
