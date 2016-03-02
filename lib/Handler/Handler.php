@@ -71,7 +71,7 @@ abstract class Handler {
 	protected $object_type;
 
 	/**
-	 * Object.
+	 * Object data.
 	 *
 	 * @since     1.0.0
 	 * @access    protected
@@ -80,7 +80,7 @@ abstract class Handler {
 	protected $object;
 
 	/**
-	 * Object with a REST API compliant schema.
+	 * Object data in a REST API compliant schema.
 	 *
 	 * @since     1.0.0
 	 * @access    protected
@@ -126,42 +126,42 @@ abstract class Handler {
 	 * Get object from a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client    $site    Site object.
+	 * @param     \Replicast\Client    $client    Client object.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function get( $site ) {}
+	public function get( $client ) {}
 
 	/**
 	 * Create object on a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client    $site    Site object.
+	 * @param     \Replicast\Client    $client    Client object.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function post( $site ) {
-		return $this->do_request( Handler::CREATABLE, $site );
+	public function post( $client ) {
+		return $this->do_request( Handler::CREATABLE, $client );
 	}
 
 	/**
 	 * Update object on a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client    $site    Site object.
+	 * @param     \Replicast\Client    $client    Client object.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function put( $site ) {
-		return $this->do_request( Handler::EDITABLE, $site );
+	public function put( $client ) {
+		return $this->do_request( Handler::EDITABLE, $client );
 	}
 
 	/**
 	 * Delete object from a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client    $site    Site object.
+	 * @param     \Replicast\Client    $client    Client object.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function delete( $site ) {
-		return $this->do_request( Handler::DELETABLE, $site );
+	public function delete( $client ) {
+		return $this->do_request( Handler::DELETABLE, $client );
 	}
 
 	/**
