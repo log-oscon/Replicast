@@ -194,12 +194,25 @@ class PostHandler extends Handler {
 	}
 
 	/**
+	 * Update post info.
+	 *
+	 * @since     1.0.0
+	 * @param     int       $site_id    Site ID.
+	 * @param     object    $data       Object data.
+	 */
+	public function update_post_info( $site_id, $data ) {
+
+		// Update replicast info
+		API::update_replicast_info( $this->object, $site_id, $data );
+
+	}
+
+	/**
 	 * Update post terms.
 	 *
 	 * @since     1.0.0
-	 * @access    private
-	 * @param     int            $site_id    Site ID.
-	 * @param     object|null    $data       Object data.
+	 * @param     int       $site_id    Site ID.
+	 * @param     object    $data       Object data.
 	 */
 	public function update_post_terms( $site_id, $data ) {
 

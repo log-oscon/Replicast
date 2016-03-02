@@ -12,10 +12,12 @@
 
 namespace Replicast\Handler;
 
+use Replicast\API;
 use Replicast\Admin;
 use Replicast\Client;
 use Replicast\Plugin;
-use Replicast\API;
+
+use GuzzleHttp\Promise\RejectedPromise;
 
 /**
  * Handles object replication.
@@ -169,84 +171,114 @@ abstract class Handler {
 	 * @param     \Replicast\Client|array    $sites    Site object(s).
 	 * @return    array
 	 */
-	public function handle_save( $sites ) {
+	public function handle_save( $site ) {
+
+		try {
+
+			// Get replicast info
+			$replicast_info = API::get_replicast_info( $this->object );
+
+			// Verify that the current object has been "removed" (aka unchecked) from any site(s)
+			// FIXME: review this later on
+			// foreach ( $replicast_info as $site_id => $replicast_data ) {
+			// 	if ( ! array_key_exists( $site_id, $sites ) && $replicast_data['status'] !== 'trash' ) {
+			// 		$notices = array_merge( $notices, $this->handle_delete( Admin::get_site( $site_id ) ) );
+			// 	}
+			// }
+
+			if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
+				return $this->put( $site );
+			}
+
+			return $this->post( $site );
+
+		} catch ( \Exception $ex ) {
+			// if ( $ex->hasResponse() ) {
+			// 	return new RejectedPromise( array(
+			// 		'status_code'   => $ex->getResponse()->getStatusCode(),
+			// 		'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
+			// 		'message'       => $ex->getMessage()
+			// 	) )	;
+			// }
+		}
+
 
 		// Admin notices
-		$notices = array();
+		// $notices = array();
 
-		// Handle single site
-		if ( ! is_array( $sites ) && $sites instanceof Client ) {
-			$sites = array( $sites->get_id() => $sites );
-		}
+		// // Handle single site
+		// if ( ! is_array( $sites ) && $sites instanceof Client ) {
+		// 	$sites = array( $sites->get_id() => $sites );
+		// }
 
-		// Get replicast info
-		$replicast_info = API::get_replicast_info( $this->object );
+		// // Get replicast info
+		// $replicast_info = API::get_replicast_info( $this->object );
 
-		// Verify that the current object has been "removed" (aka unchecked) from any site(s)
-		// FIXME: review this later on
-		foreach ( $replicast_info as $site_id => $replicast_data ) {
-			if ( ! array_key_exists( $site_id, $sites ) && $replicast_data['status'] !== 'trash' ) {
-				$notices = array_merge( $notices, $this->handle_delete( Admin::get_site( $site_id ) ) );
-			}
-		}
+		// // Verify that the current object has been "removed" (aka unchecked) from any site(s)
+		// // FIXME: review this later on
+		// foreach ( $replicast_info as $site_id => $replicast_data ) {
+		// 	if ( ! array_key_exists( $site_id, $sites ) && $replicast_data['status'] !== 'trash' ) {
+		// 		$notices = array_merge( $notices, $this->handle_delete( Admin::get_site( $site_id ) ) );
+		// 	}
+		// }
 
-		foreach ( $sites as $site ) {
+		// foreach ( $sites as $site ) {
 
-			try {
+		// 	try {
 
-				if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
-					$response = $this->put( $site )->wait();
-				}
-				else {
-					$response = $this->post( $site )->wait();
-				}
+		// 		if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
+		// 			$response = $this->put( $site )->wait();
+		// 		}
+		// 		else {
+		// 			$response = $this->post( $site )->wait();
+		// 		}
 
-				// Get the remote object data
-				$remote_data = json_decode( $response->getBody()->getContents() );
+		// 		// Get the remote object data
+		// 		$remote_data = json_decode( $response->getBody()->getContents() );
 
-				if ( $remote_data ) {
+		// 		if ( $remote_data ) {
 
-					// Update replicast info
-					API::update_replicast_info( $this->object, $site->get_id(), $remote_data );
+		// 			// Update replicast info
+		// 			API::update_replicast_info( $this->object, $site->get_id(), $remote_data );
 
-					// Update post terms
-					if ( API::is_post( $this->object ) ) {
-						$this->update_post_terms( $site->get_id(), $remote_data );
-					}
+		// 			// Update post terms
+		// 			if ( API::is_post( $this->object ) ) {
+		// 				$this->update_post_terms( $site->get_id(), $remote_data );
+		// 			}
 
-					$notices[] = array(
-						'status_code'   => $response->getStatusCode(),
-						'reason_phrase' => $response->getReasonPhrase(),
-						'message'       => sprintf(
-							'%s %s',
-							sprintf(
-								$response->getStatusCode() === 201 ? \__( 'Post published on %s.', 'replicast' ) : \__( 'Post updated on %s.', 'replicast' ),
-								$site->get_name()
-							),
-							sprintf(
-								'<a href="%s" title="%s" target="_blank">%s</a>',
-								\esc_url( $remote_data->link ),
-								\esc_attr( $site->get_name() ),
-								\__( 'View post', 'replicast' )
-							)
-						)
-					);
+		// 			$notices[] = array(
+		// 				'status_code'   => $response->getStatusCode(),
+		// 				'reason_phrase' => $response->getReasonPhrase(),
+		// 				'message'       => sprintf(
+		// 					'%s %s',
+		// 					sprintf(
+		// 						$response->getStatusCode() === 201 ? \__( 'Post published on %s.', 'replicast' ) : \__( 'Post updated on %s.', 'replicast' ),
+		// 						$site->get_name()
+		// 					),
+		// 					sprintf(
+		// 						'<a href="%s" title="%s" target="_blank">%s</a>',
+		// 						\esc_url( $remote_data->link ),
+		// 						\esc_attr( $site->get_name() ),
+		// 						\__( 'View post', 'replicast' )
+		// 					)
+		// 				)
+		// 			);
 
-				}
+		// 		}
 
-			} catch ( \Exception $ex ) {
-				if ( $ex->hasResponse() ) {
-					$notices[] = array(
-						'status_code'   => $ex->getResponse()->getStatusCode(),
-						'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-						'message'       => $ex->getMessage()
-					);
-				}
-			}
+		// 	} catch ( \Exception $ex ) {
+		// 		if ( $ex->hasResponse() ) {
+		// 			$notices[] = array(
+		// 				'status_code'   => $ex->getResponse()->getStatusCode(),
+		// 				'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
+		// 				'message'       => $ex->getMessage()
+		// 			);
+		// 		}
+		// 	}
 
-		}
+		// }
 
-		return $notices;
+		// return $notices;
 	}
 
 	/**

@@ -12,8 +12,9 @@
 
 namespace Replicast;
 
-use Replicast\Client;
 use Replicast\Admin\Site;
+use Replicast\API;
+use Replicast\Client;
 use Replicast\Handler\PostHandler;
 
 /**
@@ -303,27 +304,95 @@ class Admin {
 		}
 
 		// Admin notices
-		$notices = array();
+		// $notices = array();
 
-		// Get sites for replication
+		// Get sites
 		$sites = $this->get_sites( $post );
 
-		//
+		// Wrap the post
+		$post_handler = new PostHandler( $post );
+
+		// Wrap the post featured media, if exists
+		$featured_media_handler = null;
 		if ( \has_post_thumbnail( $post_id ) ) {
 			$featured_media_id = \get_post_thumbnail_id( $post_id );
 
-			$featured_media_handler = new PostHandler( \get_post( $featured_media_id ) );
-			$featured_media_handler->handle_save( $sites );
+			if ( $featured_media_id ) {
+				$featured_media_handler = new PostHandler( \get_post( $featured_media_id ) );
+			}
 		}
 
-		// Prepares post data for replication
-		$post_handler = new PostHandler( $post );
-		$notices = $post_handler->handle_save( $sites );
+		foreach ( $sites as $site ) {
+
+			if ( $featured_media_handler ) {
+
+				$featured_media_handler
+					->handle_save( $site )
+					->then(
+						function ( $response ) use ( $site, $featured_media_handler, $post_handler ) {
+
+							$site_id = $site->get_id();
+
+							// Get the remote object data
+							$remote_data = json_decode( $response->getBody()->getContents() );
+
+							// Update replicast info
+							$featured_media_handler->update_post_info( $site_id, $remote_data );
+
+							return $post_handler->handle_save( $site );
+						},
+						function ( $response ) {
+							error_log(print_r('----> FAIL',true));
+							error_log(print_r($response,true));
+						}
+					)
+					->then(
+						function ( $response ) use ( $site, $post_handler ) {
+
+							$site_id = $site->get_id();
+
+							// Get the remote object data
+							$remote_data = json_decode( $response->getBody()->getContents() );
+
+							// Update replicast info
+							$post_handler->update_post_info( $site_id, $remote_data );
+
+							// Update post terms
+							$post_handler->update_post_terms( $site_id, $remote_data );
+
+						}
+					)
+					->wait();
+
+			} else {
+
+				$post_handler
+					->handle_save( $site )
+					->then(
+						function ( $response ) use ( $site, $post_handler ) {
+
+							$site_id = $site->get_id();
+
+							// Get the remote object data
+							$remote_data = json_decode( $response->getBody()->getContents() );
+
+							// Update replicast info
+							$post_handler->update_post_info( $site_id, $remote_data );
+
+							// Update post terms
+							$post_handler->update_post_terms( $site_id, $remote_data );
+
+						}
+					)
+					->wait();
+
+			}
+		}
 
 		// Set admin notices
-		if ( ! empty( $notices ) ) {
-			$this->set_admin_notice( $notices );
-		}
+		// if ( ! empty( $notices ) ) {
+		// 	$this->set_admin_notice( $notices );
+		// }
 
 	}
 
