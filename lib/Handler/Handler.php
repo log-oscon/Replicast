@@ -17,8 +17,6 @@ use Replicast\Admin;
 use Replicast\Client;
 use Replicast\Plugin;
 
-use GuzzleHttp\Promise\RejectedPromise;
-
 /**
  * Handles object replication.
  *
@@ -126,50 +124,50 @@ abstract class Handler {
 	 * Get object from a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client    $client    Client object.
+	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function get( $client ) {}
+	public function get( $site ) {}
 
 	/**
 	 * Create object on a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client    $client    Client object.
+	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function post( $client ) {
-		return $this->do_request( Handler::CREATABLE, $client );
+	public function post( $site ) {
+		return $this->do_request( Handler::CREATABLE, $site );
 	}
 
 	/**
 	 * Update object on a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client    $client    Client object.
+	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function put( $client ) {
-		return $this->do_request( Handler::EDITABLE, $client );
+	public function put( $site ) {
+		return $this->do_request( Handler::EDITABLE, $site );
 	}
 
 	/**
 	 * Delete object from a site.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client    $client    Client object.
+	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function delete( $client ) {
-		return $this->do_request( Handler::DELETABLE, $client );
+	public function delete( $site ) {
+		return $this->do_request( Handler::DELETABLE, $site );
 	}
 
 	/**
 	 * Create/update object handler.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client|array    $sites    Site object(s).
-	 * @return    array
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    \GuzzleHttp\Promise
 	 */
 	public function handle_save( $site ) {
 
@@ -178,14 +176,6 @@ abstract class Handler {
 			// Get replicast info
 			$replicast_info = API::get_replicast_info( $this->object );
 
-			// Verify that the current object has been "removed" (aka unchecked) from any site(s)
-			// FIXME: review this later on
-			// foreach ( $replicast_info as $site_id => $replicast_data ) {
-			// 	if ( ! array_key_exists( $site_id, $sites ) && $replicast_data['status'] !== 'trash' ) {
-			// 		$notices = array_merge( $notices, $this->handle_delete( Admin::get_site( $site_id ) ) );
-			// 	}
-			// }
-
 			if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
 				return $this->put( $site );
 			}
@@ -193,171 +183,27 @@ abstract class Handler {
 			return $this->post( $site );
 
 		} catch ( \Exception $ex ) {
-			// if ( $ex->hasResponse() ) {
-			// 	return new RejectedPromise( array(
-			// 		'status_code'   => $ex->getResponse()->getStatusCode(),
-			// 		'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-			// 		'message'       => $ex->getMessage()
-			// 	) )	;
-			// }
+			// TODO
 		}
 
-
-		// Admin notices
-		// $notices = array();
-
-		// // Handle single site
-		// if ( ! is_array( $sites ) && $sites instanceof Client ) {
-		// 	$sites = array( $sites->get_id() => $sites );
-		// }
-
-		// // Get replicast info
-		// $replicast_info = API::get_replicast_info( $this->object );
-
-		// // Verify that the current object has been "removed" (aka unchecked) from any site(s)
-		// // FIXME: review this later on
-		// foreach ( $replicast_info as $site_id => $replicast_data ) {
-		// 	if ( ! array_key_exists( $site_id, $sites ) && $replicast_data['status'] !== 'trash' ) {
-		// 		$notices = array_merge( $notices, $this->handle_delete( Admin::get_site( $site_id ) ) );
-		// 	}
-		// }
-
-		// foreach ( $sites as $site ) {
-
-		// 	try {
-
-		// 		if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
-		// 			$response = $this->put( $site )->wait();
-		// 		}
-		// 		else {
-		// 			$response = $this->post( $site )->wait();
-		// 		}
-
-		// 		// Get the remote object data
-		// 		$remote_data = json_decode( $response->getBody()->getContents() );
-
-		// 		if ( $remote_data ) {
-
-		// 			// Update replicast info
-		// 			API::update_replicast_info( $this->object, $site->get_id(), $remote_data );
-
-		// 			// Update post terms
-		// 			if ( API::is_post( $this->object ) ) {
-		// 				$this->update_post_terms( $site->get_id(), $remote_data );
-		// 			}
-
-		// 			$notices[] = array(
-		// 				'status_code'   => $response->getStatusCode(),
-		// 				'reason_phrase' => $response->getReasonPhrase(),
-		// 				'message'       => sprintf(
-		// 					'%s %s',
-		// 					sprintf(
-		// 						$response->getStatusCode() === 201 ? \__( 'Post published on %s.', 'replicast' ) : \__( 'Post updated on %s.', 'replicast' ),
-		// 						$site->get_name()
-		// 					),
-		// 					sprintf(
-		// 						'<a href="%s" title="%s" target="_blank">%s</a>',
-		// 						\esc_url( $remote_data->link ),
-		// 						\esc_attr( $site->get_name() ),
-		// 						\__( 'View post', 'replicast' )
-		// 					)
-		// 				)
-		// 			);
-
-		// 		}
-
-		// 	} catch ( \Exception $ex ) {
-		// 		if ( $ex->hasResponse() ) {
-		// 			$notices[] = array(
-		// 				'status_code'   => $ex->getResponse()->getStatusCode(),
-		// 				'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-		// 				'message'       => $ex->getMessage()
-		// 			);
-		// 		}
-		// 	}
-
-		// }
-
-		// return $notices;
 	}
 
 	/**
 	 * Delete object handler.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client|array    $sites           Site object(s).
-	 * @param     bool                       $force_delete    Whether to bypass trash and force deletion.
-	 * @return    array
+	 * @param     \Replicast\Client    $site            Site object.
+	 * @param     bool                 $force_delete    Whether to bypass trash and force deletion.
+	 * @return    \GuzzleHttp\Promise
 	 */
-	public function handle_delete( $sites, $force_delete = false ) {
+	public function handle_delete( $site, $force_delete = false ) {
 
-		// Admin notices
-		$notices = array();
-
-		// Handle single site
-		if ( ! is_array( $sites ) && $sites instanceof Client ) {
-			$sites = array( $sites->get_id() => $sites );
+		try {
+			return $this->delete( $site );
+		} catch ( \Exception $ex ) {
+			// TODO
 		}
 
-		// Get replicast info
-		$replicast_info = API::get_replicast_info( $this->object );
-
-		foreach ( $sites as $site ) {
-
-			if ( ! array_key_exists( $site->get_id(), $replicast_info ) ) {
-				continue;
-			}
-
-			try {
-
-				$response = $this->delete( $site )->wait();
-
-				// Get the remote object data
-				$remote_data = json_decode( $response->getBody()->getContents() );
-
-				if ( $remote_data ) {
-
-					// The API returns 'publish' but we force the status to be 'trash' for better
-					// management of the next actions over the object. Like, recovering (PUT request)
-					// or permanently delete the object from remote location.
-					$remote_data->status = 'trash';
-
-					// Update replicast info
-					API::update_replicast_info( $this->object, $site->get_id(), $remote_data );
-
-					$notices[] = array(
-						'status_code'   => $response->getStatusCode(),
-						'reason_phrase' => $response->getReasonPhrase(),
-						'message'       => sprintf(
-							'%s %s',
-							sprintf(
-								\__( 'Post trashed on %s.', 'replicast' ),
-								$site->get_name()
-							),
-							sprintf(
-								'<a href="%s" title="%s" target="_blank">%s</a>',
-								\esc_url( $remote_data->link ),
-								\esc_attr( $site->get_name() ),
-								\__( 'View post', 'replicast' )
-							)
-						)
-					);
-
-				}
-
-			} catch ( \Exception $ex ) {
-				if ( $ex->hasResponse() ) {
-					$notices[] = array(
-						'status_code'   => $ex->getResponse()->getStatusCode(),
-						'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-						'message'       => $ex->getMessage()
-					);
-				}
-			}
-
-		}
-
-		return $notices;
 	}
 
 	/**
