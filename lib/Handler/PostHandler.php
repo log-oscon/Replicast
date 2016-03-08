@@ -13,6 +13,7 @@
 namespace Replicast\Handler;
 
 use Replicast\API;
+use Replicast\Handler;
 
 /**
  * Handles ´post´ content type replication.

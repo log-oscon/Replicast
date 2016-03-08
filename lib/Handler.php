@@ -10,7 +10,7 @@
  * @subpackage Replicast/lib
  */
 
-namespace Replicast\Handler;
+namespace Replicast;
 
 use Replicast\Admin;
 use Replicast\Client;
@@ -204,35 +204,35 @@ abstract class Handler {
 				// Get the remote object data
 				$remote_data = json_decode( $response->getBody()->getContents() );
 
-				if ( $remote_data ) {
-
-					// Update replicast info
-					API::update_replicast_info( $this->object, $site->get_id(), $remote_data );
-
-					// Update post terms
-					if ( API::is_post( $this->object ) ) {
-						$this->update_post_terms( $site->get_id(), $remote_data );
-					}
-
-					$notices[] = array(
-						'status_code'   => $response->getStatusCode(),
-						'reason_phrase' => $response->getReasonPhrase(),
-						'message'       => sprintf(
-							'%s %s',
-							sprintf(
-								$response->getStatusCode() === 201 ? \__( 'Post published on %s.', 'replicast' ) : \__( 'Post updated on %s.', 'replicast' ),
-								$site->get_name()
-							),
-							sprintf(
-								'<a href="%s" title="%s" target="_blank">%s</a>',
-								\esc_url( $remote_data->link ),
-								\esc_attr( $site->get_name() ),
-								\__( 'View post', 'replicast' )
-							)
-						)
-					);
-
+				if ( empty( $remote_data ) ) {
+					continue;
 				}
+
+				// Update replicast info
+				API::update_replicast_info( $this->object, $site->get_id(), $remote_data );
+
+				// Update post terms
+				if ( API::is_post( $this->object ) ) {
+					$this->update_post_terms( $site->get_id(), $remote_data );
+				}
+
+				$notices[] = array(
+					'status_code'   => $response->getStatusCode(),
+					'reason_phrase' => $response->getReasonPhrase(),
+					'message'       => sprintf(
+						'%s %s',
+						sprintf(
+							$response->getStatusCode() === 201 ? \__( 'Post published on %s.', 'replicast' ) : \__( 'Post updated on %s.', 'replicast' ),
+							$site->get_name()
+						),
+						sprintf(
+							'<a href="%s" title="%s" target="_blank">%s</a>',
+							\esc_url( $remote_data->link ),
+							\esc_attr( $site->get_name() ),
+							\__( 'View post', 'replicast' )
+						)
+					)
+				);
 
 			} catch ( \Exception $ex ) {
 				if ( $ex->hasResponse() ) {
@@ -283,35 +283,35 @@ abstract class Handler {
 				// Get the remote object data
 				$remote_data = json_decode( $response->getBody()->getContents() );
 
-				if ( $remote_data ) {
-
-					// The API returns 'publish' but we force the status to be 'trash' for better
-					// management of the next actions over the object. Like, recovering (PUT request)
-					// or permanently delete the object from remote location.
-					$remote_data->status = 'trash';
-
-					// Update replicast info
-					API::update_replicast_info( $this->object, $site->get_id(), $remote_data );
-
-					$notices[] = array(
-						'status_code'   => $response->getStatusCode(),
-						'reason_phrase' => $response->getReasonPhrase(),
-						'message'       => sprintf(
-							'%s %s',
-							sprintf(
-								\__( 'Post trashed on %s.', 'replicast' ),
-								$site->get_name()
-							),
-							sprintf(
-								'<a href="%s" title="%s" target="_blank">%s</a>',
-								\esc_url( $remote_data->link ),
-								\esc_attr( $site->get_name() ),
-								\__( 'View post', 'replicast' )
-							)
-						)
-					);
-
+				if ( empty( $remote_data ) ) {
+					continue;
 				}
+
+				// The API returns 'publish' but we force the status to be 'trash' for better
+				// management of the next actions over the object. Like, recovering (PUT request)
+				// or permanently delete the object from remote location.
+				$remote_data->status = 'trash';
+
+				// Update replicast info
+				API::update_replicast_info( $this->object, $site->get_id(), $remote_data );
+
+				$notices[] = array(
+					'status_code'   => $response->getStatusCode(),
+					'reason_phrase' => $response->getReasonPhrase(),
+					'message'       => sprintf(
+						'%s %s',
+						sprintf(
+							\__( 'Post trashed on %s.', 'replicast' ),
+							$site->get_name()
+						),
+						sprintf(
+							'<a href="%s" title="%s" target="_blank">%s</a>',
+							\esc_url( $remote_data->link ),
+							\esc_attr( $site->get_name() ),
+							\__( 'View post', 'replicast' )
+						)
+					)
+				);
 
 			} catch ( \Exception $ex ) {
 				if ( $ex->hasResponse() ) {

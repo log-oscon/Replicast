@@ -12,6 +12,8 @@
 
 namespace Replicast\Handler;
 
+use Replicast\Handler;
+
 /**
  * Handles ´tag´ content type replication.
  *
