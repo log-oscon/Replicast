@@ -50,6 +50,10 @@ class API {
 	 */
 	public function register_rest_fields() {
 
+		if ( ! function_exists( 'register_rest_field' ) ) {
+			return;
+		}
+
 		foreach ( Site::get_post_types() as $post_type ) {
 			\register_rest_field(
 				$post_type,

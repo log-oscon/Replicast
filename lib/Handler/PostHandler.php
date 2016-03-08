@@ -74,13 +74,15 @@ class PostHandler extends Handler {
 		}
 
 		// Update the "uploaded to" post ID with the associated remote post ID, if exists
-		if ( ! empty( $data['post'] ) ) {
+		if ( $data['type'] !== 'attachment' && ! empty( $data['post'] ) ) {
 
 			// Get replicast info
 			$replicast_info = API::get_replicast_info( \get_post( $data['post'] ) );
 
 			$data['post'] = $replicast_info[ $site->get_id() ]['id'];
 
+		} else {
+			$data['post'] = '';
 		}
 
 		return $data;
