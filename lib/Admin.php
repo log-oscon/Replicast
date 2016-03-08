@@ -333,16 +333,16 @@ class Admin {
 							// Get the remote object data
 							$remote_data = json_decode( $response->getBody()->getContents() );
 
-							if ( $remote_data ) {
-
-								$site_id = $site->get_id();
-
-								// Update replicast info
-								$featured_media_handler->update_post_info( $site_id, $remote_data );
-
-								// TODO: build notices
-
+							if ( empty( $remote_data ) ) {
+								continue;
 							}
+
+							$site_id = $site->get_id();
+
+							// Update replicast info
+							$featured_media_handler->update_post_info( $site_id, $remote_data );
+
+							// TODO: build notices
 
 							return $post_handler->handle_save( $site );
 						}
@@ -353,19 +353,19 @@ class Admin {
 							// Get the remote object data
 							$remote_data = json_decode( $response->getBody()->getContents() );
 
-							if ( $remote_data ) {
-
-								$site_id = $site->get_id();
-
-								// Update replicast info
-								$post_handler->update_post_info( $site_id, $remote_data );
-
-								// Update post terms
-								$post_handler->update_post_terms( $site_id, $remote_data );
-
-								// TODO: build notices
-
+							if ( empty( $remote_data ) ) {
+								continue;
 							}
+
+							$site_id = $site->get_id();
+
+							// Update replicast info
+							$post_handler->update_post_info( $site_id, $remote_data );
+
+							// Update post terms
+							$post_handler->update_post_terms( $site_id, $remote_data );
+
+							// TODO: build notices
 
 						}
 					)
@@ -380,19 +380,19 @@ class Admin {
 							// Get the remote object data
 							$remote_data = json_decode( $response->getBody()->getContents() );
 
-							if ( $remote_data ) {
-
-								$site_id = $site->get_id();
-
-								// Update replicast info
-								$post_handler->update_post_info( $site_id, $remote_data );
-
-								// Update post terms
-								$post_handler->update_post_terms( $site_id, $remote_data );
-
-								// TODO: build notices
-
+							if ( empty( $remote_data ) ) {
+								continue;
 							}
+
+							$site_id = $site->get_id();
+
+							// Update replicast info
+							$post_handler->update_post_info( $site_id, $remote_data );
+
+							// Update post terms
+							$post_handler->update_post_terms( $site_id, $remote_data );
+
+							// TODO: build notices
 
 						}
 					)
@@ -446,11 +446,12 @@ class Admin {
 							// Get the remote object data
 							$remote_data = json_decode( $response->getBody()->getContents() );
 
-							if ( $remote_data ) {
-
-								// TODO: build notices
-
+							if ( empty( $remote_data ) ) {
+								continue;
 							}
+
+							// TODO: build notices
+
 						}
 					)
 					->wait();
@@ -513,21 +514,21 @@ class Admin {
 						// Get the remote object data
 						$remote_data = json_decode( $response->getBody()->getContents() );
 
-						if ( $remote_data ) {
-
-							$site_id = $site->get_id();
-
-							// The API returns 'publish' but we force the status to be 'trash' for better
-							// management of the next actions over the object. Like, recovering (PUT request)
-							// or permanently delete the object from remote location.
-							$remote_data->status = 'trash';
-
-							// Update replicast info
-							$post_handler->update_post_info( $site_id, $remote_data );
-
-							// TODO: build notices
-
+						if ( empty( $remote_data ) ) {
+							continue;
 						}
+
+						$site_id = $site->get_id();
+
+						// The API returns 'publish' but we force the status to be 'trash' for better
+						// management of the next actions over the object. Like, recovering (PUT request)
+						// or permanently delete the object from remote location.
+						$remote_data->status = 'trash';
+
+						// Update replicast info
+						$post_handler->update_post_info( $site_id, $remote_data );
+
+						// TODO: build notices
 
 					}
 				)
@@ -615,21 +616,21 @@ class Admin {
 						// Get the remote object data
 						$remote_data = json_decode( $response->getBody()->getContents() );
 
-						if ( $remote_data ) {
-
-							$site_id = $site->get_id();
-
-							// The API returns 'publish' but we force the status to be 'trash' for better
-							// management of the next actions over the object. Like, recovering (PUT request)
-							// or permanently delete the object from remote location.
-							$remote_data->status = 'trash';
-
-							// Update replicast info
-							$post_handler->update_post_info( $site_id, $remote_data );
-
-							// TODO: build notices
-
+						if ( empty( $remote_data ) ) {
+							continue;
 						}
+
+						$site_id = $site->get_id();
+
+						// The API returns 'publish' but we force the status to be 'trash' for better
+						// management of the next actions over the object. Like, recovering (PUT request)
+						// or permanently delete the object from remote location.
+						$remote_data->status = 'trash';
+
+						// Update replicast info
+						$post_handler->update_post_info( $site_id, $remote_data );
+
+						// TODO: build notices
 
 					}
 				)
