@@ -437,9 +437,9 @@ class Admin {
 		// Verify that the current object has been "removed" (aka unchecked) from any site(s)
 		// FIXME: review this later on
 		foreach ( $replicast_info as $site_id => $replicast_data ) {
-			if ( ! array_key_exists( $site_id, $sites ) && $replicast_data['status'] !== 'trash' ) {
+			if ( ! array_key_exists( $site_id, $sites ) ) {
 
-				$post_handler->handle_delete( static::get_site( $site_id ) )
+				$post_handler->handle_delete( static::get_site( $site_id ), true )
 					->then(
 						function ( $response ) {
 
@@ -507,7 +507,10 @@ class Admin {
 
 		foreach ( $sites as $site ) {
 
-			$post_handler->handle_delete( $site )
+			try {
+
+				$post_handler
+				->handle_delete( $site )
 				->then(
 					function ( $response ) use ( $site, $post_handler ) {
 
@@ -518,15 +521,8 @@ class Admin {
 							continue;
 						}
 
-						$site_id = $site->get_id();
-
-						// The API returns 'publish' but we force the status to be 'trash' for better
-						// management of the next actions over the object. Like, recovering (PUT request)
-						// or permanently delete the object from remote location.
-						$remote_data->status = 'trash';
-
 						// Update replicast info
-						$post_handler->update_post_info( $site_id, $remote_data );
+						$post_handler->update_post_info( $site->get_id(), $remote_data );
 
 						// TODO: build notices
 
@@ -534,37 +530,14 @@ class Admin {
 				)
 				->wait();
 
+
+			} catch ( \Exception $ex ) {
+				// FIXME
+				error_log( '---- on_trash_post ----' );
+				error_log( print_r( $ex, true ) );
+			}
+
 		}
-
-			// 	$notices[] = array(
-			// 			'status_code'   => $response->getStatusCode(),
-			// 			'reason_phrase' => $response->getReasonPhrase(),
-			// 			'message'       => sprintf(
-			// 				'%s %s',
-			// 				sprintf(
-			// 					\__( 'Post trashed on %s.', 'replicast' ),
-			// 					$site->get_name()
-			// 				),
-			// 				sprintf(
-			// 					'<a href="%s" title="%s" target="_blank">%s</a>',
-			// 					\esc_url( $remote_data->link ),
-			// 					\esc_attr( $site->get_name() ),
-			// 					\__( 'View post', 'replicast' )
-			// 				)
-			// 			)
-			// 		);
-
-			// 	}
-
-			// } catch ( \Exception $ex ) {
-			// 	if ( $ex->hasResponse() ) {
-			// 		$notices[] = array(
-			// 			'status_code'   => $ex->getResponse()->getStatusCode(),
-			// 			'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-			// 			'message'       => $ex->getMessage()
-			// 		);
-			// 	}
-			// }
 
 		// Set admin notices
 		if ( ! empty( $notices ) ) {
@@ -609,22 +582,24 @@ class Admin {
 
 		foreach ( $sites as $site ) {
 
-			$post_handler->handle_delete( $site, true )
+			try {
+
+				$post_handler
+				->handle_delete( $site, true )
 				->then(
 					function ( $response ) use ( $site ) {
-
-						// Get the remote object data
-						$remote_data = json_decode( $response->getBody()->getContents() );
-
-						if ( empty( $remote_data ) ) {
-							continue;
-						}
 
 						// TODO: build notices
 
 					}
 				)
 				->wait();
+
+			} catch ( \Exception $ex ) {
+				// FIXME
+				error_log( '---- on_delete_post ----' );
+				error_log( print_r( $ex, true ) );
+			}
 
 		}
 

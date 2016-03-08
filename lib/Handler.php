@@ -175,21 +175,15 @@ abstract class Handler {
 	 */
 	public function handle_save( $site ) {
 
-		try {
+		// Get replicast info
+		// FIXME: maybe this should be part of the handler to avoid multiple calls
+		$replicast_info = API::get_replicast_info( $this->object );
 
-			// Get replicast info
-			// FIXME: maybe this should be part of the handler to avoid multiple calls
-			$replicast_info = API::get_replicast_info( $this->object );
-
-			if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
-				return $this->put( $site );
-			}
-
-			return $this->post( $site );
-
-		} catch ( \Exception $ex ) {
-			// TODO: return rejected or fulfilled promise?
+		if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
+			return $this->put( $site );
 		}
+
+		return $this->post( $site );
 
 	}
 
@@ -203,27 +197,21 @@ abstract class Handler {
 	 */
 	public function handle_delete( $site, $force = false ) {
 
-		try {
+		$object_type = API::get_object_type( $this->object );
+		$args        = array();
 
-			$object_type = API::get_object_type( $this->object );
-			$args        = array();
+		/**
+		 * Filter for whether to bypass trash or force deletion.
+		 *
+		 * @since     1.0.0
+		 * @param     bool    $force   Flag for bypass trash or force deletion.
+		 * @return    bool             Possibly-modified flag for bypass trash or force deletion.
+		 */
+		$force = \apply_filters( "replicast_force_{$object_type}_delete", $force );
 
-			/**
-			 * Filter for whether to bypass trash or force deletion.
-			 *
-			 * @since     1.0.0
-			 * @param     bool    $force   Flag for bypass trash or force deletion.
-			 * @return    bool             Possibly-modified flag for bypass trash or force deletion.
-			 */
-			$force = \apply_filters( "replicast_force_{$object_type}_delete", $force );
-
-			return $this->delete( $site, array(
-				'force' => $force
-			) );
-
-		} catch ( \Exception $ex ) {
-			// TODO: return rejected or fulfilled promise?
-		}
+		return $this->delete( $site, array(
+			'force' => $force
+		) );
 
 	}
 
