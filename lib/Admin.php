@@ -611,7 +611,7 @@ class Admin {
 
 			$post_handler->handle_delete( $site, true )
 				->then(
-					function ( $response ) use ( $site, $post_handler ) {
+					function ( $response ) use ( $site ) {
 
 						// Get the remote object data
 						$remote_data = json_decode( $response->getBody()->getContents() );
@@ -619,16 +619,6 @@ class Admin {
 						if ( empty( $remote_data ) ) {
 							continue;
 						}
-
-						$site_id = $site->get_id();
-
-						// The API returns 'publish' but we force the status to be 'trash' for better
-						// management of the next actions over the object. Like, recovering (PUT request)
-						// or permanently delete the object from remote location.
-						$remote_data->status = 'trash';
-
-						// Update replicast info
-						$post_handler->update_post_info( $site_id, $remote_data );
 
 						// TODO: build notices
 

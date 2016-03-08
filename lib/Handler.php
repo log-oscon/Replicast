@@ -125,19 +125,21 @@ abstract class Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
+	 * @param     array                $args    Query string parameters.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function get( $site ) {}
+	public function get( $site, $args = array() ) {}
 
 	/**
 	 * Create object on a site.
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
+	 * @param     array                $args    Query string parameters.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function post( $site ) {
-		return $this->do_request( Handler::CREATABLE, $site );
+	public function post( $site, $args = array() ) {
+		return $this->do_request( Handler::CREATABLE, $site, $args );
 	}
 
 	/**
@@ -145,10 +147,11 @@ abstract class Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
+	 * @param     array                $args    Query string parameters.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function put( $site ) {
-		return $this->do_request( Handler::EDITABLE, $site );
+	public function put( $site, $args = array() ) {
+		return $this->do_request( Handler::EDITABLE, $site, $args );
 	}
 
 	/**
@@ -156,10 +159,11 @@ abstract class Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
+	 * @param     array                $args    Query string parameters.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function delete( $site ) {
-		return $this->do_request( Handler::DELETABLE, $site );
+	public function delete( $site, $args = array() ) {
+		return $this->do_request( Handler::DELETABLE, $site, $args );
 	}
 
 	/**
@@ -193,14 +197,30 @@ abstract class Handler {
 	 * Delete object handler.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client    $site            Site object.
-	 * @param     bool                 $force_delete    Whether to bypass trash and force deletion.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @param     bool                 $force   Flag for bypass trash or force deletion.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function handle_delete( $site, $force_delete = false ) {
+	public function handle_delete( $site, $force = false ) {
 
 		try {
-			return $this->delete( $site );
+
+			$object_type = API::get_object_type( $this->object );
+			$args        = array();
+
+			/**
+			 * Filter for whether to bypass trash or force deletion.
+			 *
+			 * @since     1.0.0
+			 * @param     bool    $force   Flag for bypass trash or force deletion.
+			 * @return    bool             Possibly-modified flag for bypass trash or force deletion.
+			 */
+			$force = \apply_filters( "replicast_force_{$object_type}_delete", $force );
+
+			return $this->delete( $site, array(
+				'force' => $force
+			) );
+
 		} catch ( \Exception $ex ) {
 			// TODO: return rejected or fulfilled promise?
 		}
@@ -434,9 +454,15 @@ abstract class Handler {
 	 * @param     string    $method       Request method.
 	 * @param     array     $config       Request config.
 	 * @param     int       $timestamp    Request timestamp.
+	 * @param     array     $args         Query string parameters.
 	 * @return    string                  Return hash of the secret.
 	 */
-	private function generate_signature( $method = 'GET', $config, $timestamp ) {
+	private function generate_signature( $method = 'GET', $config, $timestamp, $args ) {
+
+		$request_uri = $config['api_url'];
+		if ( ! empty( $args ) ) {
+			$request_uri = sprintf( '%s?%s', $request_uri, http_build_query( $args, null, '&', PHP_QUERY_RFC3986 ) );
+		}
 
 		/**
 		 * Arguments used for generating the signature.
@@ -449,7 +475,7 @@ abstract class Handler {
 			'ip'             => $_SERVER['SERVER_ADDR'],
 			'request_method' => $method,
 			'request_post'   => array(),
-			'request_uri'    => $config['api_url'],
+			'request_uri'    => $request_uri,
 			'timestamp'      => $timestamp,
 		);
 
@@ -474,9 +500,10 @@ abstract class Handler {
 	 * @access    protected
 	 * @param     string               $method    Request method.
 	 * @param     \Replicast\Client    $site      Site object.
+	 * @param     array                $args      Query string parameters.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	protected function do_request( $method, $site ) {
+	protected function do_request( $method, $site, $args ) {
 
 		// Bail out if the site is invalid
 		if ( ! $site->is_valid() ) {
@@ -538,7 +565,7 @@ abstract class Handler {
 		}
 
 		// Generate request signature
-		$signature = $this->generate_signature( $method, $config, $timestamp );
+		$signature = $this->generate_signature( $method, $config, $timestamp, $args );
 
 		// Auth headers
 		$headers['X-API-KEY'      ] = $config['apy_key'];
@@ -549,7 +576,10 @@ abstract class Handler {
 			$method,
 			$config['api_url'],
 			array_merge(
-				array( 'headers' => $headers ),
+				array(
+					'headers' => $headers,
+					'query'   => $args,
+				),
 				$body
 			)
 		);
