@@ -12,6 +12,8 @@
 
 namespace Replicast\Handler;
 
+use Replicast\Handler;
+
 /**
  * Handles ´category´ content type replication.
  *

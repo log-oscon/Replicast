@@ -10,7 +10,7 @@
  * @subpackage Replicast/lib
  */
 
-namespace Replicast\Handler;
+namespace Replicast;
 
 use Replicast\API;
 use Replicast\Admin;
