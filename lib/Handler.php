@@ -257,6 +257,12 @@ abstract class Handler {
 			$data = $this->prepare_featured_media( $data, $site );
 		}
 
+		// Check for date_gmt presence
+		// Note: date_gmt is necessary for post update and it's zeroed upon deletion
+		if ( empty( $data['date_gmt'] ) && ! empty( $data['date'] ) ) {
+			$data['date_gmt'] = \mysql_to_rfc3339( $data['date'] );
+		}
+
 		// Prepare post terms
 		if ( API::is_post( $this->object ) ) {
 			$data = $this->prepare_post_terms( $data, $site );
