@@ -196,23 +196,9 @@ abstract class Handler {
 	 * @return    \GuzzleHttp\Promise
 	 */
 	public function handle_delete( $site, $force = false ) {
-
-		$object_type = API::get_object_type( $this->object );
-		$args        = array();
-
-		/**
-		 * Filter for whether to bypass trash or force deletion.
-		 *
-		 * @since     1.0.0
-		 * @param     bool    $force   Flag for bypass trash or force deletion.
-		 * @return    bool             Possibly-modified flag for bypass trash or force deletion.
-		 */
-		$force = \apply_filters( "replicast_force_{$object_type}_delete", $force );
-
 		return $this->delete( $site, array(
 			'force' => $force
 		) );
-
 	}
 
 	/**

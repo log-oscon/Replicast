@@ -204,7 +204,7 @@ class PostHandler extends Handler {
 	 * @param     int       $site_id    Site ID.
 	 * @param     object    $data       Object data.
 	 */
-	public function update_post_info( $site_id, $data ) {
+	public function update_post_info( $site_id, $data = null ) {
 
 		// Update replicast info
 		API::update_replicast_info( $this->object, $site_id, $data );

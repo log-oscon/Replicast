@@ -401,36 +401,6 @@ class Admin {
 			}
 		}
 
-		// 			$notices[] = array(
-		// 				'status_code'   => $response->getStatusCode(),
-		// 				'reason_phrase' => $response->getReasonPhrase(),
-		// 				'message'       => sprintf(
-		// 					'%s %s',
-		// 					sprintf(
-		// 						$response->getStatusCode() === 201 ? \__( 'Post published on %s.', 'replicast' ) : \__( 'Post updated on %s.', 'replicast' ),
-		// 						$site->get_name()
-		// 					),
-		// 					sprintf(
-		// 						'<a href="%s" title="%s" target="_blank">%s</a>',
-		// 						\esc_url( $remote_data->link ),
-		// 						\esc_attr( $site->get_name() ),
-		// 						\__( 'View post', 'replicast' )
-		// 					)
-		// 				)
-		// 			);
-
-		// 		}
-
-		// 	} catch ( \Exception $ex ) {
-		// 		if ( $ex->hasResponse() ) {
-		// 			$notices[] = array(
-		// 				'status_code'   => $ex->getResponse()->getStatusCode(),
-		// 				'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-		// 				'message'       => $ex->getMessage()
-		// 			);
-		// 		}
-		// 	}
-
 		// Get replicast info
 		$replicast_info = API::get_replicast_info( $post );
 
@@ -441,14 +411,10 @@ class Admin {
 
 				$post_handler->handle_delete( static::get_site( $site_id ), true )
 					->then(
-						function ( $response ) {
+						function ( $response ) use ( $site_id, $post_handler ) {
 
-							// Get the remote object data
-							$remote_data = json_decode( $response->getBody()->getContents() );
-
-							if ( empty( $remote_data ) ) {
-								continue;
-							}
+							// Update replicast info
+							$post_handler->update_post_info( $site_id );
 
 							// TODO: build notices
 
@@ -505,20 +471,33 @@ class Admin {
 		// Wrap the post
 		$post_handler = new PostHandler( $post );
 
+		/**
+		 * Filter for whether to bypass trash or force deletion.
+		 *
+		 * @since     1.0.0
+		 * @param     bool    Flag for bypass trash or force deletion.
+		 * @return    bool    Possibly-modified flag for bypass trash or force deletion.
+		 */
+		$force = \apply_filters( "replicast_force_{$post->post_type}_delete", false );
+
 		foreach ( $sites as $site ) {
 
 			try {
 
 				$post_handler
-				->handle_delete( $site )
+				->handle_delete( $site, $force )
 				->then(
-					function ( $response ) use ( $site, $post_handler ) {
+					function ( $response ) use ( $site, $post_handler, $force ) {
 
 						// Get the remote object data
 						$remote_data = json_decode( $response->getBody()->getContents() );
 
 						if ( empty( $remote_data ) ) {
 							continue;
+						}
+
+						if ( $force ) {
+							$remote_data = null;
 						}
 
 						// Update replicast info
@@ -534,7 +513,7 @@ class Admin {
 			} catch ( \Exception $ex ) {
 				// FIXME
 				error_log( '---- on_trash_post ----' );
-				error_log( print_r( $ex, true ) );
+				error_log( print_r( $ex->getMessage(), true ) );
 			}
 
 		}
@@ -587,7 +566,10 @@ class Admin {
 				$post_handler
 				->handle_delete( $site, true )
 				->then(
-					function ( $response ) use ( $site ) {
+					function ( $response ) use ( $site, $post_handler ) {
+
+						// Update replicast info
+						$post_handler->update_post_info( $site->get_id() );
 
 						// TODO: build notices
 
@@ -598,7 +580,7 @@ class Admin {
 			} catch ( \Exception $ex ) {
 				// FIXME
 				error_log( '---- on_delete_post ----' );
-				error_log( print_r( $ex, true ) );
+				error_log( print_r( $ex->getMessage(), true ) );
 			}
 
 		}
