@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Site taxonomy functionality
+ * The dashboard-specific functionality of the `remote_site` taxonomy
  *
  * @link       http://log.pt/
  * @since      1.0.0
@@ -13,7 +13,7 @@
 namespace Replicast\Admin;
 
 /**
- * Site taxonomy functionality.
+ * The dashboard-specific functionality of the `remote_site` taxonomy.
  *
  * @since      1.0.0
  * @package    Replicast
