@@ -23,7 +23,7 @@ use Replicast\Handler;
  * @subpackage Replicast/lib/Handler
  * @author     log.OSCON, Lda. <engenharia@log.pt>
  */
-class PostHandler extends Handler {
+class Post extends Handler {
 
 	/**
 	 * Constructor.

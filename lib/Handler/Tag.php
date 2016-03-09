@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Handles ´category´ content type replication
+ * Handles ´tag´ terms replication
  *
  * @link       http://log.pt/
  * @since      1.0.0
@@ -15,14 +15,14 @@ namespace Replicast\Handler;
 use Replicast\Handler;
 
 /**
- * Handles ´category´ content type replication.
+ * Handles ´tag´ terms replication.
  *
  * @since      1.0.0
  * @package    Replicast
  * @subpackage Replicast/lib/Handler
  * @author     log.OSCON, Lda. <engenharia@log.pt>
  */
-class CategoryHandler extends Handler {
+class Tag extends Handler {
 
 	/**
 	 * Constructor.
@@ -31,7 +31,7 @@ class CategoryHandler extends Handler {
 	 * @param    \WP_Term    $term    Term object.
 	 */
 	public function __construct( \WP_Term $term ) {
-		$this->rest_base  = 'categories';
+		$this->rest_base  = 'tags';
 		$this->object     = $term;
 		$this->attributes = array( 'context' => 'embed' );
 		$this->data       = $this->get_object_data();

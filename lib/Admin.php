@@ -15,7 +15,7 @@ namespace Replicast;
 use Replicast\Admin\Site;
 use Replicast\API;
 use Replicast\Client;
-use Replicast\Handler\PostHandler;
+use Replicast\Handler\Post;
 
 /**
  * The dashboard-specific functionality of the plugin.
@@ -310,7 +310,7 @@ class Admin {
 		$sites = $this->get_sites( $post );
 
 		// Wrap the post
-		$post_handler = new PostHandler( $post );
+		$post_handler = new Post( $post );
 
 		// Wrap the post featured media, if exists
 		$featured_media_handler = null;
@@ -318,7 +318,7 @@ class Admin {
 			$featured_media_id = \get_post_thumbnail_id( $post_id );
 
 			if ( $featured_media_id ) {
-				$featured_media_handler = new PostHandler( \get_post( $featured_media_id ) );
+				$featured_media_handler = new Post( \get_post( $featured_media_id ) );
 			}
 		}
 
@@ -469,7 +469,7 @@ class Admin {
 		$sites = $this->get_sites( $post );
 
 		// Wrap the post
-		$post_handler = new PostHandler( $post );
+		$post_handler = new Post( $post );
 
 		/**
 		 * Filter for whether to bypass trash or force deletion.
@@ -557,7 +557,7 @@ class Admin {
 		$sites = $this->get_sites( $post );
 
 		// Wrap the post
-		$post_handler = new PostHandler( $post );
+		$post_handler = new Post( $post );
 
 		foreach ( $sites as $site ) {
 
