@@ -401,6 +401,36 @@ class Admin {
 			}
 		}
 
+		// 			$notices[] = array(
+		// 				'status_code'   => $response->getStatusCode(),
+		// 				'reason_phrase' => $response->getReasonPhrase(),
+		// 				'message'       => sprintf(
+		// 					'%s %s',
+		// 					sprintf(
+		// 						$response->getStatusCode() === 201 ? \__( 'Post published on %s.', 'replicast' ) : \__( 'Post updated on %s.', 'replicast' ),
+		// 						$site->get_name()
+		// 					),
+		// 					sprintf(
+		// 						'<a href="%s" title="%s" target="_blank">%s</a>',
+		// 						\esc_url( $remote_data->link ),
+		// 						\esc_attr( $site->get_name() ),
+		// 						\__( 'View post', 'replicast' )
+		// 					)
+		// 				)
+		// 			);
+
+		// 		}
+
+		// 	} catch ( \Exception $ex ) {
+		// 		if ( $ex->hasResponse() ) {
+		// 			$notices[] = array(
+		// 				'status_code'   => $ex->getResponse()->getStatusCode(),
+		// 				'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
+		// 				'message'       => $ex->getMessage()
+		// 			);
+		// 		}
+		// 	}
+
 		// Get replicast info
 		$replicast_info = API::get_replicast_info( $post );
 
@@ -517,6 +547,36 @@ class Admin {
 			}
 
 		}
+
+			// 	$notices[] = array(
+			// 			'status_code'   => $response->getStatusCode(),
+			// 			'reason_phrase' => $response->getReasonPhrase(),
+			// 			'message'       => sprintf(
+			// 				'%s %s',
+			// 				sprintf(
+			// 					\__( 'Post trashed on %s.', 'replicast' ),
+			// 					$site->get_name()
+			// 				),
+			// 				sprintf(
+			// 					'<a href="%s" title="%s" target="_blank">%s</a>',
+			// 					\esc_url( $remote_data->link ),
+			// 					\esc_attr( $site->get_name() ),
+			// 					\__( 'View post', 'replicast' )
+			// 				)
+			// 			)
+			// 		);
+
+			// 	}
+
+			// } catch ( \Exception $ex ) {
+			// 	if ( $ex->hasResponse() ) {
+			// 		$notices[] = array(
+			// 			'status_code'   => $ex->getResponse()->getStatusCode(),
+			// 			'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
+			// 			'message'       => $ex->getMessage()
+			// 		);
+			// 	}
+			// }
 
 		// Set admin notices
 		if ( ! empty( $notices ) ) {
