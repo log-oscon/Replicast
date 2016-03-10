@@ -32,11 +32,14 @@ class PostHandler extends Handler {
 	 * @param    \WP_Post    $post    Post object.
 	 */
 	public function __construct( \WP_Post $post ) {
+
 		$post_type         = \get_post_type_object( $post->post_type );
+
 		$this->rest_base   = ! empty( $post_type->rest_base ) ? $post_type->rest_base : $post_type->name;
-		$this->object_type = $post_type;
 		$this->object      = $post;
+		$this->object_type = $post->post_type;
 		$this->data        = $this->get_object_data();
+
 	}
 
 	/**

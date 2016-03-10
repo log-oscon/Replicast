@@ -238,8 +238,6 @@ abstract class Handler {
 	 */
 	protected function prepare_body_for_create( $site ) {
 
-		$object_type = API::get_object_type( $this->object );
-
 		// Get object data
 		$data = $this->data;
 
@@ -269,9 +267,9 @@ abstract class Handler {
 		}
 
 		// Prepare data by object type
-		if ( $object_type === 'page' ) {
+		if ( $this->object_type === 'page' ) {
 			$data = $this->prepare_page( $data, $site );
-		} elseif ( $object_type === 'attachment' ) {
+		} elseif ( $this->object_type === 'attachment' ) {
 			$data = $this->prepare_attachment( $data, $site );
 		}
 
@@ -282,7 +280,7 @@ abstract class Handler {
 		 * @param     array    $data    Prepared object data.
 		 * @return    array             Possibly-modified object data.
 		 */
-		return \apply_filters( "replicast_prepare_{$object_type}_for_create", $data );
+		return \apply_filters( "replicast_prepare_{$this->object_type}_for_create", $data );
 	}
 
 	/**
@@ -294,8 +292,6 @@ abstract class Handler {
 	 * @return    array                         Prepared object data.
 	 */
 	protected function prepare_body_for_update( $site ) {
-
-		$object_type = API::get_object_type( $this->object );
 
 		// Get object data
 		$data = $this->data;
@@ -331,9 +327,9 @@ abstract class Handler {
 		}
 
 		// Prepare data by object type
-		if ( $object_type === 'page' ) {
+		if ( $this->object_type === 'page' ) {
 			$data = $this->prepare_page( $data, $site );
-		} elseif ( $object_type === 'attachment' ) {
+		} elseif ( $this->object_type === 'attachment' ) {
 			$data = $this->prepare_attachment( $data, $site );
 		}
 
@@ -344,7 +340,7 @@ abstract class Handler {
 		 * @param     array    $data    Prepared object data.
 		 * @return    array             Possibly-modified object data.
 		 */
-		return \apply_filters( "replicast_prepare_{$object_type}_for_update", $data );
+		return \apply_filters( "replicast_prepare_{$this->object_type}_for_update", $data );
 	}
 
 	/**
@@ -524,7 +520,7 @@ abstract class Handler {
 		$body    = array();
 
 		// Asynchronous request
-		if ( $method === static::CREATABLE && API::get_object_type( $this->object ) === 'attachment' ) {
+		if ( $method === static::CREATABLE && $this->object_type === 'attachment' ) {
 
 			$file_path = \get_attached_file( API::get_object_id( $this->object ) );
 			$file_name = basename( $file_path );

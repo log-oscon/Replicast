@@ -437,24 +437,6 @@ class API {
 	}
 
 	/**
-	 * Get object type.
-	 *
-	 * @since     1.0.0
-	 * @param     object|array    $object    The object.
-	 * @return    string                     The object type.
-	 */
-	public static function get_object_type( $object ) {
-
-		// FIXME: revisit later
-
-		if ( static::is_term( $object ) ) {
-			return $object->taxonomy;
-		}
-
-		return $object->post_type;
-	}
-
-	/**
 	 * Get meta type based on the object class or array data.
 	 *
 	 * @since     1.0.0
