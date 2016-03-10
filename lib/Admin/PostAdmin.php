@@ -248,137 +248,145 @@ class PostAdmin extends Admin {
 			}
 		}
 
-		foreach ( $sites as $site ) {
+		try {
 
-			if ( $featured_media_handler ) {
+			foreach ( $sites as $site ) {
 
-				$featured_media_handler->handle_save( $site )
-					->then(
-						function ( $response ) use ( $site, $featured_media_handler, $post_handler ) {
+				if ( $featured_media_handler ) {
 
-							// Get the remote object data
-							$remote_data = json_decode( $response->getBody()->getContents() );
+					$featured_media_handler->handle_save( $site )
+						->then(
+							function ( $response ) use ( $site, $featured_media_handler, $post_handler ) {
 
-							if ( empty( $remote_data ) ) {
-								continue;
+								// Get the remote object data
+								$remote_data = json_decode( $response->getBody()->getContents() );
+
+								if ( empty( $remote_data ) ) {
+									continue;
+								}
+
+								$site_id = $site->get_id();
+
+								// Update replicast info
+								$featured_media_handler->update_post_info( $site_id, $remote_data );
+
+								// TODO: build notices
+
+								return $post_handler->handle_save( $site );
 							}
+						)
+						->then(
+							function ( $response ) use ( $site, $post_handler ) {
 
-							$site_id = $site->get_id();
+								// Get the remote object data
+								$remote_data = json_decode( $response->getBody()->getContents() );
 
-							// Update replicast info
-							$featured_media_handler->update_post_info( $site_id, $remote_data );
+								if ( empty( $remote_data ) ) {
+									continue;
+								}
 
-							// TODO: build notices
+								$site_id = $site->get_id();
 
-							return $post_handler->handle_save( $site );
-						}
-					)
-					->then(
-						function ( $response ) use ( $site, $post_handler ) {
+								// Update replicast info
+								$post_handler->update_post_info( $site_id, $remote_data );
 
-							// Get the remote object data
-							$remote_data = json_decode( $response->getBody()->getContents() );
+								// Update post terms
+								$post_handler->update_post_terms( $site_id, $remote_data );
 
-							if ( empty( $remote_data ) ) {
-								continue;
+								// TODO: build notices
+
 							}
+						)
+						->wait();
 
-							$site_id = $site->get_id();
+				} else {
 
-							// Update replicast info
-							$post_handler->update_post_info( $site_id, $remote_data );
+					$post_handler->handle_save( $site )
+						->then(
+							function ( $response ) use ( $site, $post_handler ) {
 
-							// Update post terms
-							$post_handler->update_post_terms( $site_id, $remote_data );
+								// Get the remote object data
+								$remote_data = json_decode( $response->getBody()->getContents() );
 
-							// TODO: build notices
+								if ( empty( $remote_data ) ) {
+									continue;
+								}
 
-						}
-					)
-					->wait();
+								$site_id = $site->get_id();
 
-			} else {
+								// Update replicast info
+								$post_handler->update_post_info( $site_id, $remote_data );
 
-				$post_handler->handle_save( $site )
-					->then(
-						function ( $response ) use ( $site, $post_handler ) {
+								// Update post terms
+								$post_handler->update_post_terms( $site_id, $remote_data );
 
-							// Get the remote object data
-							$remote_data = json_decode( $response->getBody()->getContents() );
+								// TODO: build notices
 
-							if ( empty( $remote_data ) ) {
-								continue;
 							}
+						)
+						->wait();
 
-							$site_id = $site->get_id();
-
-							// Update replicast info
-							$post_handler->update_post_info( $site_id, $remote_data );
-
-							// Update post terms
-							$post_handler->update_post_terms( $site_id, $remote_data );
-
-							// TODO: build notices
-
-						}
-					)
-					->wait();
-
+				}
 			}
-		}
 
-		// 			$notices[] = array(
-		// 				'status_code'   => $response->getStatusCode(),
-		// 				'reason_phrase' => $response->getReasonPhrase(),
-		// 				'message'       => sprintf(
-		// 					'%s %s',
-		// 					sprintf(
-		// 						$response->getStatusCode() === 201 ? \__( 'PostHandler published on %s.', 'replicast' ) : \__( 'PostHandler updated on %s.', 'replicast' ),
-		// 						$site->get_name()
-		// 					),
-		// 					sprintf(
-		// 						'<a href="%s" title="%s" target="_blank">%s</a>',
-		// 						\esc_url( $remote_data->link ),
-		// 						\esc_attr( $site->get_name() ),
-		// 						\__( 'View post', 'replicast' )
-		// 					)
-		// 				)
-		// 			);
+			// 			$notices[] = array(
+			// 				'status_code'   => $response->getStatusCode(),
+			// 				'reason_phrase' => $response->getReasonPhrase(),
+			// 				'message'       => sprintf(
+			// 					'%s %s',
+			// 					sprintf(
+			// 						$response->getStatusCode() === 201 ? \__( 'PostHandler published on %s.', 'replicast' ) : \__( 'PostHandler updated on %s.', 'replicast' ),
+			// 						$site->get_name()
+			// 					),
+			// 					sprintf(
+			// 						'<a href="%s" title="%s" target="_blank">%s</a>',
+			// 						\esc_url( $remote_data->link ),
+			// 						\esc_attr( $site->get_name() ),
+			// 						\__( 'View post', 'replicast' )
+			// 					)
+			// 				)
+			// 			);
 
-		// 		}
+			// 		}
 
-		// 	} catch ( \Exception $ex ) {
-		// 		if ( $ex->hasResponse() ) {
-		// 			$notices[] = array(
-		// 				'status_code'   => $ex->getResponse()->getStatusCode(),
-		// 				'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-		// 				'message'       => $ex->getMessage()
-		// 			);
-		// 		}
-		// 	}
+			// 	} catch ( \Exception $ex ) {
+			// 		if ( $ex->hasResponse() ) {
+			// 			$notices[] = array(
+			// 				'status_code'   => $ex->getResponse()->getStatusCode(),
+			// 				'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
+			// 				'message'       => $ex->getMessage()
+			// 			);
+			// 		}
+			// 	}
 
-		// Get replicast info
-		$replicast_info = API::get_replicast_info( $post );
+			// Get replicast info
+			$replicast_info = API::get_replicast_info( $post );
 
-		// Verify that the current object has been "removed" (aka unchecked) from any site(s)
-		// FIXME: review this later on
-		foreach ( $replicast_info as $site_id => $replicast_data ) {
-			if ( ! array_key_exists( $site_id, $sites ) ) {
+			// Verify that the current object has been "removed" (aka unchecked) from any site(s)
+			// FIXME: review this later on
+			foreach ( $replicast_info as $site_id => $replicast_data ) {
+				if ( ! array_key_exists( $site_id, $sites ) ) {
 
-				$post_handler->handle_delete( $this->get_site( $site_id ), true )
-					->then(
-						function ( $response ) use ( $site_id, $post_handler ) {
+					$post_handler->handle_delete( $this->get_site( $site_id ), true )
+						->then(
+							function ( $response ) use ( $site_id, $post_handler ) {
 
-							// Update replicast info
-							$post_handler->update_post_info( $site_id );
+								// Update replicast info
+								$post_handler->update_post_info( $site_id );
 
-							// TODO: build notices
+								// TODO: build notices
 
-						}
-					)
-					->wait();
+							}
+						)
+						->wait();
 
+				}
 			}
+
+		} catch ( \Exception $ex ) {
+			// FIXME
+			error_log( '---- on_trash_post ----' );
+			error_log( print_r( $ex->getMessage(), true ) );
 		}
 
 		// Set admin notices
@@ -436,42 +444,41 @@ class PostAdmin extends Admin {
 		 */
 		$force = \apply_filters( "replicast_force_{$post->post_type}_delete", false );
 
-		foreach ( $sites as $site ) {
+		try {
 
-			try {
+			foreach ( $sites as $site ) {
 
-				$post_handler
-				->handle_delete( $site, $force )
-				->then(
-					function ( $response ) use ( $site, $post_handler, $force ) {
+					$post_handler
+					->handle_delete( $site, $force )
+					->then(
+						function ( $response ) use ( $site, $post_handler, $force ) {
 
-						// Get the remote object data
-						$remote_data = json_decode( $response->getBody()->getContents() );
+							// Get the remote object data
+							$remote_data = json_decode( $response->getBody()->getContents() );
 
-						if ( empty( $remote_data ) ) {
-							continue;
+							if ( empty( $remote_data ) ) {
+								continue;
+							}
+
+							if ( $force ) {
+								$remote_data = null;
+							}
+
+							// Update replicast info
+							$post_handler->update_post_info( $site->get_id(), $remote_data );
+
+							// TODO: build notices
+
 						}
+					)
+					->wait();
 
-						if ( $force ) {
-							$remote_data = null;
-						}
-
-						// Update replicast info
-						$post_handler->update_post_info( $site->get_id(), $remote_data );
-
-						// TODO: build notices
-
-					}
-				)
-				->wait();
-
-
-			} catch ( \Exception $ex ) {
-				// FIXME
-				error_log( '---- on_trash_post ----' );
-				error_log( print_r( $ex->getMessage(), true ) );
 			}
 
+		} catch ( \Exception $ex ) {
+			// FIXME
+			error_log( '---- on_trash_post ----' );
+			error_log( print_r( $ex->getMessage(), true ) );
 		}
 
 			// 	$notices[] = array(
@@ -545,30 +552,30 @@ class PostAdmin extends Admin {
 		// Wrap the post
 		$post_handler = new PostHandler( $post );
 
-		foreach ( $sites as $site ) {
+		try {
 
-			try {
+			foreach ( $sites as $site ) {
 
-				$post_handler
-				->handle_delete( $site, true )
-				->then(
-					function ( $response ) use ( $site, $post_handler ) {
+					$post_handler
+					->handle_delete( $site, true )
+					->then(
+						function ( $response ) use ( $site, $post_handler ) {
 
-						// Update replicast info
-						$post_handler->update_post_info( $site->get_id() );
+							// Update replicast info
+							$post_handler->update_post_info( $site->get_id() );
 
-						// TODO: build notices
+							// TODO: build notices
 
-					}
-				)
-				->wait();
+						}
+					)
+					->wait();
 
-			} catch ( \Exception $ex ) {
-				// FIXME
-				error_log( '---- on_delete_post ----' );
-				error_log( print_r( $ex->getMessage(), true ) );
 			}
 
+		} catch ( \Exception $ex ) {
+			// FIXME
+			error_log( '---- on_delete_post ----' );
+			error_log( print_r( $ex->getMessage(), true ) );
 		}
 
 		// Set admin notices
