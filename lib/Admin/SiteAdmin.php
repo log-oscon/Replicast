@@ -20,7 +20,7 @@ namespace Replicast\Admin;
  * @subpackage Replicast/lib/Admin
  * @author     log.OSCON, Lda. <engenharia@log.pt>
  */
-class Site {
+class SiteAdmin {
 
 	/**
 	 * Plugin instance.

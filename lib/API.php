@@ -13,7 +13,6 @@
 namespace Replicast;
 
 use Replicast\Admin;
-use Replicast\Admin\Site;
 
 /**
  * Extend the API functionality.
@@ -54,7 +53,7 @@ class API {
 			return;
 		}
 
-		foreach ( Site::get_post_types() as $post_type ) {
+		foreach ( Admin\SiteAdmin::get_post_types() as $post_type ) {
 			\register_rest_field(
 				$post_type,
 				'replicast',

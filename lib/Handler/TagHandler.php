@@ -22,7 +22,7 @@ use Replicast\Handler;
  * @subpackage Replicast/lib/Handler
  * @author     log.OSCON, Lda. <engenharia@log.pt>
  */
-class Tag extends Handler {
+class TagHandler extends Handler {
 
 	/**
 	 * Constructor.

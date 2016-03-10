@@ -32,10 +32,10 @@ namespace Replicast;
 class Plugin {
 
 	/**
-	 * The \Admin\Site taxonomy identifier.
+	 * The remote site identifier.
 	 *
 	 * @since    1.0.0
-	 * @var      string
+	 * @var      \Replicast\Admin\SiteAdmin
 	 */
 	const TAXONOMY_SITE = 'remote_site';
 
@@ -117,8 +117,7 @@ class Plugin {
 	}
 
 	/**
-	 * Register all of the hooks related to the dashboard functionality
-	 * of the plugin.
+	 * Register all of the hooks related to the dashboard functionality.
 	 *
 	 * @since     1.0.0
 	 * @access    private
@@ -130,33 +129,43 @@ class Plugin {
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_notices',         $admin, 'display_admin_notices' );
 
-		// Sync posts
-		$this->loader->add_action( 'save_post',          $admin, 'on_save_post', 10, 3 );
-		$this->loader->add_action( 'attachment_updated', $admin, 'on_save_post', 10, 3 );
-		$this->loader->add_action( 'trashed_post',       $admin, 'on_trash_post' );
-		$this->loader->add_action( 'before_delete_post', $admin, 'on_delete_post' );
-
-		// Admin UI
-		$this->loader->add_action( 'manage_posts_custom_column', $admin, 'manage_custom_column', 10, 2 );
-		$this->loader->add_action( 'manage_pages_custom_column', $admin, 'manage_custom_column', 10, 2 );
-		$this->loader->add_filter( 'manage_pages_columns',       $admin, 'manage_columns', 10, 2 );
-		$this->loader->add_filter( 'manage_posts_columns',       $admin, 'manage_columns', 10, 2 );
-		$this->loader->add_filter( 'user_has_cap',               $admin, 'hide_edit_link', 10, 4 );
-		$this->loader->add_filter( 'post_row_actions',           $admin, 'hide_row_actions', 99, 2 );
-		$this->loader->add_filter( 'page_row_actions',           $admin, 'hide_row_actions', 99, 2 );
-
 	}
 
 	/**
-	 * Register all of the hooks related to the ´Site´ taxonomy functionality
-	 * of the plugin.
+	 * Register all of the hooks related to the \Admin\Post functionality.
 	 *
 	 * @since     1.0.0
 	 * @access    private
 	 */
-	private function define_site_hooks() {
+	private function define_admin_post_hooks() {
 
-		$site = new Admin\Site( $this, static::TAXONOMY_SITE );
+		$post = new Admin\PostAdmin( $this );
+
+		$this->loader->add_action( 'save_post',          $post, 'on_save_post', 10, 3 );
+		$this->loader->add_action( 'attachment_updated', $post, 'on_save_post', 10, 3 );
+		$this->loader->add_action( 'trashed_post',       $post, 'on_trash_post' );
+		$this->loader->add_action( 'before_delete_post', $post, 'on_delete_post' );
+
+		// Admin UI
+		$this->loader->add_action( 'manage_posts_custom_column', $post, 'manage_custom_column', 10, 2 );
+		$this->loader->add_action( 'manage_pages_custom_column', $post, 'manage_custom_column', 10, 2 );
+		$this->loader->add_filter( 'manage_pages_columns',       $post, 'manage_columns', 10, 2 );
+		$this->loader->add_filter( 'manage_posts_columns',       $post, 'manage_columns', 10, 2 );
+		$this->loader->add_filter( 'user_has_cap',               $post, 'hide_edit_link', 10, 4 );
+		$this->loader->add_filter( 'post_row_actions',           $post, 'hide_row_actions', 99, 2 );
+		$this->loader->add_filter( 'page_row_actions',           $post, 'hide_row_actions', 99, 2 );
+
+	}
+
+	/**
+	 * Register all of the hooks related to the \Admin\Site functionality.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 */
+	private function define_admin_site_hooks() {
+
+		$site = new Admin\SiteAdmin( $this, static::TAXONOMY_SITE );
 
 		$this->loader->add_action( 'init',                                      $site, 'register' );
 		$this->loader->add_action( 'init',                                      $site, 'register_fields' );
@@ -192,10 +201,14 @@ class Plugin {
 	 * @since    1.0.0
 	 */
 	public function run() {
+
 		$this->set_locale();
-		$this->define_admin_hooks();
-		$this->define_site_hooks();
+
 		$this->define_api_hooks();
+		$this->define_admin_hooks();
+		$this->define_admin_post_hooks();
+		$this->define_admin_site_hooks();
+
 		$this->loader->run();
 	}
 
