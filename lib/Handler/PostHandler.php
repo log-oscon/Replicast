@@ -102,6 +102,7 @@ class PostHandler extends Handler {
 	 */
 	public function prepare_post_terms( $data, $site ) {
 
+		// Unset default categories and tags data structures
 		unset( $data['categories'] );
 		unset( $data['tags'] );
 
@@ -245,6 +246,77 @@ class PostHandler extends Handler {
 
 		}
 
+	}
+
+	/**
+	 * Prepare post meta (ACF).
+	 *
+	 * @since     1.0.0
+	 * @param     array                $data    Prepared post data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified post data.
+	 */
+	public function prepare_post_meta( $data, $site ) {
+
+		if ( empty( $data['replicast'] ) ) {
+			return $data;
+		}
+
+		if ( empty( $data['replicast']['meta'] ) ) {
+			return $data;
+		}
+
+		foreach ( $data['replicast']['meta'] as $key => $meta ) {
+
+			if ( empty( $meta['raw'] ) ) {
+				continue;
+			}
+
+			$meta_value  = array();
+			$field_type  = \acf_extract_var( $meta['raw'], 'type' );
+			$field_value = \acf_extract_var( $meta['raw'], 'value' );
+
+			if ( $field_type === 'text' ) {
+				$meta_value = $field_value;
+			}
+
+			if ( $field_type === 'relationship' ) {
+
+				error_log(print_r($field_value,true));
+
+				foreach ( $field_value as $related_object ) {
+
+					if ( is_numeric( $related_object ) ) {
+						$related_object = \get_post( $related_object );
+					}
+
+					// Get replicast info
+					$replicast_info = API::get_replicast_info( $related_object );
+
+					// Update object ID
+					if ( ! empty( $replicast_info ) ) {
+						$meta_value[] = $replicast_info[ $site->get_id() ]['id'];
+					}
+
+				}
+
+				if ( ! empty( $meta_value ) ) {
+					$meta_value = maybe_serialize( $meta_value );
+				}
+
+			}
+
+			unset( $data['replicast']['meta'][ $key ] );
+
+			if ( empty( $meta_value ) ) {
+				continue;
+			}
+
+			$data['replicast']['meta'][ $key ][] = $meta_value;
+
+		}
+
+		return $data;
 	}
 
 }

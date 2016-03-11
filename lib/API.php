@@ -126,6 +126,25 @@ class API {
 
 			$prepared_metadata[ $meta_key ] = $meta_value;
 
+			/**
+			 * If it's an ACF field, add more information regarding the field.
+			 *
+			 * The raw/rendered keys are used just to identify what's an ACF meta value ahead in the
+			 * replication process.
+			 *
+			 * @see  Replicast\Handler\PostHander\prepare_post_meta
+			 *
+			 * FIXME: Maybe we should do this using a filter?!
+			 * FIXME: I don't know if it's a good idea use the raw/rendered keys like the core uses
+			 *        with posts and pages. Maybe we should use some key that relates to ACF?
+			 */
+			if ( class_exists( 'acf' ) && $field = \get_field_object( $meta_key, $object['id'] ) ) {
+				$prepared_metadata[ $meta_key ] = array(
+					'raw'      => $field,
+					'rendered' => $meta_value,
+				);
+			}
+
 		}
 
 		// Add object REST route to meta
