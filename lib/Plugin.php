@@ -178,8 +178,7 @@ class Plugin {
 	}
 
 	/**
-	 * Register all of the hooks related to the API functionality
-	 * of the plugin.
+	 * Register all of the hooks related to the API functionality.
 	 *
 	 * @since     1.0.0
 	 * @access    private
@@ -189,6 +188,28 @@ class Plugin {
 		$api = new API( $this );
 
 		$this->loader->add_action( 'rest_api_init', $api, 'register_rest_fields' );
+
+	}
+
+	/**
+	 * Register all of the hooks related to the ACF functionality.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 */
+	private function define_acf_hooks() {
+
+		if ( ! class_exists( 'acf' ) ) {
+			return;
+		}
+
+		$acf = new ACF( $this );
+
+		$this->loader->add_filter( 'replicast_get_post_meta',           $acf, 'get_post_acf_meta', 10, 2 );
+		$this->loader->add_filter( 'replicast_prepare_post_for_create', $acf, 'prepare_post_acf_meta', 10, 2 );
+		$this->loader->add_filter( 'replicast_prepare_post_for_update', $acf, 'prepare_post_acf_meta', 10, 2 );
+		$this->loader->add_filter( 'replicast_prepare_page_for_create', $acf, 'prepare_post_acf_meta', 10, 2 );
+		$this->loader->add_filter( 'replicast_prepare_page_for_update', $acf, 'prepare_post_acf_meta', 10, 2 );
 
 	}
 
@@ -208,6 +229,8 @@ class Plugin {
 		$this->define_admin_hooks();
 		$this->define_admin_post_hooks();
 		$this->define_admin_site_hooks();
+
+		$this->define_acf_hooks();
 
 		$this->loader->run();
 	}

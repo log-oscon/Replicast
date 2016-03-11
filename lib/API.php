@@ -107,54 +107,44 @@ class API {
 		$whitelist = \apply_filters( 'replicast_expose_object_protected_meta', array(), $object );
 
 		// Get object metadata
-		$metadata = \get_metadata( $meta_type, $object['id'] );
+		$meta = \get_metadata( $meta_type, $object['id'] );
 
-		if ( ! $metadata ) {
+		if ( ! $meta ) {
 			return array();
 		}
 
-		if ( ! is_array( $metadata ) ) {
-			$metadata = (array) $metadata;
+		if ( ! is_array( $meta ) ) {
+			$meta = (array) $meta;
 		}
 
-		$prepared_metadata = array();
-		foreach ( $metadata as $meta_key => $meta_value ) {
+		$prepared_meta = array();
+		foreach ( $meta as $meta_key => $meta_value ) {
 
 			if ( \is_protected_meta( $meta_key ) && ! in_array( $meta_key, $whitelist ) ) {
 				continue;
 			}
 
-			$prepared_metadata[ $meta_key ] = $meta_value;
-
-			/**
-			 * If it's an ACF field, add more information regarding the field.
-			 *
-			 * The raw/rendered keys are used just to identify what's an ACF meta value ahead in the
-			 * replication process.
-			 *
-			 * @see  Replicast\Handler\PostHander\prepare_post_meta
-			 *
-			 * FIXME: Maybe we should do this using a filter?!
-			 * FIXME: I don't know if it's a good idea use the raw/rendered keys like the core uses
-			 *        with posts and pages. Maybe we should use some key that relates to ACF?
-			 */
-			if ( class_exists( 'acf' ) && $field = \get_field_object( $meta_key, $object['id'] ) ) {
-				$prepared_metadata[ $meta_key ] = array(
-					'raw'      => $field,
-					'rendered' => $meta_value,
-				);
-			}
-
+			$prepared_meta[ $meta_key ] = $meta_value;
 		}
 
+		/**
+		 * Filter the obtained object meta.
+		 *
+		 * @since     1.0.0
+		 * @param     array    Object meta.
+		 * @param     int      Object ID.
+		 * @return    array    Possibly-modified object meta.
+		 */
+		$prepared_meta = \apply_filters( "replicast_get_{$meta_type}_meta", $prepared_meta, $object['id'] );
+
 		// Add object REST route to meta
-		$prepared_metadata[ Plugin::REPLICAST_REMOTE ] = array( \maybe_serialize( array(
+		$prepared_meta[ Plugin::REPLICAST_REMOTE ] = array( \maybe_serialize( array(
 			'ID'        => $object['id'],
 			'edit_link' => \get_edit_post_link( $object['id'] ),
 			'rest_url'  => \rest_url( $request->get_route() ),
 		) ) );
 
-		return $prepared_metadata;
+		return $prepared_meta;
 	}
 
 	/**
@@ -200,7 +190,15 @@ class API {
 		// FIXME: we should soft cache this
 		$terms = static::get_object_terms_hierarchical( $object['id'], $prepared_taxonomies );
 
-		return $terms;
+		/**
+		 * Filter the obtained object terms.
+		 *
+		 * @since     1.0.0
+		 * @param     array    Hierarchical list of object terms.
+		 * @param     int      Object ID.
+		 * @return    array    Possibly-modified object terms.
+		 */
+		return \apply_filters( 'replicast_get_object_terms', $terms, $object['id'] );
 	}
 
 	/**
