@@ -272,17 +272,20 @@ class PostHandler extends Handler {
 				continue;
 			}
 
+			$field_value = \acf_extract_var( $meta['raw'], 'value' );
+
+			if ( empty( $field_value ) ) {
+				continue;
+			}
+
 			$meta_value  = array();
 			$field_type  = \acf_extract_var( $meta['raw'], 'type' );
-			$field_value = \acf_extract_var( $meta['raw'], 'value' );
 
 			if ( $field_type === 'text' ) {
 				$meta_value = $field_value;
 			}
 
 			if ( $field_type === 'relationship' ) {
-
-				error_log(print_r($field_value,true));
 
 				foreach ( $field_value as $related_object ) {
 
