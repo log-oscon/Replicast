@@ -58,10 +58,11 @@ class PostAdmin extends Admin {
 		 * Filter the column contents.
 		 *
 		 * @since     1.0.0
-		 * @param     mixed       $remote_info    Single metadata value, or array of values.
-		 *                                        If the $meta_type or $object_id parameters are invalid, false is returned.
-		 * @param     \WP_Post    $object         The current object ID.
-		 * @return    string                      Possibly-modified column contents.
+		 * @param     string      Column contents.
+		 * @param     mixed       Single metadata value, or array of values.
+		 *                        If the $meta_type or $object_id parameters are invalid, false is returned.
+		 * @param     \WP_Post    The current object ID.
+		 * @return    string      Possibly-modified column contents.
 		 */
 		echo \apply_filters( 'manage_custom_column_html', $html, $remote_info, $object_id );
 
@@ -94,9 +95,9 @@ class PostAdmin extends Admin {
 		 * Filter the columns displayed.
 		 *
 		 * @since     1.0.0
-		 * @param     array     $columns      An array of column names.
-		 * @param     string    $post_type    The object type slug.
-		 * @return    array                   Possibly-modified array of column names.
+		 * @param     array     An array of column names.
+		 * @param     string    The object type slug.
+		 * @return    array     Possibly-modified array of column names.
 		 */
 		return \apply_filters(
 			'replicast_manage_columns',
@@ -158,9 +159,9 @@ class PostAdmin extends Admin {
 		 * Extend the list of unsupported row action links.
 		 *
 		 * @since     1.0.0
-		 * @param     array       $defaults    An array of row actions.
-		 * @param     \WP_Post    $object      The current object.
-		 * @return    array                    Possibly-modified array of row actions.
+		 * @param     array       An array of row actions.
+		 * @param     \WP_Post    The current object.
+		 * @return    array       Possibly-modified array of row actions.
 		 */
 		$defaults = \apply_filters( 'replicast_hide_row_actions', $defaults, $object );
 

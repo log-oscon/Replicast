@@ -100,9 +100,9 @@ class API {
 		 * Filter for exposing specific protected meta keys.
 		 *
 		 * @since     1.0.0
-		 * @param     array               Name(s) of the exposed meta keys.
-		 * @param     array    $object    Details of current content object.
-		 * @return    array               Possibly-modified name(s) of the exposed meta keys.
+		 * @param     array    Name(s) of the exposed meta keys.
+		 * @param     array    Details of current content object.
+		 * @return    array    Possibly-modified name(s) of the exposed meta keys.
 		 */
 		$whitelist = \apply_filters( 'replicast_expose_object_protected_meta', array(), $object );
 
@@ -174,10 +174,10 @@ class API {
 		 * Filter for suppressing taxonomies.
 		 *
 		 * @since     1.0.0
-		 * @param     array                    Name(s) of the suppressed taxonomies.
-		 * @param     array    $taxonomies     List of registered taxonomies.
-		 * @param     array    $object         The object from the response.
-		 * @return    array                    Possibly-modified name(s) of the suppressed taxonomies.
+		 * @param     array    Name(s) of the suppressed taxonomies.
+		 * @param     array    List of registered taxonomies.
+		 * @param     array    The object from the response.
+		 * @return    array    Possibly-modified name(s) of the suppressed taxonomies.
 		 */
 		$blacklist = \apply_filters( 'replicast_suppress_object_taxonomies', array(), $taxonomies, $object );
 
@@ -305,10 +305,10 @@ class API {
 		 * Filter for suppressing specific meta keys from update.
 		 *
 		 * @since     1.0.0
-		 * @param     array                Name(s) of the suppressed meta keys.
-		 * @param     array     $values    The values of the field.
-		 * @param     object    $object    The object from the response.
-		 * @return    array                Possibly-modified name(s) of the suppressed meta keys.
+		 * @param     array     Name(s) of the suppressed meta keys.
+		 * @param     array     The values of the field.
+		 * @param     object    The object from the response.
+		 * @return    array     Possibly-modified name(s) of the suppressed meta keys.
 		 */
 		$blacklist = \apply_filters( 'replicast_suppress_object_meta_from_update', array(), $values, $object );
 

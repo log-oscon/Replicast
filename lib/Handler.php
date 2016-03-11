@@ -283,10 +283,11 @@ abstract class Handler {
 		 * Filter the prepared object data for creation.
 		 *
 		 * @since     1.0.0
-		 * @param     array    $data    Prepared object data.
-		 * @return    array             Possibly-modified object data.
+		 * @param     array                Prepared object data.
+		 * @param     \Replicast\Client    Site object.
+		 * @return    array                Possibly-modified object data.
 		 */
-		return \apply_filters( "replicast_prepare_{$this->object_type}_for_create", $data );
+		return \apply_filters( "replicast_prepare_{$this->object_type}_for_create", $data, $site );
 	}
 
 	/**
@@ -349,10 +350,11 @@ abstract class Handler {
 		 * Filter the prepared object data for update.
 		 *
 		 * @since     1.0.0
-		 * @param     array    $data    Prepared object data.
-		 * @return    array             Possibly-modified object data.
+		 * @param     array                Prepared object data.
+		 * @param     \Replicast\Client    Site object.
+		 * @return    array                Possibly-modified object data.
 		 */
-		return \apply_filters( "replicast_prepare_{$this->object_type}_for_update", $data );
+		return \apply_filters( "replicast_prepare_{$this->object_type}_for_update", $data, $site );
 	}
 
 	/**
@@ -385,7 +387,7 @@ abstract class Handler {
 			 * Filter the REST Server Class.
 			 *
 			 * @since    1.0.0
-			 * @param    string    $class_name    The name of the server class. Default '\WP_REST_Server'.
+			 * @param    string    The name of the server class. Default '\WP_REST_Server'.
 			 */
 			$wp_rest_server_class = \apply_filters( 'replicast_rest_server_class', '\WP_REST_Server' );
 			$wp_rest_server       = new $wp_rest_server_class;
