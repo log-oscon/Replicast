@@ -137,9 +137,9 @@ class API {
 		 */
 		$prepared_meta = \apply_filters( "replicast_get_{$meta_type}_meta", $prepared_meta, $object['id'] );
 
-		// Add object REST route to meta
-		$prepared_meta[ Plugin::REPLICAST_REMOTE ] = array( \maybe_serialize( array(
-			'ID'        => $object['id'],
+		// Remote object info
+		$prepared_meta[ Plugin::REPLICAST_REMOTE_INFO ] = array( \maybe_serialize( array(
+			'object_id' => $object['id'],
 			'edit_link' => \get_edit_post_link( $object['id'] ),
 			'rest_url'  => \rest_url( $request->get_route() ),
 		) ) );

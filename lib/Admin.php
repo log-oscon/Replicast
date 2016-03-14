@@ -161,12 +161,13 @@ class Admin {
 	 * Retrieve remote info from an object.
 	 *
 	 * @since     1.0.0
-	 * @param     \WP_Post    $object    The object ID.
-	 * @return    mixed                  Single metadata value, or array of values.
-	 *                                   If the $meta_type or $object_id parameters are invalid, false is returned.
+	 * @param     int       $object_id    The object ID.
+	 * @param     string    $meta_type    Type of object metadata.
+	 * @return    mixed                   Single metadata value, or array of values.
+	 *                                    If the $meta_type or $object_id parameters are invalid, false is returned.
 	 */
-	public function get_remote_info( $object_id ) {
-		return \get_post_meta( $object_id, Plugin::REPLICAST_REMOTE, true );
+	public function get_remote_info( $object_id, $meta_type = 'post' ) {
+		return \get_metadata( $meta_type, $object_id, Plugin::REPLICAST_REMOTE_INFO, true );
 	}
 
 	/**

@@ -48,12 +48,12 @@ class Plugin {
 	const REPLICAST_IDS = '_replicast_ids';
 
 	/**
-	 * The route for the remote object.
+	 * The remote object info.
 	 *
 	 * @since    1.0.0
 	 * @var      string
 	 */
-	const REPLICAST_REMOTE = '_replicast_remote';
+	const REPLICAST_REMOTE_INFO = '_replicast_remote_info';
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
