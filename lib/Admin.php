@@ -167,7 +167,7 @@ class Admin {
 	 *                                    If the $meta_type or $object_id parameters are invalid, false is returned.
 	 */
 	public function get_remote_info( $object_id, $meta_type = 'post' ) {
-		return \get_metadata( $meta_type, $object_id, Plugin::REPLICAST_INFO, true );
+		return \get_metadata( $meta_type, $object_id, Plugin::REPLICAST_OBJECT_INFO, true );
 	}
 
 	/**

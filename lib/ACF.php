@@ -25,6 +25,15 @@ use Replicast\API;
 class ACF {
 
 	/**
+	 * Identifies the meta variable that is sent to the remote site and
+	 * that contains information regarding the remote object ACF meta.
+	 *
+	 * @since    1.0.0
+	 * @var      string
+	 */
+	const REPLICAST_ACF_INFO = '_replicast_acf_info';
+
+	/**
 	 * The plugin's instance.
 	 *
 	 * @since     1.0.0
@@ -41,6 +50,81 @@ class ACF {
 	 */
 	public function __construct( $plugin ) {
 		$this->plugin = $plugin;
+	}
+
+	/**
+	 * Expose \Replicast\ACF protected meta keys.
+	 *
+	 * @since     1.0.0
+	 * @return    array    Exposed meta keys.
+	 */
+	public function expose_object_protected_meta() {
+		return array( static::REPLICAST_ACF_INFO );
+	}
+
+	/**
+	 * Adds REST persistence to removed object relationships.
+	 *
+	 * When a relationship between one or more objects is removed, this change is not synced via REST API.
+	 * Leaving these same relationships remotely unchanged. To address this, we are sending the objects
+	 * that were removed in a private meta variable which is then processed.
+	 *
+	 * @since     1.0.0
+	 * @param     mixed    $value      The value of the field.
+	 * @param     int      $post_id    The post id.
+	 * @param     array    $field      The field object.
+	 * @return    mixed                Possibly-modified value of the field.
+	 */
+	public function relationship_persistence( $value, $post_id, $field ) {
+
+		// Bail out if not admin and bypass REST API requests
+		if ( ! \is_admin() ) {
+			return $value;
+		}
+
+		// If post is an autosave, return
+		if ( \wp_is_post_autosave( $post_id ) ) {
+			return $value;
+		}
+
+		// If post is a revision, return
+		if ( \wp_is_post_revision( $post_id ) ) {
+			return $value;
+		}
+
+		if ( ! $field ) {
+			return $value;
+		}
+
+		$field_name       = $field['name'];
+		$previous_posts   = \get_field( $field_name, $post_id );
+		$add_posts_ids    = ! empty( $value ) ? $value : array();
+		$remove_posts_ids = array();
+
+		if ( $previous_posts ) {
+			foreach ( $previous_posts as $key => $previous_post ) {
+				if ( ! empty( $previous_post->ID ) ) {
+					$remove_posts_ids[] = $previous_post->ID;
+				}
+			}
+		}
+
+		$remove_posts_ids = array_diff( $remove_posts_ids, $add_posts_ids );
+
+		// Get meta
+		$meta = (array) \maybe_unserialize( \get_post_meta( $post_id, static::REPLICAST_ACF_INFO, true ) );
+
+		// Add meta persistence
+		\update_post_meta(
+			$post_id,
+			static::REPLICAST_ACF_INFO,
+			\maybe_serialize( array_merge( $meta, array(
+				$field_name => $remove_posts_ids
+			) ) ),
+			$meta
+		);
+
+		return $value;
 	}
 
 	/**

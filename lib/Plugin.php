@@ -32,7 +32,7 @@ namespace Replicast;
 class Plugin {
 
 	/**
-	 * The remote site identifier.
+	 * The remote site taxonomy identifier.
 	 *
 	 * @since    1.0.0
 	 * @var      \Replicast\Admin\SiteAdmin
@@ -40,20 +40,22 @@ class Plugin {
 	const TAXONOMY_SITE = 'remote_site';
 
 	/**
-	 * The "to where" the object was replicated.
+	 * Identifies the meta variable that saves the information
+	 * regarding the "to where" the object was replicated.
 	 *
 	 * @since    1.0.0
 	 * @var      string
 	 */
-	const REPLICAST_IDS = '_replicast_ids';
+	const REPLICAST_REMOTE_IDS = '_replicast_remote_ids';
 
 	/**
-	 * The remote object info.
+	 * Identifies the meta variable that is sent to the remote site and
+	 * that contains information regarding the remote object.
 	 *
 	 * @since    1.0.0
 	 * @var      string
 	 */
-	const REPLICAST_INFO = '_replicast_info';
+	const REPLICAST_OBJECT_INFO = '_replicast_object_info';
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -205,11 +207,14 @@ class Plugin {
 
 		$acf = new ACF( $this );
 
-		$this->loader->add_filter( 'replicast_get_post_meta',           $acf, 'get_post_acf_meta', 10, 2 );
-		$this->loader->add_filter( 'replicast_prepare_post_for_create', $acf, 'prepare_post_acf_meta', 10, 2 );
-		$this->loader->add_filter( 'replicast_prepare_post_for_update', $acf, 'prepare_post_acf_meta', 10, 2 );
-		$this->loader->add_filter( 'replicast_prepare_page_for_create', $acf, 'prepare_post_acf_meta', 10, 2 );
-		$this->loader->add_filter( 'replicast_prepare_page_for_update', $acf, 'prepare_post_acf_meta', 10, 2 );
+		$this->loader->add_filter( 'replicast_expose_object_protected_meta', $acf, 'expose_object_protected_meta', 10, 3 );
+		$this->loader->add_filter( 'acf/update_value/type=relationship',     $acf, 'relationship_persistence', 10, 3 );
+
+		$this->loader->add_filter( 'replicast_get_post_meta',                $acf, 'get_post_acf_meta', 10, 2 );
+		$this->loader->add_filter( 'replicast_prepare_post_for_create',      $acf, 'prepare_post_acf_meta', 10, 2 );
+		$this->loader->add_filter( 'replicast_prepare_post_for_update',      $acf, 'prepare_post_acf_meta', 10, 2 );
+		$this->loader->add_filter( 'replicast_prepare_page_for_create',      $acf, 'prepare_post_acf_meta', 10, 2 );
+		$this->loader->add_filter( 'replicast_prepare_page_for_update',      $acf, 'prepare_post_acf_meta', 10, 2 );
 
 	}
 

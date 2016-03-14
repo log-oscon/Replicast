@@ -138,7 +138,7 @@ class API {
 		$prepared_meta = \apply_filters( "replicast_get_{$meta_type}_meta", $prepared_meta, $object['id'] );
 
 		// Add remote object info
-		$prepared_meta[ Plugin::REPLICAST_INFO ] = array( \maybe_serialize( array(
+		$prepared_meta[ Plugin::REPLICAST_OBJECT_INFO ] = array( \maybe_serialize( array(
 			'object_id' => $object['id'],
 			'edit_link' => \get_edit_post_link( $object['id'] ),
 			'rest_url'  => \rest_url( $request->get_route() ),
@@ -532,7 +532,7 @@ class API {
 	 */
 	public static function get_replicast_info( $object ) {
 
-		$replicast_info = \get_metadata( static::get_meta_type( $object ), static::get_object_id( $object ), Plugin::REPLICAST_IDS, true );
+		$replicast_info = \get_metadata( static::get_meta_type( $object ), static::get_object_id( $object ), Plugin::REPLICAST_REMOTE_IDS, true );
 
 		if ( ! $replicast_info ) {
 			return array();
@@ -573,7 +573,7 @@ class API {
 			unset( $replicast_info[ $site_id ] );
 		}
 
-		return \update_metadata( static::get_meta_type( $object ), static::get_object_id( $object ), Plugin::REPLICAST_IDS, $replicast_info );
+		return \update_metadata( static::get_meta_type( $object ), static::get_object_id( $object ), Plugin::REPLICAST_REMOTE_IDS, $replicast_info );
 	}
 
 }
