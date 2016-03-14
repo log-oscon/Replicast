@@ -53,7 +53,7 @@ class Plugin {
 	 * @since    1.0.0
 	 * @var      string
 	 */
-	const REPLICAST_REMOTE_INFO = '_replicast_remote_info';
+	const REPLICAST_INFO = '_replicast_info';
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
