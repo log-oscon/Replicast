@@ -137,7 +137,7 @@ class API {
 		 */
 		$prepared_meta = \apply_filters( "replicast_get_{$meta_type}_meta", $prepared_meta, $object['id'] );
 
-		// Remote object info
+		// Add remote object info
 		$prepared_meta[ Plugin::REPLICAST_INFO ] = array( \maybe_serialize( array(
 			'object_id' => $object['id'],
 			'edit_link' => \get_edit_post_link( $object['id'] ),
