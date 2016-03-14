@@ -68,7 +68,7 @@ class ACF {
 			 *        with posts and pages. Maybe we should use some key that relates to ACF?
 			 */
 			if ( $field = \get_field_object( $meta_key, $post_id ) ) {
-				$prepared_metadata[ $meta_key ] = array(
+				$prepared_meta[ $meta_key ] = array(
 					'raw'      => $field,
 					'rendered' => $meta_value,
 				);
