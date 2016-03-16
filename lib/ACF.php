@@ -102,15 +102,19 @@ class ACF {
 		$remove_posts_ids = array_diff( $remove_posts_ids, $add_posts_ids );
 
 		// Get meta
-		$meta = (array) \maybe_unserialize( \get_post_meta( $post_id, static::REPLICAST_ACF_INFO, true ) );
+		$meta = \get_post_meta( $post_id, static::REPLICAST_ACF_INFO, true );
+
+		if ( ! $meta ) {
+			$meta = array();
+		}
 
 		// Add meta persistence
 		\update_post_meta(
 			$post_id,
 			static::REPLICAST_ACF_INFO,
-			\maybe_serialize( array_merge( $meta, array(
+			array_merge( $meta, array(
 				$field_name => $remove_posts_ids
-			) ) ),
+			) ),
 			$meta
 		);
 
