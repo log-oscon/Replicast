@@ -515,7 +515,7 @@ abstract class Handler {
 		// Build endpoint for GET, PUT and DELETE
 		// FIXME: this has to be more bulletproof!
 		if ( $method !== static::CREATABLE ) {
-			$config['api_url'] = \trailingslashit( $config['api_url'] ) . $data['id'];
+			$config['api_url'] = $config['api_url'] . \trailingslashit( $data['id'] );
 		}
 
 		$headers = array();

@@ -78,21 +78,13 @@ class SiteAdmin {
 	public function register_fields() {
 
 		$this->fields = array(
-			'site_url' => array(
-				'name'          => 'site_url',
-				'label'         => \__( 'Site URL', 'replicast' ),
-				'type'          => 'url',
-				'instructions'  => \__( 'The site\'s main address.', 'replicast' ),
-				'default_value' => '',
-				'placeholder'   => \__( 'http://example.com', 'replicast' )
-			),
 			'api_url' => array(
 				'name'          => 'api_url',
 				'label'         => \__( 'REST API URL', 'replicast' ),
 				'type'          => 'text',
-				'instructions'  => \__( 'The site\'s base REST API address.', 'replicast' ),
+				'instructions'  => \__( 'The remote REST API address.', 'replicast' ),
 				'default_value' => '',
-				'placeholder'   => \__( '/wp-json/', 'replicast' )
+				'placeholder'   => \__( 'http://example.com/wp-json/wp/v2/', 'replicast' )
 			),
 			'api_key' => array(
 				'name'          => 'api_key',

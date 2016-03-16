@@ -144,8 +144,9 @@ class Admin {
 
 		if ( ! $site || ! $site instanceof Client ) {
 
+			$url    = \parse_url( \get_term_meta( $term->term_id, 'api_url', true ) );
 			$client = new \GuzzleHttp\Client( array(
-				'base_uri' => \untrailingslashit( \get_term_meta( $term->term_id, 'site_url', true ) ),
+				'base_uri' => sprintf( '%s://%s', $url['scheme'], $url['host'] ),
 				'debug'    => \apply_filters( 'replicast_client_debug', defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG )
 			) );
 
