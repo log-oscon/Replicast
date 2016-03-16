@@ -60,12 +60,12 @@ class ACF {
 	 * that were removed in a private meta variable which is then processed.
 	 *
 	 * @since     1.0.0
-	 * @param     mixed    $value      The value of the field.
-	 * @param     int      $post_id    The post id.
-	 * @param     array    $field      The field object.
-	 * @return    mixed                Possibly-modified value of the field.
+	 * @param     mixed    $value        The value of the field.
+	 * @param     int      $object_id    The object ID.
+	 * @param     array    $field        The field object.
+	 * @return    mixed                  Possibly-modified value of the field.
 	 */
-	public function relationship_persistence( $value, $post_id, $field ) {
+	public function relationship_persistence( $value, $object_id, $field ) {
 
 		// Bail out if not admin and bypass REST API requests
 		if ( ! \is_admin() ) {
@@ -73,12 +73,12 @@ class ACF {
 		}
 
 		// If post is an autosave, return
-		if ( \wp_is_post_autosave( $post_id ) ) {
+		if ( \wp_is_post_autosave( $object_id ) ) {
 			return $value;
 		}
 
 		// If post is a revision, return
-		if ( \wp_is_post_revision( $post_id ) ) {
+		if ( \wp_is_post_revision( $object_id ) ) {
 			return $value;
 		}
 
@@ -86,23 +86,21 @@ class ACF {
 			return $value;
 		}
 
-		$field_name       = $field['name'];
-		$previous_posts   = \get_field( $field_name, $post_id );
-		$add_posts_ids    = ! empty( $value ) ? $value : array();
-		$remove_posts_ids = array();
+		$field_name     = $field['name'];
+		$prev_selection = \get_field( $field_name, $object_id );
+		$next_selection = ! empty( $value ) ? $value : array(); // This only contains object ID's
+		$ids_to_remove  = array();
 
-		if ( $previous_posts ) {
-			foreach ( $previous_posts as $key => $previous_post ) {
-				if ( ! empty( $previous_post->ID ) ) {
-					$remove_posts_ids[] = $previous_post->ID;
+		if ( $prev_selection ) {
+			foreach ( $prev_selection as $key => $prev_selected_object ) {
+				if ( ! in_array( $prev_selected_object->ID, $next_selection ) ) {
+					$ids_to_remove[] = $prev_selected_object->ID;
 				}
 			}
 		}
 
-		$remove_posts_ids = array_diff( $remove_posts_ids, $add_posts_ids );
-
 		// Get meta
-		$meta = \get_post_meta( $post_id, static::REPLICAST_ACF_INFO, true );
+		$meta = \get_post_meta( $object_id, static::REPLICAST_ACF_INFO, true );
 
 		if ( ! $meta ) {
 			$meta = array();
@@ -110,10 +108,10 @@ class ACF {
 
 		// Add meta persistence
 		\update_post_meta(
-			$post_id,
+			$object_id,
 			static::REPLICAST_ACF_INFO,
 			array_merge( $meta, array(
-				$field_name => $remove_posts_ids
+				$field_name => $ids_to_remove
 			) ),
 			$meta
 		);
@@ -135,15 +133,16 @@ class ACF {
 	 * Retrieve post ACF meta.
 	 *
 	 * @since     1.0.0
-	 * @param     array    Object meta.
-	 * @param     int      Object ID.
-	 * @return    array    Possibly-modified object meta.
+	 * @param     array     $values       Object meta.
+	 * @param     string    $meta_type    The object meta type.
+	 * @param     int       $object_id    The object ID.
+	 * @return    array                   Possibly-modified object meta.
 	 */
-	public function get_post_meta( $meta, $post_id ) {
+	public function get_post_meta( $values, $meta_type, $object_id ) {
 
 		$prepared_meta = array();
 
-		foreach ( $meta as $meta_key => $meta_value ) {
+		foreach ( $values as $meta_key => $meta_value ) {
 
 			/**
 			 * If it's an ACF field, add more information regarding the field.
@@ -154,7 +153,7 @@ class ACF {
 			 * FIXME: I don't know if it's a good idea use the raw/rendered keys like the core uses
 			 *        with posts and pages. Maybe we should use some key that relates to ACF?
 			 */
-			if ( $field = \get_field_object( $meta_key, $post_id ) ) {
+			if ( $field = \get_field_object( $meta_key, $object_id ) ) {
 				$prepared_meta[ $meta_key ] = array(
 					'raw'      => $field,
 					'rendered' => $meta_value,
@@ -255,10 +254,11 @@ class ACF {
 	 * @see    \Replicast\ACF\relationship_persistence
 	 *
 	 * @since    1.0.0
-	 * @param    array    $values     The values of the field.
-	 * @param    int      $post_id    The post id.
+	 * @param    array     $values       The values of the field.
+	 * @param    string    $meta_type    The object meta type.
+	 * @param    int       $object_id    The post id.
 	 */
-	public function update_post_meta( $values, $post_id ) {
+	public function update_post_meta( $values, $meta_type, $object_id ) {
 
 	}
 

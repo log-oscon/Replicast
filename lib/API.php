@@ -100,11 +100,12 @@ class API {
 		 * Filter for exposing specific protected meta keys.
 		 *
 		 * @since     1.0.0
-		 * @param     array    Name(s) of the exposed meta keys.
-		 * @param     array    Details of current content object.
-		 * @return    array    Possibly-modified name(s) of the exposed meta keys.
+		 * @param     array     Name(s) of the exposed meta keys.
+		 * @param     string    The object meta type.
+		 * @param     int       The object ID.
+		 * @return    array     Possibly-modified name(s) of the exposed meta keys.
 		 */
-		$whitelist = \apply_filters( 'replicast_expose_object_protected_meta', array(), $object );
+		$whitelist = \apply_filters( 'replicast_expose_object_protected_meta', array(), $meta_type, $object['id'] );
 
 		// Get object metadata
 		$meta = \get_metadata( $meta_type, $object['id'] );
@@ -131,11 +132,12 @@ class API {
 		 * Filter the obtained object meta.
 		 *
 		 * @since     1.0.0
-		 * @param     array    Object meta.
-		 * @param     int      Object ID.
-		 * @return    array    Possibly-modified object meta.
+		 * @param     array     Object meta.
+		 * @param     string    The object meta type.
+		 * @param     int       Object ID.
+		 * @return    array     Possibly-modified object meta.
 		 */
-		$prepared_meta = \apply_filters( "replicast_get_object_{$meta_type}_meta", $prepared_meta, $object['id'] );
+		$prepared_meta = \apply_filters( "replicast_get_object_{$meta_type}_meta", $prepared_meta, $meta_type, $object['id'] );
 
 		// Add remote object info
 		$prepared_meta[ Plugin::REPLICAST_OBJECT_INFO ] = array( \maybe_serialize( array(
@@ -305,10 +307,11 @@ class API {
 		 * @since     1.0.0
 		 * @param     array     Name(s) of the suppressed meta keys.
 		 * @param     array     The values of the field.
+		 * @param     string    The object meta type.
 		 * @param     int       The object ID.
 		 * @return    array     Possibly-modified name(s) of the suppressed meta keys.
 		 */
-		$blacklist = \apply_filters( 'replicast_suppress_object_meta_from_update', array(), $values, $object->ID );
+		$blacklist = \apply_filters( 'replicast_suppress_object_meta_from_update', array(), $values, $meta_type, $object->ID );
 
 		// Update metadata
 		foreach ( $values as $meta_key => $meta_values ) {
@@ -329,9 +332,10 @@ class API {
 		 *
 		 * @since    1.0.0
 		 * @param    array     The values of the field.
+		 * @param    string    The object meta type.
 		 * @param    int       The object ID.
 		 */
-		\do_action( "replicast_update_object_{$meta_type}_meta", $values, $object->ID );
+		\do_action( "replicast_update_object_{$meta_type}_meta", $values, $meta_type, $object->ID );
 
 	}
 
