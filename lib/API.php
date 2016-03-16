@@ -324,6 +324,15 @@ class API {
 
 		}
 
+		/**
+		 * Fires immediately after object meta of a specific type is updated.
+		 *
+		 * @since    1.0.0
+		 * @param    array     The values of the field.
+		 * @param    int       The object ID.
+		 */
+		\do_action( "replicast_update_object_{$meta_type}_meta", $values, $object_id );
+
 	}
 
 	/**
