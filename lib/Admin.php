@@ -53,7 +53,7 @@ class Admin {
 	public function enqueue_styles() {
 		\wp_enqueue_style(
 			$this->plugin->get_name(),
-			\plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/admin.css',
+			\plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/replicast-admin.css',
 			array(),
 			$this->plugin->get_version(),
 			'all'
