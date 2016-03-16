@@ -250,13 +250,17 @@ class ACF {
 	}
 
 	/**
+	 * Update post ACF meta.
 	 *
+	 * This function is used primarily to remove previous relationships
+	 * based on the information saved in \Replicast\ACF\REPLICAST_ACF_INFO.
+	 *
+	 * @see    \Replicast\ACF\relationship_persistence
 	 *
 	 * @since    1.0.0
 	 * @param    $values     array     The values of the field.
-	 * @param    $post_id    int       The post ID.
 	 */
-	public function update_post_meta( $values, $post_id ) {
+	public function update_post_meta( $values ) {
 
 	}
 
