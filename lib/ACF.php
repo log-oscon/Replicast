@@ -53,16 +53,6 @@ class ACF {
 	}
 
 	/**
-	 * Expose \Replicast\ACF protected meta keys.
-	 *
-	 * @since     1.0.0
-	 * @return    array    Exposed meta keys.
-	 */
-	public function expose_object_protected_meta() {
-		return array( static::REPLICAST_ACF_INFO );
-	}
-
-	/**
 	 * Adds REST persistence to removed object relationships.
 	 *
 	 * When a relationship between one or more objects is removed, this change is not synced via REST API.
@@ -125,44 +115,6 @@ class ACF {
 		);
 
 		return $value;
-	}
-
-	/**
-	 * Retrieve post ACF meta.
-	 *
-	 * @since     1.0.0
-	 * @param     array    Object meta.
-	 * @param     int      Object ID.
-	 * @return    array    Possibly-modified object meta.
-	 */
-	public function get_post_meta( $meta, $post_id ) {
-
-		$prepared_meta = array();
-
-		foreach ( $meta as $meta_key => $meta_value ) {
-
-			/**
-			 * If it's an ACF field, add more information regarding the field.
-			 *
-			 * The raw/rendered keys are used just to identify what's an ACF meta value ahead in the
-			 * replication process.
-			 *
-			 * FIXME: Maybe we should do this using a filter?!
-			 * FIXME: I don't know if it's a good idea use the raw/rendered keys like the core uses
-			 *        with posts and pages. Maybe we should use some key that relates to ACF?
-			 */
-			if ( $field = \get_field_object( $meta_key, $post_id ) ) {
-				$prepared_meta[ $meta_key ] = array(
-					'raw'      => $field,
-					'rendered' => $meta_value,
-				);
-			} else {
-				$prepared_meta[ $meta_key ] = $meta_value;
-			}
-
-		}
-
-		return $prepared_meta;
 	}
 
 	/**
@@ -237,6 +189,75 @@ class ACF {
 		}
 
 		return $data;
+	}
+
+
+	/**
+	 * Expose \Replicast\ACF protected meta keys.
+	 *
+	 * @since     1.0.0
+	 * @return    array    Exposed meta keys.
+	 */
+	public function expose_protected_meta() {
+		return array( static::REPLICAST_ACF_INFO );
+	}
+
+	/**
+	 * Retrieve post ACF meta.
+	 *
+	 * @since     1.0.0
+	 * @param     array    Object meta.
+	 * @param     int      Object ID.
+	 * @return    array    Possibly-modified object meta.
+	 */
+	public function get_post_meta( $meta, $post_id ) {
+
+		$prepared_meta = array();
+
+		foreach ( $meta as $meta_key => $meta_value ) {
+
+			/**
+			 * If it's an ACF field, add more information regarding the field.
+			 *
+			 * The raw/rendered keys are used just to identify what's an ACF meta value ahead in the
+			 * replication process.
+			 *
+			 * FIXME: I don't know if it's a good idea use the raw/rendered keys like the core uses
+			 *        with posts and pages. Maybe we should use some key that relates to ACF?
+			 */
+			if ( $field = \get_field_object( $meta_key, $post_id ) ) {
+				$prepared_meta[ $meta_key ] = array(
+					'raw'      => $field,
+					'rendered' => $meta_value,
+				);
+			} else {
+				$prepared_meta[ $meta_key ] = $meta_value;
+			}
+
+		}
+
+		return $prepared_meta;
+	}
+
+	/**
+	 * Suppress \Replicast\ACF meta keys from update.
+	 *
+	 * @since     1.0.0
+	 * @return    array     Suppressed meta keys.
+	 */
+	public function suppress_meta_from_update() {
+		return array( static::REPLICAST_ACF_INFO );
+	}
+
+	/**
+	 *
+	 *
+	 * @since    1.0.0
+	 * @param    $values     array     The values of the field.
+	 * @param    $post_id    int       The post ID.
+	 */
+	public function update_post_meta( $values, $post_id ) {
+
 	}
 
 }
