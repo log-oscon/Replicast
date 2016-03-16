@@ -217,8 +217,12 @@ class Plugin {
 		$this->loader->add_filter( 'replicast_prepare_page_for_create', $acf, 'prepare_post_meta', 10, 2 );
 		$this->loader->add_filter( 'replicast_prepare_page_for_update', $acf, 'prepare_post_meta', 10, 2 );
 
+		$this->loader->add_filter( 'replicast_prepare_post_for_create', $acf, 'prepare_post_relationship_persistence', 10, 2 );
+		$this->loader->add_filter( 'replicast_prepare_post_for_update', $acf, 'prepare_post_relationship_persistence', 10, 2 );
+		$this->loader->add_filter( 'replicast_prepare_page_for_create', $acf, 'prepare_post_relationship_persistence', 10, 2 );
+		$this->loader->add_filter( 'replicast_prepare_page_for_update', $acf, 'prepare_post_relationship_persistence', 10, 2 );
+
 		$this->loader->add_filter( 'replicast_suppress_meta_from_update', $acf, 'suppress_meta_from_update', 10 );
-		$this->loader->add_action( 'replicast_update_object_post_meta',   $acf, 'update_post_meta', 10, 3 );
 
 	}
 

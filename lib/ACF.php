@@ -53,19 +53,19 @@ class ACF {
 	}
 
 	/**
-	 * Adds REST persistence to removed object relationships.
+	 * Adds persistence to removed relations.
 	 *
 	 * When a relationship between one or more objects is removed, this change is not synced via REST API.
 	 * Leaving these same relationships remotely unchanged. To address this, we are sending the objects
 	 * that were removed in a private meta variable which is then processed.
 	 *
 	 * @since     1.0.0
-	 * @param     mixed    $value        The value of the field.
-	 * @param     int      $object_id    The object ID.
-	 * @param     array    $field        The field object.
-	 * @return    mixed                  Possibly-modified value of the field.
+	 * @param     mixed    $value      The value of the field.
+	 * @param     int      $post_id    The object ID.
+	 * @param     array    $field      The field object.
+	 * @return    mixed                Possibly-modified value of the field.
 	 */
-	public function relationship_persistence( $value, $object_id, $field ) {
+	public function relationship_persistence( $value, $post_id, $field ) {
 
 		// Bail out if not admin and bypass REST API requests
 		if ( ! \is_admin() ) {
@@ -73,12 +73,12 @@ class ACF {
 		}
 
 		// If post is an autosave, return
-		if ( \wp_is_post_autosave( $object_id ) ) {
+		if ( \wp_is_post_autosave( $post_id ) ) {
 			return $value;
 		}
 
 		// If post is a revision, return
-		if ( \wp_is_post_revision( $object_id ) ) {
+		if ( \wp_is_post_revision( $post_id ) ) {
 			return $value;
 		}
 
@@ -87,7 +87,7 @@ class ACF {
 		}
 
 		$field_name     = $field['name'];
-		$prev_selection = \get_field( $field_name, $object_id );
+		$prev_selection = \get_field( $field_name, $post_id );
 		$next_selection = ! empty( $value ) ? $value : array(); // This only contains object ID's
 		$ids_to_remove  = array();
 
@@ -100,7 +100,7 @@ class ACF {
 		}
 
 		// Get meta
-		$meta = \get_post_meta( $object_id, static::REPLICAST_ACF_INFO, true );
+		$meta = \get_post_meta( $post_id, static::REPLICAST_ACF_INFO, true );
 
 		if ( ! $meta ) {
 			$meta = array();
@@ -108,7 +108,7 @@ class ACF {
 
 		// Add meta persistence
 		\update_post_meta(
-			$object_id,
+			$post_id,
 			static::REPLICAST_ACF_INFO,
 			array_merge( $meta, array(
 				$field_name => $ids_to_remove
@@ -135,10 +135,10 @@ class ACF {
 	 * @since     1.0.0
 	 * @param     array     $values       Object meta.
 	 * @param     string    $meta_type    The object meta type.
-	 * @param     int       $object_id    The object ID.
+	 * @param     int       $post_id      The object ID.
 	 * @return    array                   Possibly-modified object meta.
 	 */
-	public function get_post_meta( $values, $meta_type, $object_id ) {
+	public function get_post_meta( $values, $meta_type, $post_id ) {
 
 		$prepared_meta = array();
 
@@ -153,7 +153,7 @@ class ACF {
 			 * FIXME: I don't know if it's a good idea use the raw/rendered keys like the core uses
 			 *        with posts and pages. Maybe we should use some key that relates to ACF?
 			 */
-			if ( $field = \get_field_object( $meta_key, $object_id ) ) {
+			if ( $field = \get_field_object( $meta_key, $post_id ) ) {
 				$prepared_meta[ $meta_key ] = array(
 					'raw'      => $field,
 					'rendered' => $meta_value,
@@ -205,14 +205,14 @@ class ACF {
 					$field_value = array();
 				}
 
-				foreach ( $field_value as $related_object ) {
+				foreach ( $field_value as $related_post ) {
 
-					if ( is_numeric( $related_object ) ) {
-						$related_object = \get_post( $related_object );
+					if ( is_numeric( $related_post ) ) {
+						$related_post = \get_post( $related_post );
 					}
 
 					// Get replicast info
-					$replicast_info = API::get_replicast_info( $related_object );
+					$replicast_info = API::get_replicast_info( $related_post );
 
 					// Update object ID
 					if ( ! empty( $replicast_info ) ) {
@@ -222,14 +222,66 @@ class ACF {
 				}
 
 				if ( ! empty( $meta_value ) && is_array( $meta_value ) ) {
-					$meta_value = maybe_serialize( $meta_value );
+					$meta_value = \maybe_serialize( $meta_value );
 				}
 
 			}
 
 			unset( $data['replicast']['meta'][ $key ] );
-
 			$data['replicast']['meta'][ $key ][] = $meta_value;
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Prepare removed relations.
+	 *
+	 * @since     1.0.0
+	 * @param     array                $data    Prepared post data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified post data.
+	 */
+	public function prepare_post_relationship_persistence( $data, $site ) {
+
+		if ( empty( $data['replicast'] ) ) {
+			return $data;
+		}
+
+		if ( empty( $data['replicast']['meta'] ) ) {
+			return $data;
+		}
+
+		if ( empty( $data['replicast']['meta'][ static::REPLICAST_ACF_INFO ] ) ) {
+			return $data;
+		}
+
+		foreach ( $data['replicast']['meta'][ static::REPLICAST_ACF_INFO ] as $meta_values ) {
+
+			$meta_values   = \maybe_unserialize( $meta_values );
+			$prepared_meta = array();
+
+			foreach ( $meta_values as $meta_key => $meta_value ) {
+				foreach ( $meta_value as $related_post_id ) {
+
+					// Get replicast info
+					$replicast_info = API::get_replicast_info( \get_post( $related_post_id ) );
+
+					// Update object ID
+					if ( ! empty( $replicast_info ) ) {
+						$prepared_meta[ $meta_key ][] = $replicast_info[ $site->get_id() ]['id'];
+					}
+
+				}
+
+			}
+
+			if ( ! empty( $prepared_meta ) && is_array( $prepared_meta ) ) {
+				$prepared_meta = \maybe_serialize( $prepared_meta );
+			}
+
+			unset( $data['replicast']['meta'][ static::REPLICAST_ACF_INFO ] );
+			$data['replicast']['meta'][ static::REPLICAST_ACF_INFO ][] = $prepared_meta;
 		}
 
 		return $data;
@@ -243,23 +295,6 @@ class ACF {
 	 */
 	public function suppress_meta_from_update() {
 		return array( static::REPLICAST_ACF_INFO );
-	}
-
-	/**
-	 * Update post ACF meta.
-	 *
-	 * This function is used primarily to remove previous relationships
-	 * based on the information saved in \Replicast\ACF\REPLICAST_ACF_INFO.
-	 *
-	 * @see    \Replicast\ACF\relationship_persistence
-	 *
-	 * @since    1.0.0
-	 * @param    array     $values       The values of the field.
-	 * @param    string    $meta_type    The object meta type.
-	 * @param    int       $object_id    The post id.
-	 */
-	public function update_post_meta( $values, $meta_type, $object_id ) {
-
 	}
 
 }
