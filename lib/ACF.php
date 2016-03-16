@@ -135,7 +135,7 @@ class ACF {
 	 * @param     int      Object ID.
 	 * @return    array    Possibly-modified object meta.
 	 */
-	public function get_post_acf_meta( $meta, $post_id ) {
+	public function get_post_meta( $meta, $post_id ) {
 
 		$prepared_meta = array();
 
@@ -173,7 +173,7 @@ class ACF {
 	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    array                         Possibly-modified post data.
 	 */
-	public function prepare_post_acf_meta( $data, $site ) {
+	public function prepare_post_meta( $data, $site ) {
 
 		if ( empty( $data['replicast'] ) ) {
 			return $data;
