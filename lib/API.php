@@ -135,7 +135,7 @@ class API {
 		 * @param     int      Object ID.
 		 * @return    array    Possibly-modified object meta.
 		 */
-		$prepared_meta = \apply_filters( "replicast_get_{$meta_type}_meta", $prepared_meta, $object['id'] );
+		$prepared_meta = \apply_filters( "replicast_get_object_{$meta_type}_meta", $prepared_meta, $object['id'] );
 
 		// Add remote object info
 		$prepared_meta[ Plugin::REPLICAST_OBJECT_INFO ] = array( \maybe_serialize( array(
@@ -166,10 +166,10 @@ class API {
 		 * @since     1.0.0
 		 * @param     array    Name(s) of the suppressed taxonomies.
 		 * @param     array    List of registered taxonomies.
-		 * @param     array    The object from the response.
+		 * @param     int      The object ID.
 		 * @return    array    Possibly-modified name(s) of the suppressed taxonomies.
 		 */
-		$blacklist = \apply_filters( 'replicast_suppress_object_taxonomies', array(), $taxonomies, $object );
+		$blacklist = \apply_filters( 'replicast_suppress_object_taxonomies', array(), $taxonomies, $object['id'] );
 
 		$prepared_taxonomies = array();
 		foreach ( $taxonomies as $taxonomy_key => $taxonomy_key ) {
@@ -198,7 +198,7 @@ class API {
 		 * @param     int      Object ID.
 		 * @return    array    Possibly-modified object terms.
 		 */
-		return \apply_filters( 'replicast_get_object_terms', $terms, $object['id'] );
+		return \apply_filters( 'replicast_get_object_term', $terms, $object['id'] );
 	}
 
 	/**
@@ -305,10 +305,10 @@ class API {
 		 * @since     1.0.0
 		 * @param     array     Name(s) of the suppressed meta keys.
 		 * @param     array     The values of the field.
-		 * @param     object    The object from the response.
+		 * @param     int       The object ID.
 		 * @return    array     Possibly-modified name(s) of the suppressed meta keys.
 		 */
-		$blacklist = \apply_filters( 'replicast_suppress_object_meta_from_update', array(), $values, $object );
+		$blacklist = \apply_filters( 'replicast_suppress_object_meta_from_update', array(), $values, $object->ID );
 
 		// Update metadata
 		foreach ( $values as $meta_key => $meta_values ) {
