@@ -92,10 +92,18 @@ class ACF {
 		$ids_to_remove  = array();
 
 		if ( $prev_selection ) {
-			foreach ( $prev_selection as $key => $prev_selected_object ) {
-				if ( ! in_array( $prev_selected_object->ID, $next_selection ) ) {
-					$ids_to_remove[] = $prev_selected_object->ID;
+			foreach ( $prev_selection as $key => $selected_post ) {
+
+				$selected_post_id = $selected_post;
+
+				if ( is_object( $selected_post ) ) {
+					$selected_post_id = $selected_post->ID;
 				}
+
+				if ( ! in_array( $selected_post_id, $next_selection ) ) {
+					$ids_to_remove[] = $selected_post_id;
+				}
+
 			}
 		}
 
