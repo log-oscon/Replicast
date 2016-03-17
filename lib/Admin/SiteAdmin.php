@@ -320,7 +320,7 @@ class SiteAdmin {
 			$atts['name']
 		);
 		printf(
-			'<th scope="row"><label for="tag-%s">%s *</label></th>',
+			'<th scope="row"><label for="tag-%s">%s</label></th>',
 			$atts['name'],
 			$atts['label']
 		);

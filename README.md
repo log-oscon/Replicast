@@ -34,7 +34,7 @@ x Associação de attachments ao post correspondente
 - Desactivar edição local dos attachments criados centralmente
 
 ### Outros
-- Melhorar mecanismo de gestão de sites (unificar campos Site URL e REST API URL)
+x Melhorar mecanismo de gestão de sites (unificar campos Site URL e REST API URL)
 - Melhorar mecanismo de gestão de mensagens de admin
 - Melhorar mecanismo de logs
 - Validar campos obrigatórios na criação de um "Site"
