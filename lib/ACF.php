@@ -221,40 +221,20 @@ class ACF {
 				continue;
 			}
 
-			$field_type  = \acf_extract_var( $meta['raw'], 'type' );
-			$field_value = \acf_extract_var( $meta['raw'], 'value' );
-			$meta_value  = '';
+			$meta_value = '';
 
-			if ( $field_type === 'text' ) {
-				$meta_value = $field_value;
+			// In theory, the $meta['rendered'] field has no more than one element, but you never know :-)
+			if ( ! empty( $meta['rendered'] ) && sizeof( $meta['rendered'] ) === 1 ) {
+				$meta_value = $meta['rendered'][0];
 			}
 
-			if ( $field_type === 'relationship' ) {
+			$field_type  = \acf_extract_var( $meta['raw'], 'type' );
+			$field_value = \acf_extract_var( $meta['raw'], 'value' );
 
-				if ( empty( $field_value ) ) {
-					$field_value = array();
-				}
-
-				foreach ( $field_value as $related_post ) {
-
-					if ( is_numeric( $related_post ) ) {
-						$related_post = \get_post( $related_post );
-					}
-
-					// Get replicast info
-					$replicast_info = API::get_replicast_info( $related_post );
-
-					// Update object ID
-					if ( ! empty( $replicast_info ) ) {
-						$meta_value[] = $replicast_info[ $site->get_id() ]['id'];
-					}
-
-				}
-
-				if ( ! empty( $meta_value ) && is_array( $meta_value ) ) {
-					$meta_value = \maybe_serialize( $meta_value );
-				}
-
+			switch ( $field_type ) {
+				case 'relationship':
+					$meta_value = $this->prepare_relationship( $field_value, $site );
+					break;
 			}
 
 			unset( $data['replicast']['meta'][ $key ] );
@@ -262,6 +242,44 @@ class ACF {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Prepare ACF 'relationship'.
+	 *
+	 * @since     1.0.0
+	 * @param     string               $field_value    The meta value.
+	 * @param     \Replicast\Client    $site           Site object.
+	 * @return    string                               Possibly-modified meta value.
+	 */
+	private function prepare_relationship( $field_value, $site ) {
+		$meta_value = '';
+
+		if ( empty( $field_value ) ) {
+			$field_value = array();
+		}
+
+		foreach ( $field_value as $related_post ) {
+
+			if ( is_numeric( $related_post ) ) {
+				$related_post = \get_post( $related_post );
+			}
+
+			// Get replicast info
+			$replicast_info = API::get_replicast_info( $related_post );
+
+			// Update object ID
+			if ( ! empty( $replicast_info ) ) {
+				$meta_value[] = $replicast_info[ $site->get_id() ]['id'];
+			}
+
+		}
+
+		if ( ! empty( $meta_value ) && is_array( $meta_value ) ) {
+			$meta_value = \maybe_serialize( $meta_value );
+		}
+
+		return $meta_value;
 	}
 
 	/**
