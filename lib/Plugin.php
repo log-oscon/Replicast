@@ -207,22 +207,7 @@ class Plugin {
 
 		$acf = new ACF( $this );
 
-		$this->loader->add_filter( 'acf/update_value/type=relationship', $acf, 'relationship_persistence', 10, 3 );
-
-		$this->loader->add_filter( 'replicast_expose_object_protected_meta', $acf, 'expose_protected_meta', 10 );
-		$this->loader->add_filter( 'replicast_get_object_post_meta',         $acf, 'get_post_meta', 10, 3 );
-
-		$this->loader->add_filter( 'replicast_prepare_post_for_create', $acf, 'prepare_post_meta', 10, 2 );
-		$this->loader->add_filter( 'replicast_prepare_post_for_update', $acf, 'prepare_post_meta', 10, 2 );
-		$this->loader->add_filter( 'replicast_prepare_page_for_create', $acf, 'prepare_post_meta', 10, 2 );
-		$this->loader->add_filter( 'replicast_prepare_page_for_update', $acf, 'prepare_post_meta', 10, 2 );
-
-		$this->loader->add_filter( 'replicast_prepare_post_for_create', $acf, 'prepare_post_relationship_persistence', 10, 2 );
-		$this->loader->add_filter( 'replicast_prepare_post_for_update', $acf, 'prepare_post_relationship_persistence', 10, 2 );
-		$this->loader->add_filter( 'replicast_prepare_page_for_create', $acf, 'prepare_post_relationship_persistence', 10, 2 );
-		$this->loader->add_filter( 'replicast_prepare_page_for_update', $acf, 'prepare_post_relationship_persistence', 10, 2 );
-
-		$this->loader->add_filter( 'replicast_suppress_meta_from_update', $acf, 'suppress_meta_from_update', 10 );
+		$this->loader->add_action( 'init', $acf, 'register', 99 );
 
 	}
 

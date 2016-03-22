@@ -12,6 +12,7 @@
 
 namespace Replicast;
 
+use Replicast\Admin;
 use Replicast\API;
 
 /**
@@ -50,6 +51,27 @@ class ACF {
 	 */
 	public function __construct( $plugin ) {
 		$this->plugin = $plugin;
+	}
+
+	/**
+	 * Register hooks.
+	 *
+	 * @since    1.0.0
+	 */
+	public function register() {
+
+		\add_filter( 'acf/update_value/type=relationship',     array( $this, 'relationship_persistence' ), 10, 3 );
+		\add_filter( 'replicast_expose_object_protected_meta', array( $this, 'expose_protected_meta' ), 10 );
+		\add_filter( 'replicast_get_object_post_meta',         array( $this, 'get_post_meta' ), 10, 3 );
+		\add_filter( 'replicast_suppress_meta_from_update',    array( $this, 'suppress_meta_from_update' ), 10 );
+
+		foreach ( Admin\SiteAdmin::get_post_types() as $post_type ) {
+			\add_filter( "replicast_prepare_{$post_type}_for_create", array( $this, 'prepare_post_meta' ), 10, 2 );
+			\add_filter( "replicast_prepare_{$post_type}_for_update", array( $this, 'prepare_post_meta' ), 10, 2 );
+			\add_filter( "replicast_prepare_{$post_type}_for_create", array( $this, 'prepare_post_relationship_persistence' ), 10, 2 );
+			\add_filter( "replicast_prepare_{$post_type}_for_update", array( $this, 'prepare_post_relationship_persistence' ), 10, 2 );
+		};
+
 	}
 
 	/**
