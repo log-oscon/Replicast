@@ -409,7 +409,7 @@ class SiteAdmin {
 	 * @return    string             Nonce key identifier.
 	 */
 	private function get_nonce_key( $name ) {
-		return 'replicast_' . $name . '_nonce';
+		return 'replicast_site_admin_' . $name . '_nonce';
 	}
 
 }
