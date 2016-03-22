@@ -169,7 +169,7 @@ class Plugin {
 
 		$site = new Admin\SiteAdmin( $this, static::TAXONOMY_SITE );
 
-		$this->loader->add_action( 'init',                                      $site, 'register' );
+		$this->loader->add_action( 'init',                                      $site, 'register', 99 );
 		$this->loader->add_action( 'init',                                      $site, 'register_fields' );
 		$this->loader->add_action( static::TAXONOMY_SITE . '_add_form_fields',  $site, 'add_fields' );
 		$this->loader->add_action( static::TAXONOMY_SITE . '_edit_form_fields', $site, 'edit_fields' );
