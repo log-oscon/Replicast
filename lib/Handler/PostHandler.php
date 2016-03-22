@@ -33,9 +33,9 @@ class PostHandler extends Handler {
 	 */
 	public function __construct( \WP_Post $post ) {
 
-		$post_type         = \get_post_type_object( $post->post_type );
+		$obj = \get_post_type_object( $post->post_type );
 
-		$this->rest_base   = ! empty( $post_type->rest_base ) ? $post_type->rest_base : $post_type->name;
+		$this->rest_base   = ! empty( $obj->rest_base ) ? $obj->rest_base : $obj->name;
 		$this->object      = $post;
 		$this->object_type = $post->post_type;
 		$this->data        = $this->get_object_data();
