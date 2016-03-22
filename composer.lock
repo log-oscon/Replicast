@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "901fa84c2be4d6da02d929c18001a66c",
-    "content-hash": "fb373f8f21eec4b9e0e1e98eb560a3ec",
+    "hash": "240b1477040d39324711e5fe04ac4bb1",
+    "content-hash": "02dc73dd7b3d370e108638b05384e75a",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -177,6 +177,47 @@
                 "uri"
             ],
             "time": "2016-02-18 21:54:00"
+        },
+        {
+            "name": "julien731/wp-dismissible-notices-handler",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/s3rgiosan/WP-Dismissible-Notices-Handler.git",
+                "reference": "ac7095fecac141dc395739083155cf3a6e7a350d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/s3rgiosan/WP-Dismissible-Notices-Handler/zipball/ac7095fecac141dc395739083155cf3a6e7a350d",
+                "reference": "ac7095fecac141dc395739083155cf3a6e7a350d",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.5.0"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "handler.php"
+                ]
+            },
+            "license": [
+                "GNU GPL"
+            ],
+            "authors": [
+                {
+                    "name": "Julien Liabeuf",
+                    "email": "julien@liabeuf.fr",
+                    "homepage": "https://julienliabeuf.com",
+                    "role": "Lead Developer"
+                }
+            ],
+            "description": "A simple library to handle Ajax-dismissible admin notices for WordPress",
+            "homepage": "https://github.com/julien731/WP-Dismissible-Notices-Handler",
+            "support": {
+                "source": "https://github.com/s3rgiosan/WP-Dismissible-Notices-Handler/tree/master"
+            },
+            "time": "2016-03-22 00:04:30"
         },
         {
             "name": "psr/http-message",
@@ -2325,16 +2366,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "4.8.23",
+            "version": "4.8.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "6e351261f9cd33daf205a131a1ba61c6d33bd483"
+                "reference": "a1066c562c52900a142a0e2bbf0582994671385e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/6e351261f9cd33daf205a131a1ba61c6d33bd483",
-                "reference": "6e351261f9cd33daf205a131a1ba61c6d33bd483",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/a1066c562c52900a142a0e2bbf0582994671385e",
+                "reference": "a1066c562c52900a142a0e2bbf0582994671385e",
                 "shasum": ""
             },
             "require": {
@@ -2393,7 +2434,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2016-02-11 14:56:33"
+            "time": "2016-03-14 06:16:08"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -3150,6 +3191,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "julien731/wp-dismissible-notices-handler": 20,
         "phpunit/phpunit": 0,
         "apigen/apigen": 0,
         "10up/wp_mock": 20

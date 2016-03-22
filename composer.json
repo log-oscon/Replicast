@@ -20,6 +20,10 @@
     {
       "type": "composer",
       "url": "https://composer.log.pt"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/s3rgiosan/WP-Dismissible-Notices-Handler"
     }
   ],
   "support": {
@@ -42,7 +46,8 @@
     }
   },
   "require": {
-    "guzzlehttp/guzzle": "^6.0"
+    "guzzlehttp/guzzle": "6.1.1",
+    "julien731/wp-dismissible-notices-handler": "dev-master"
   },
   "require-dev": {
     "phpunit/phpunit": "*@stable",
