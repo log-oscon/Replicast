@@ -362,19 +362,8 @@ class API {
 				continue;
 			}
 
-			// Check if term exists. Create it if not exists.
-			$term = \get_term_by( 'id', $term_data['term_id'], $term_data['taxonomy'], 'ARRAY_A' );
-
-			if ( ! $term ) {
-				$term = \wp_insert_term( $term_data['name'], $term_data['taxonomy'], array(
-					'description' => $term_data['description'],
-					'parent'      => 0,
-				) );
-			}
-
-			if ( \is_wp_error( $term ) ) {
-				continue;
-			}
+			// Get term
+			$term = static::get_term( $term_data );
 
 			$prepared_ids[ $term_data['taxonomy'] ][] = $term['term_id'];
 
@@ -417,19 +406,8 @@ class API {
 
 		foreach ( $terms as $term_data ) {
 
-			// Check if term exists
-			$term = \get_term_by( 'id', $term_data['term_id'], $term_data['taxonomy'], 'ARRAY_A' );
-
-			if ( ! $term ) {
-				$term = \wp_insert_term( $term_data['name'], $term_data['taxonomy'], array(
-					'description' => $term_data['description'],
-					'parent'      => $parent_id,
-				) );
-			}
-
-			if ( \is_wp_error( $term ) ) {
-				continue;
-			}
+			// Get term
+			$term = static::get_term( $term_data, $parent_id );
 
 			$prepared_ids[ $term_data['taxonomy'] ][] = $term['term_id'];
 
@@ -446,6 +424,33 @@ class API {
 		}
 
 		return $prepared_ids;
+	}
+
+	/**
+	 * Get term object.
+	 *
+	 * @since     1.0.0
+	 * @param     array    $term_data    The term data.
+	 * @param     int      $parent_id    The parent term ID.
+	 * @return    array                  An array containing, at least, the term_id and term_taxonomy_id.
+	 */
+	private static function get_term( $term_data, $parent_id = 0 ) {
+
+		$term = \wp_insert_term( $term_data['name'], $term_data['taxonomy'], array(
+			'description' => $term_data['description'],
+			'parent'      => $parent_id,
+		) );
+
+		if ( \is_wp_error( $term ) ) {
+
+			if ( ! \is_numeric( $term->get_error_data() ) ) {
+				return array();
+			}
+
+			$term = \get_term_by( 'id', $term->get_error_data(), $term_data['taxonomy'], 'ARRAY_A' );
+		}
+
+		return $term;
 	}
 
 	/**
