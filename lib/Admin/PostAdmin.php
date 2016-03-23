@@ -15,6 +15,7 @@ namespace Replicast\Admin;
 use Replicast\Admin;
 use Replicast\API;
 use Replicast\Handler\PostHandler;
+use Replicast\Plugin;
 
 /**
  * The dashboard-specific functionality of the `post` taxonomy.
@@ -109,12 +110,12 @@ class PostAdmin extends Admin {
 	/**
 	 * Dynamically filter a user's capabilities.
 	 *
-	 * @since      1.0.0
-	 * @param      array       $allcaps    An array of all the user's capabilities.
-	 * @param      array       $caps       Actual capabilities for meta capability.
-	 * @param      array       $args       Optional parameters passed to has_cap(), typically object ID.
-	 * @param      \WP_User    $user       The user object.
-	 * @return     array                   Possibly-modified array of all the user's capabilities.
+	 * @since     1.0.0
+	 * @param     array       $allcaps    An array of all the user's capabilities.
+	 * @param     array       $caps       Actual capabilities for meta capability.
+	 * @param     array       $args       Optional parameters passed to has_cap(), typically object ID.
+	 * @param     \WP_User    $user       The user object.
+	 * @return    array                   Possibly-modified array of all the user's capabilities.
 	 */
 	public function hide_edit_link( $allcaps, $caps, $args, $user ) {
 
@@ -144,6 +145,7 @@ class PostAdmin extends Admin {
 	/**
 	 * Filter the list of row action links.
 	 *
+	 * @since     1.0.0
 	 * @param     array       $defaults    An array of row actions.
 	 * @param     \WP_Post    $object      The current object.
 	 * @return    array                    Possibly-modified array of row actions.
@@ -187,6 +189,64 @@ class PostAdmin extends Admin {
 		}
 
 		return $actions;
+	}
+
+	/**
+	 * Replace the admin post thumbnail HTML.
+	 *
+	 * @since     1.0.0
+	 * @param     string    $content    Admin post thumbnail HTML markup.
+	 * @param     int       $post_id    Post ID.
+	 * @return    string                Possibly-modified admin post thumbnail HTML markup.
+	*/
+	public function post_thumbnail_html( $content, $post_id ) {
+
+		$thumb_id = \get_post_thumbnail_id( $post_id );
+
+		if ( empty( $thumb_id ) ) {
+			return '';
+		}
+
+		$thumb_meta = \get_post_meta( $thumb_id );
+
+		if ( empty( $thumb_meta ) ) {
+			return '';
+		}
+
+		if ( empty( $thumb_meta[ Plugin::REPLICAST_OBJECT_INFO ] ) ) {
+			return '';
+		}
+
+		$remote_info = \maybe_unserialize( $thumb_meta[ Plugin::REPLICAST_OBJECT_INFO ][0] );
+
+		if ( empty( $remote_info['sizes'] ) ) {
+			return '';
+		}
+
+		if ( empty( $remote_info['sizes']['post-thumbnail'] ) ) {
+			return '';
+		}
+
+		$image_title = '';
+		if ( ! empty( $thumb_meta['_wp_attachment_metadata'] ) ) {
+			$image_info  = \maybe_unserialize( $thumb_meta['_wp_attachment_metadata'][0] );
+			$image_title = $image_info['title'];
+		}
+
+		$thumb_html = sprintf(
+			'<img width="%s" height="%s" src="%s" class="attachment-post-thumbnail size-post-thumbnail" alt="%s">',
+			\esc_attr( $remote_info['sizes']['post-thumbnail'][1] ),
+			\esc_attr( $remote_info['sizes']['post-thumbnail'][2] ),
+			\esc_attr( $remote_info['sizes']['post-thumbnail'][0] ),
+			\esc_attr( $image_title )
+		);
+
+		return sprintf(
+			'<p class="hide-if-no-js"><a href="%s" title="%s" id="set-post-thumbnail" class="thickbox">%s</a></p>',
+			\esc_url( $remote_info['edit_link'] ),
+			\esc_attr__( 'Edit', 'replicast' ),
+			$thumb_html
+		);
 	}
 
 	/**

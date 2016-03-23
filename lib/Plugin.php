@@ -156,6 +156,7 @@ class Plugin {
 		$this->loader->add_filter( 'user_has_cap',               $post, 'hide_edit_link', 10, 4 );
 		$this->loader->add_filter( 'post_row_actions',           $post, 'hide_row_actions', 99, 2 );
 		$this->loader->add_filter( 'page_row_actions',           $post, 'hide_row_actions', 99, 2 );
+		$this->loader->add_filter( 'admin_post_thumbnail_html',  $post, 'post_thumbnail_html', 10, 2 );
 
 	}
 
