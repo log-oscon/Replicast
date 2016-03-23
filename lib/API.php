@@ -294,13 +294,19 @@ class API {
 		// Get image metadata
 		$attachment_metadata = \get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
 		if ( $attachment_metadata ) {
-			$prepared_data['metadata'] = $attachment_metadata['image_meta'];
+			$prepared_data['image_meta'] = $attachment_metadata['image_meta'];
+		}
+
+		// Get image filename
+		$filename = basename( \get_attached_file( $attachment_id ) );
+		if ( empty( $filename ) ) {
+			$filename = \sanitize_title_with_dashes( $object['title']['rendered'] );
 		}
 
 		return array_merge(
 			array(
-				'object_id' => $attachment_id,
 				'edit_link' => \get_edit_post_link( $attachment_id ),
+				'filename'  => $filename,
 			),
 			$prepared_data
 		);
