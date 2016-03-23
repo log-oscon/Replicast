@@ -293,7 +293,7 @@ class API {
 
 		// Get image metadata
 		$attachment_metadata = \get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
-		if ( $attachment_metadata ) {
+		if ( ! empty( $attachment_metadata['image_meta'] ) ) {
 			$prepared_data['image_meta'] = $attachment_metadata['image_meta'];
 		}
 
@@ -305,7 +305,9 @@ class API {
 
 		return array_merge(
 			array(
+				'id'        => $attachment_id,
 				'edit_link' => \get_edit_post_link( $attachment_id ),
+				'rest_url'  => \rest_url( sprintf( '/wp/v2/media/%s', $attachment_id ) ),
 				'filename'  => $filename,
 			),
 			$prepared_data
@@ -367,6 +369,11 @@ class API {
 		// Update object terms
 		if ( ! empty( $values['term'] ) ) {
 			static::update_object_term( $values['term'], $object );
+		}
+
+		// Update featured media
+		if ( ! empty( $values['featured_media'] ) ) {
+			static::update_object_featured_media( $values['featured_media'], $object );
 		}
 
 	}
@@ -534,6 +541,60 @@ class API {
 		}
 
 		return $term;
+	}
+
+	/**
+	 * Update object featured media.
+	 *
+	 * @since     1.0.0
+	 * @param     array     $values    The values of the field.
+	 * @param     object    $object    The object from the response.
+	 */
+	public static function update_object_featured_media( $values, $object ) {
+
+		$attachment_id = ! empty( $values['id'] ) ? $values['id'] : '';
+
+		// Create an attachment if no ID was given
+		if ( empty( $attachment_id ) ) {
+
+			$filename   = $values['filename'];
+			$upload_dir = \wp_upload_dir();
+
+			// Create a transparent 1x1 gif
+			$image = hex2bin( '47494638396101000100900000ff000000000021f90405100000002c00000000010001000002020401003b' );
+
+			// Check folder permission and define file location
+			if( \wp_mkdir_p( $upload_dir['path'] ) ) {
+				$file = implode( '/', array( $upload_dir['path'], $filename ) );
+			} else {
+				$file = implode( '/', array( $upload_dir['basedir'], $filename ) );
+			}
+
+			// Create the image  file on the server
+			file_put_contents( $file, $image );
+
+			// Check image file type
+			$filetype = \wp_check_filetype( $filename, null );
+
+			// Set attachment data
+			$attachment = array(
+				'post_mime_type' => $filetype['type'],
+				'post_title'     => \sanitize_file_name( $filename ),
+				'post_content'   => '',
+				'post_status'    => 'inherit'
+			);
+
+			// Create the attachment
+			$attachment_id = \wp_insert_attachment( $attachment, $file, $object->ID );
+
+			// Assign metadata to attachment
+			\wp_update_attachment_metadata( $attachment_id, $values['image_meta'] );
+
+		}
+
+		// Assign featured media to post
+		\set_post_thumbnail( $object->ID, $attachment_id );
+
 	}
 
 	/**

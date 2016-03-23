@@ -83,10 +83,13 @@ class PostHandler extends Handler {
 			// Get replicast info
 			$replicast_info = API::get_replicast_info( \get_post( $data['post'] ) );
 
-			$data['post'] = $replicast_info[ $site->get_id() ]['id'];
-
-		} else {
+			// Update object ID
 			$data['post'] = '';
+
+			if ( ! empty( $replicast_info ) ) {
+				$data['post'] = $replicast_info[ $site->get_id() ]['id'];
+			}
+
 		}
 
 		return $data;
@@ -188,14 +191,28 @@ class PostHandler extends Handler {
 	 */
 	public function prepare_featured_media( $data, $site ) {
 
-		if ( empty( $data['featured_media'] ) ) {
+		$attachment_id = $data['featured_media'];
+
+		// Unset default featured media data structure
+		unset( $data['featured_media'] );
+
+		if ( empty( $data['replicast'] ) ) {
+			return $data;
+		}
+
+		if ( empty( $data['replicast']['featured_media'] ) ) {
 			return $data;
 		}
 
 		// Get replicast info
-		$replicast_info = API::get_replicast_info( \get_post( $data['featured_media'] ) );
+		$replicast_info = API::get_replicast_info( \get_post( $attachment_id ) );
 
-		$data['featured_media'] = $replicast_info[ $site->get_id() ]['id'];
+		// Update object ID
+		$data['replicast']['featured_media']['id'] = '';
+
+		if ( ! empty( $replicast_info ) ) {
+			$data['replicast']['featured_media']['id'] = $replicast_info[ $site->get_id() ]['id'];
+		}
 
 		return $data;
 	}
