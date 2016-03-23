@@ -694,7 +694,12 @@ class API {
 	 */
 	public static function get_replicast_info( $object ) {
 
-		$replicast_info = \get_metadata( static::get_meta_type( $object ), static::get_object_id( $object ), Plugin::REPLICAST_REMOTE_IDS, true );
+		$replicast_info = \get_metadata(
+			static::get_meta_type( $object ),
+			static::get_object_id( $object ),
+			Plugin::REPLICAST_REMOTE_IDS,
+			true
+		);
 
 		if ( ! $replicast_info ) {
 			return array();
