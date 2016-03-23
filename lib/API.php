@@ -78,8 +78,9 @@ class API {
 	 */
 	public static function get_rest_fields( $object, $field_name, $request ) {
 		return array(
-			'meta' => static::get_object_meta( $object, $request ),
-			'term' => static::get_object_term( $object, $request ),
+			'meta'           => static::get_object_meta( $object, $request ),
+			'term'           => static::get_object_term( $object, $request ),
+			'featured_media' => static::get_object_featured_media( $object, $request ),
 		);
 	}
 
@@ -266,6 +267,81 @@ class API {
 		}
 
 		return $children;
+	}
+
+	/**
+	 * Retrieve object featured media.
+	 *
+	 * @since     1.0.0
+	 * @param     array               $object     Details of current content object.
+	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
+	 * @return    array                           Object featured media.
+	 */
+	public static function get_object_featured_media( $object, $request ) {
+
+		if ( empty( $object['featured_media'] ) ) {
+			return array();
+		}
+
+		$attachment_id = $object['featured_media'];
+		$prepared_data = array();
+
+		// Get image size information
+		foreach ( static::get_image_sizes() as $size => $value ) {
+			$prepared_data['sizes'][ $size ] = \wp_get_attachment_image_src( $attachment_id, $size );
+		}
+
+		// Get image metadata
+		$attachment_metadata = \get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
+		if ( $attachment_metadata ) {
+			$prepared_data['metadata'] = $attachment_metadata['image_meta'];
+		}
+
+		return array_merge(
+			array(
+				'object_id' => $attachment_id,
+				'edit_link' => \get_edit_post_link( $attachment_id ),
+			),
+			$prepared_data
+		);
+	}
+
+	/**
+	 * Get size information for all currently-registered image sizes.
+	 *
+	 * @global    $_wp_additional_image_sizes
+	 * @uses      \get_intermediate_image_sizes()
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @return    array    Data for all currently-registered image sizes.
+	 */
+	private static function get_image_sizes() {
+
+		global $_wp_additional_image_sizes;
+
+		$sizes = array();
+		foreach ( \get_intermediate_image_sizes() as $_size ) {
+
+			if ( in_array( $_size, array( 'thumbnail', 'medium', 'medium_large', 'large' ) ) ) {
+
+				$sizes[ $_size ]['width']  = \get_option( "{$_size}_size_w" );
+				$sizes[ $_size ]['height'] = \get_option( "{$_size}_size_h" );
+				$sizes[ $_size ]['crop']   = (bool) \get_option( "{$_size}_crop" );
+
+			} elseif ( isset( $_wp_additional_image_sizes[ $_size ] ) ) {
+
+				$sizes[ $_size ] = array(
+					'width'  => $_wp_additional_image_sizes[ $_size ]['width'],
+					'height' => $_wp_additional_image_sizes[ $_size ]['height'],
+					'crop'   => $_wp_additional_image_sizes[ $_size ]['crop'],
+				);
+
+			}
+
+		}
+
+		return $sizes;
 	}
 
 	/**
