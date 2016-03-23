@@ -506,6 +506,7 @@ class API {
 	 * Get term object.
 	 *
 	 * @since     1.0.0
+	 * @access    private
 	 * @param     array    $term_data    The term data.
 	 * @param     int      $parent_id    The parent term ID.
 	 * @return    array                  An array containing, at least, the term_id and term_taxonomy_id.
