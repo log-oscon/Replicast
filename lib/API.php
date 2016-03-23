@@ -735,7 +735,12 @@ class API {
 			unset( $replicast_info[ $site_id ] );
 		}
 
-		return \update_metadata( static::get_meta_type( $object ), static::get_object_id( $object ), Plugin::REPLICAST_REMOTE_IDS, $replicast_info );
+		return \update_metadata(
+			static::get_meta_type( $object ),
+			static::get_object_id( $object ),
+			Plugin::REPLICAST_REMOTE_IDS,
+			$replicast_info
+		);
 	}
 
 }

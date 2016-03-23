@@ -237,97 +237,40 @@ class PostAdmin extends Admin {
 		$sites = $this->get_sites( $post );
 
 		// Wrap the post
-		$post_handler = new PostHandler( $post );
-
-		// Wrap the post featured media, if exists
-		$featured_media_handler = null;
-		if ( \has_post_thumbnail( $post_id ) ) {
-			$featured_media_id = \get_post_thumbnail_id( $post_id );
-
-			if ( $featured_media_id ) {
-				$featured_media_handler = new PostHandler( \get_post( $featured_media_id ) );
-			}
-		}
+		$handler = new PostHandler( $post );
 
 		try {
 
 			foreach ( $sites as $site ) {
 
-				if ( $featured_media_handler ) {
+				$handler->handle_save( $site )
+					->then(
+						function ( $response ) use ( $site, $handler ) {
 
-					$featured_media_handler->handle_save( $site )
-						->then(
-							function ( $response ) use ( $site, $featured_media_handler, $post_handler ) {
+							// Get the remote object data
+							$remote_data = json_decode( $response->getBody()->getContents() );
 
-								// Get the remote object data
-								$remote_data = json_decode( $response->getBody()->getContents() );
-
-								if ( empty( $remote_data ) ) {
-									continue;
-								}
-
-								$site_id = $site->get_id();
-
-								// Update replicast info
-								$featured_media_handler->update_post_info( $site_id, $remote_data );
-
-								// TODO: build notices
-
-								return $post_handler->handle_save( $site );
+							if ( empty( $remote_data ) ) {
+								continue;
 							}
-						)
-						->then(
-							function ( $response ) use ( $site, $post_handler ) {
 
-								// Get the remote object data
-								$remote_data = json_decode( $response->getBody()->getContents() );
+							$site_id = $site->get_id();
 
-								if ( empty( $remote_data ) ) {
-									continue;
-								}
+							// Update replicast info
+							$handler->update_post_info( $site_id, $remote_data );
 
-								$site_id = $site->get_id();
+							// Update featured media
+							$handler->update_post_featured_media( $site_id, $remote_data );
 
-								// Update replicast info
-								$post_handler->update_post_info( $site_id, $remote_data );
+							// Update post terms
+							$handler->update_post_terms( $site_id, $remote_data );
 
-								// Update post terms
-								$post_handler->update_post_terms( $site_id, $remote_data );
+							// TODO: build notices
 
-								// TODO: build notices
+						}
+					)
+					->wait();
 
-							}
-						)
-						->wait();
-
-				} else {
-
-					$post_handler->handle_save( $site )
-						->then(
-							function ( $response ) use ( $site, $post_handler ) {
-
-								// Get the remote object data
-								$remote_data = json_decode( $response->getBody()->getContents() );
-
-								if ( empty( $remote_data ) ) {
-									continue;
-								}
-
-								$site_id = $site->get_id();
-
-								// Update replicast info
-								$post_handler->update_post_info( $site_id, $remote_data );
-
-								// Update post terms
-								$post_handler->update_post_terms( $site_id, $remote_data );
-
-								// TODO: build notices
-
-							}
-						)
-						->wait();
-
-				}
 			}
 
 			// 			$notices[] = array(
@@ -368,12 +311,12 @@ class PostAdmin extends Admin {
 			foreach ( $replicast_info as $site_id => $replicast_data ) {
 				if ( ! array_key_exists( $site_id, $sites ) ) {
 
-					$post_handler->handle_delete( $this->get_site( $site_id ), true )
+					$handler->handle_delete( $this->get_site( $site_id ), true )
 						->then(
-							function ( $response ) use ( $site_id, $post_handler ) {
+							function ( $response ) use ( $site_id, $handler ) {
 
 								// Update replicast info
-								$post_handler->update_post_info( $site_id );
+								$handler->update_post_info( $site_id );
 
 								// TODO: build notices
 
@@ -434,7 +377,7 @@ class PostAdmin extends Admin {
 		$sites = $this->get_sites( $post );
 
 		// Wrap the post
-		$post_handler = new PostHandler( $post );
+		$handler = new PostHandler( $post );
 
 		/**
 		 * Filter for whether to bypass trash or force deletion.
@@ -449,10 +392,10 @@ class PostAdmin extends Admin {
 
 			foreach ( $sites as $site ) {
 
-					$post_handler
+				$handler
 					->handle_delete( $site, $force )
 					->then(
-						function ( $response ) use ( $site, $post_handler, $force ) {
+						function ( $response ) use ( $site, $handler, $force ) {
 
 							// Get the remote object data
 							$remote_data = json_decode( $response->getBody()->getContents() );
@@ -466,7 +409,7 @@ class PostAdmin extends Admin {
 							}
 
 							// Update replicast info
-							$post_handler->update_post_info( $site->get_id(), $remote_data );
+							$handler->update_post_info( $site->get_id(), $remote_data );
 
 							// TODO: build notices
 
@@ -551,19 +494,19 @@ class PostAdmin extends Admin {
 		$sites = $this->get_sites( $post );
 
 		// Wrap the post
-		$post_handler = new PostHandler( $post );
+		$handler = new PostHandler( $post );
 
 		try {
 
 			foreach ( $sites as $site ) {
 
-					$post_handler
+				$handler
 					->handle_delete( $site, true )
 					->then(
-						function ( $response ) use ( $site, $post_handler ) {
+						function ( $response ) use ( $site, $handler ) {
 
 							// Update replicast info
-							$post_handler->update_post_info( $site->get_id() );
+							$handler->update_post_info( $site->get_id() );
 
 							// TODO: build notices
 

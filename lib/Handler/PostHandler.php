@@ -232,6 +232,36 @@ class PostHandler extends Handler {
 	}
 
 	/**
+	 * Update post featured media.
+	 *
+	 * @since     1.0.0
+	 * @param     int       $site_id    Site ID.
+	 * @param     object    $data       Object data.
+	 */
+	public function update_post_featured_media( $site_id, $data ) {
+
+		$object_id = API::get_object_id( $this->object );
+
+		if ( ! \has_post_thumbnail( $object_id ) ) {
+			return;
+		}
+
+		if ( empty( $data->replicast ) ) {
+			return;
+		}
+
+		if ( empty( $data->replicast->featured_media ) ) {
+			return;
+		}
+
+		$attachment_id = \get_post_thumbnail_id( $object_id );
+
+		// Update replicast info
+		API::update_replicast_info( \get_post( $attachment_id ), $site_id, $data->replicast->featured_media );
+
+	}
+
+	/**
 	 * Update post terms.
 	 *
 	 * @since     1.0.0
