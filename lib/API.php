@@ -89,7 +89,7 @@ class API {
 	 * @since     1.0.0
 	 * @param     array               $object     Details of current content object.
 	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
-	 * @return    array               Object meta.
+	 * @return    array                           Object meta.
 	 */
 	public static function get_object_meta( $object, $request ) {
 
@@ -118,14 +118,14 @@ class API {
 			$meta = (array) $meta;
 		}
 
-		$prepared_meta = array();
+		$prepared_data = array();
 		foreach ( $meta as $meta_key => $meta_value ) {
 
 			if ( \is_protected_meta( $meta_key ) && ! in_array( $meta_key, $whitelist ) ) {
 				continue;
 			}
 
-			$prepared_meta[ $meta_key ] = $meta_value;
+			$prepared_data[ $meta_key ] = $meta_value;
 		}
 
 		/**
@@ -137,16 +137,16 @@ class API {
 		 * @param     int       Object ID.
 		 * @return    array     Possibly-modified object meta.
 		 */
-		$prepared_meta = \apply_filters( "replicast_get_object_{$meta_type}_meta", $prepared_meta, $meta_type, $object['id'] );
+		$prepared_data = \apply_filters( "replicast_get_object_{$meta_type}_meta", $prepared_data, $meta_type, $object['id'] );
 
 		// Add remote object info
-		$prepared_meta[ Plugin::REPLICAST_OBJECT_INFO ] = array( \maybe_serialize( array(
+		$prepared_data[ Plugin::REPLICAST_OBJECT_INFO ] = array( \maybe_serialize( array(
 			'object_id' => $object['id'],
 			'edit_link' => \get_edit_post_link( $object['id'] ),
 			'rest_url'  => \rest_url( $request->get_route() ),
 		) ) );
 
-		return $prepared_meta;
+		return $prepared_data;
 	}
 
 	/**
@@ -155,7 +155,7 @@ class API {
 	 * @since     1.0.0
 	 * @param     array               $object     Details of current content object.
 	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
-	 * @return    array               Object terms.
+	 * @return    array                           Object terms.
 	 */
 	public static function get_object_term( $object, $request ) {
 
@@ -173,7 +173,7 @@ class API {
 		 */
 		$blacklist = \apply_filters( 'replicast_suppress_object_taxonomies', array(), $taxonomies, $object['id'] );
 
-		$prepared_taxonomies = array();
+		$prepared_data = array();
 		foreach ( $taxonomies as $taxonomy_key => $taxonomy_key ) {
 
 			if ( in_array( $taxonomy_key, array( Plugin::TAXONOMY_SITE ) ) ) {
@@ -184,13 +184,13 @@ class API {
 				continue;
 			}
 
-			$prepared_taxonomies[ $taxonomy_key ] = $taxonomy_key;
+			$prepared_data[ $taxonomy_key ] = $taxonomy_key;
 
 		}
 
 		// Get a hierarchical list of object terms
 		// FIXME: we should soft cache this
-		$terms = static::get_object_terms_hierarchical( $object['id'], $prepared_taxonomies );
+		$terms = static::get_object_terms_hierarchical( $object['id'], $prepared_data );
 
 		/**
 		 * Filter the obtained object terms.
