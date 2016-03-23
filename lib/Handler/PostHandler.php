@@ -188,15 +188,14 @@ class PostHandler extends Handler {
 	 */
 	public function prepare_featured_media( $data, $site ) {
 
-		// Update the "featured image" post ID with the associated remote post ID, if exists
-		if ( ! empty( $data['featured_media'] ) ) {
-
-			// Get replicast info
-			$replicast_info = API::get_replicast_info( \get_post( $data['featured_media'] ) );
-
-			$data['featured_media'] = $replicast_info[ $site->get_id() ]['id'];
-
+		if ( empty( $data['featured_media'] ) ) {
+			return $data;
 		}
+
+		// Get replicast info
+		$replicast_info = API::get_replicast_info( \get_post( $data['featured_media'] ) );
+
+		$data['featured_media'] = $replicast_info[ $site->get_id() ]['id'];
 
 		return $data;
 	}
