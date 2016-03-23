@@ -284,12 +284,33 @@ class API {
 		}
 
 		$attachment_id = $object['featured_media'];
-		$prepared_data = array();
 
 		// Get image size information
-		foreach ( static::get_image_sizes() as $size => $value ) {
-			$prepared_data['sizes'][ $size ] = \wp_get_attachment_image_src( $attachment_id, $size );
+		$image_sizes = static::get_image_sizes();
+
+		/**
+		 * Filter for suppressing image sizes.
+		 *
+		 * @since     1.0.0
+		 * @param     array    Name(s) of the suppressed image sizes.
+		 * @param     array    List of registered image sizes.
+		 * @param     int      The attachment ID.
+		 * @return    array    Possibly-modified name(s) of the suppressed image sizes.
+		 */
+		$blacklist = \apply_filters( 'replicast_suppress_featured_media_sizes', array(), $image_sizes, $attachment_id );
+
+		$prepared_image_sizes = array();
+		foreach ( $image_sizes as $size => $value ) {
+
+			if ( in_array( $size, $blacklist ) ) {
+				continue;
+			}
+
+			$prepared_image_sizes[ $size ] = \wp_get_attachment_image_src( $attachment_id, $size );
+
 		}
+
+		$prepared_data = array();
 
 		// Get image metadata
 		$attachment_metadata = \get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
@@ -303,12 +324,17 @@ class API {
 			$filename = \sanitize_title_with_dashes( $object['title']['rendered'] );
 		}
 
+		// Add remote object info
+		$prepared_data[ Plugin::REPLICAST_OBJECT_INFO ] = array( \maybe_serialize( array(
+			'sizes'     => $prepared_image_sizes,
+			'edit_link' => \get_edit_post_link( $attachment_id ),
+			'rest_url'  => \rest_url( sprintf( '/wp/v2/media/%s', $attachment_id ) ),
+		) ) );
+
 		return array_merge(
 			array(
-				'id'        => $attachment_id,
-				'edit_link' => \get_edit_post_link( $attachment_id ),
-				'rest_url'  => \rest_url( sprintf( '/wp/v2/media/%s', $attachment_id ) ),
-				'filename'  => $filename,
+				'id'       => $attachment_id,
+				'filename' => $filename,
 			),
 			$prepared_data
 		);
@@ -590,6 +616,15 @@ class API {
 			// Assign metadata to attachment
 			\wp_update_attachment_metadata( $attachment_id, $values['image_meta'] );
 
+		}
+
+		// Save remote object info
+		if ( ! empty( $values[ Plugin::REPLICAST_OBJECT_INFO ] ) ) {
+			\update_post_meta(
+				$attachment_id,
+				Plugin::REPLICAST_OBJECT_INFO,
+				\maybe_unserialize( $values[ Plugin::REPLICAST_OBJECT_INFO ][0] )
+			);
 		}
 
 		// Assign featured media to post
