@@ -192,39 +192,39 @@ class PostAdmin extends Admin {
 	}
 
 	/**
-	 * Replace the admin post thumbnail HTML.
+	 * Update post thumbnail with the remote thumbnail image.
 	 *
 	 * @since     1.0.0
-	 * @param     string    $content    Admin post thumbnail HTML markup.
+	 * @param     string    $content    Post thumbnail markup.
 	 * @param     int       $post_id    Post ID.
-	 * @return    string                Possibly-modified admin post thumbnail HTML markup.
+	 * @return    string                Possibly-modified post thumbnail markup.
 	*/
-	public function post_thumbnail_html( $content, $post_id ) {
+	public function update_post_thumbnail( $content, $post_id ) {
 
 		$thumb_id = \get_post_thumbnail_id( $post_id );
 
 		if ( empty( $thumb_id ) ) {
-			return '';
+			return $content;
 		}
 
 		$thumb_meta = \get_post_meta( $thumb_id );
 
 		if ( empty( $thumb_meta ) ) {
-			return '';
+			return $content;
 		}
 
 		if ( empty( $thumb_meta[ Plugin::REPLICAST_OBJECT_INFO ] ) ) {
-			return '';
+			return $content;
 		}
 
 		$remote_info = \maybe_unserialize( $thumb_meta[ Plugin::REPLICAST_OBJECT_INFO ][0] );
 
 		if ( empty( $remote_info['sizes'] ) ) {
-			return '';
+			return $content;
 		}
 
 		if ( empty( $remote_info['sizes']['post-thumbnail'] ) ) {
-			return '';
+			return $content;
 		}
 
 		$image_title = '';
@@ -247,6 +247,30 @@ class PostAdmin extends Admin {
 			\esc_attr__( 'Edit', 'replicast' ),
 			$thumb_html
 		);
+	}
+
+	/**
+	 * Delete remote info from post thumbnail.
+	 *
+	 * @since    1.0.0
+	 * @param    array     $meta_ids     An array of deleted metadata entry IDs.
+	 * @param    int       $object_id    Object ID.
+	 * @param    string    $meta_key     Meta key.
+	 */
+	public function delete_post_thumbnail( $meta_ids, $object_id, $meta_key ) {
+
+		if ( $meta_key !== '_thumbnail_id' ) {
+			return;
+		}
+
+		$thumb_id = \get_post_thumbnail_id( $object_id );
+
+		if ( ! $thumb_id ) {
+			return;
+		}
+
+		\delete_post_meta( $thumb_id, Plugin::REPLICAST_REMOTE_IDS );
+
 	}
 
 	/**
