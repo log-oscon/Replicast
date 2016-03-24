@@ -721,7 +721,7 @@ class API {
 	}
 
 	/**
-	 * Retrieve replicast info from object.
+	 * Retrieve remote info from object.
 	 *
 	 * @since     1.0.0
 	 * @param     object|array    $object    The object.
@@ -748,9 +748,9 @@ class API {
 	}
 
 	/**
-	 * Update object with replication info.
+	 * Update object with remote info.
 	 *
-	 * This replication info consists in a pair <site_id, remote_object_id>.
+	 * This remote info consists in a pair <site_id, remote_object_id>.
 	 *
 	 * @since     1.0.0
 	 * @param     object|array         $object                       The object.
