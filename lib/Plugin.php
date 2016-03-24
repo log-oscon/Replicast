@@ -158,8 +158,9 @@ class Plugin {
 		$this->loader->add_filter( 'page_row_actions',           $post, 'hide_row_actions', 99, 2 );
 
 		// Admin UI - Featured Image
-		$this->loader->add_filter( 'admin_post_thumbnail_html', $post, 'update_post_thumbnail', 10, 2 );
-		$this->loader->add_filter( 'delete_post_meta',          $post, 'delete_post_thumbnail', 10, 3 );
+		$this->loader->add_filter( 'admin_post_thumbnail_html',   $post, 'update_post_thumbnail', 10, 2 );
+		$this->loader->add_filter( 'delete_post_meta',            $post, 'delete_post_thumbnail', 10, 3 );
+		$this->loader->add_filter( 'ajax_query_attachments_args', $post, 'hide_attachments', 10, 1 );
 
 	}
 

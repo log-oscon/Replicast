@@ -274,6 +274,41 @@ class PostAdmin extends Admin {
 	}
 
 	/**
+	 * Filter remote attachments on Media Library AJAX calls.
+	 *
+	 * @since     1.0.0
+	 * @param     array    $query    Main query variables.
+	 * @return    array              Possibly-modified main query variables.
+	 */
+	public function hide_attachments( $query ) {
+
+		// Meta query to filter remote attachments
+		$meta_query = array(
+			'key'     => Plugin::REPLICAST_OBJECT_INFO,
+			'compare' => 'NOT EXISTS',
+		);
+
+		/**
+		 * Extend the meta query to filter remote attachments on Media Library AJAX calls.
+		 *
+		 * @since     1.0.0
+		 * @param     array    Meta query variables.
+		 * @param     array    Main query variables.
+		 * @return    array    Possibly-modified array of meta query variables.
+		 */
+		$meta_query = \apply_filters( 'replicast_hide_attachments', $meta_query, $query );
+
+		if ( ! empty( $query['meta_query'] ) && ! isset( $query['meta_query']['relation'] ) ) {
+			$query['meta_query']['relation'] = 'AND';
+		}
+
+		return array_merge_recursive(
+			array( 'meta_query' => array( $meta_query ) ),
+			$query
+		);
+	}
+
+	/**
 	 * Triggered whenever a post is published, or if it is edited and
 	 * the status is changed to publish.
 	 *
