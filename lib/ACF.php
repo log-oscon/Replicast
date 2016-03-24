@@ -233,10 +233,10 @@ class ACF {
 
 			switch ( $field_type ) {
 				case 'image':
-					$meta_value = $this->prepare_related( array( $field_value['ID'] ), $site );
+					$meta_value = $this->prepare_image( $field_value, $site );
 					break;
 				case 'relationship':
-					$meta_value = $this->prepare_related( $field_value, $site );
+					$meta_value = $this->prepare_relationship( $field_value, $site );
 					break;
 			}
 
@@ -248,14 +248,42 @@ class ACF {
 	}
 
 	/**
-	 * Prepare ACF related fields.
+	 * Prepare ACF image fields.
 	 *
 	 * @since     1.0.0
 	 * @param     array                $field_value    The meta value.
 	 * @param     \Replicast\Client    $site           Site object.
 	 * @return    string                               Possibly-modified meta value.
 	 */
-	private function prepare_related( $field_value, $site ) {
+	private function prepare_image( $field_value, $site ) {
+		$meta_value = '';
+
+		$image = \get_post( $field_value['ID'] );
+
+		if ( ! $image ) {
+			return $meta_value;
+		}
+
+		// Get replicast info
+		$replicast_info = API::get_replicast_info( $image );
+
+		// Update object ID
+		if ( ! empty( $replicast_info ) ) {
+			return $replicast_info[ $site->get_id() ]['id'];
+		}
+
+		return $meta_value;
+	}
+
+	/**
+	 * Prepare ACF relationship fields.
+	 *
+	 * @since     1.0.0
+	 * @param     array                $field_value    The meta value.
+	 * @param     \Replicast\Client    $site           Site object.
+	 * @return    string                               Possibly-modified meta value.
+	 */
+	private function prepare_relationship( $field_value, $site ) {
 		$meta_value = '';
 
 		if ( empty( $field_value ) ) {
@@ -266,6 +294,10 @@ class ACF {
 
 			if ( is_numeric( $related_post ) ) {
 				$related_post = \get_post( $related_post );
+			}
+
+			if ( ! $related_post ) {
+				continue;
 			}
 
 			// Get replicast info
