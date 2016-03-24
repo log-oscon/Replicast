@@ -232,8 +232,11 @@ class ACF {
 			$field_value = \acf_extract_var( $meta['raw'], 'value' );
 
 			switch ( $field_type ) {
+				case 'image':
+					$meta_value = $this->prepare_related( array( $field_value['ID'] ), $site );
+					break;
 				case 'relationship':
-					$meta_value = $this->prepare_relationship( $field_value, $site );
+					$meta_value = $this->prepare_related( $field_value, $site );
 					break;
 			}
 
@@ -245,14 +248,14 @@ class ACF {
 	}
 
 	/**
-	 * Prepare ACF 'relationship'.
+	 * Prepare ACF related fields.
 	 *
 	 * @since     1.0.0
-	 * @param     string               $field_value    The meta value.
+	 * @param     array                $field_value    The meta value.
 	 * @param     \Replicast\Client    $site           Site object.
 	 * @return    string                               Possibly-modified meta value.
 	 */
-	private function prepare_relationship( $field_value, $site ) {
+	private function prepare_related( $field_value, $site ) {
 		$meta_value = '';
 
 		if ( empty( $field_value ) ) {
