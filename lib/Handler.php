@@ -533,9 +533,9 @@ abstract class Handler {
 			$file_path = \get_attached_file( API::get_object_id( $this->object ) );
 			$file_name = basename( $file_path );
 
-			$headers['Content-Type'       ] = $data['mime_type'];
+			$headers['Content-Type']        = $data['mime_type'];
 			$headers['Content-Disposition'] = sprintf( 'attachment; filename=%s', $file_name );
-			$headers['Content-MD5'        ] = md5_file( $file_path );
+			$headers['Content-MD5']         = md5_file( $file_path );
 
 			$body['body'] = file_get_contents( $file_path );
 
