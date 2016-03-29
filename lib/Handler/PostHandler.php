@@ -53,7 +53,6 @@ class PostHandler extends Handler {
 	public function prepare_page( $data, $site ) {
 
 		// Unset page template if empty
-		// @see https://github.com/WP-API/WP-API/blob/develop/lib/endpoints/class-wp-rest-posts-controller.php#L1553
 		if ( empty( $data['template'] ) ) {
 			unset( $data['template'] );
 		}
