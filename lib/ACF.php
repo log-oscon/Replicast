@@ -324,6 +324,10 @@ class ACF {
 
 		$meta_value = '';
 
+		if ( empty( $field_value['ID'] ) ) {
+			return $meta_value;
+		}
+
 		$post = \get_post( $field_value['ID'] );
 
 		if ( ! $post ) {
