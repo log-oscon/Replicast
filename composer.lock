@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "c132a917dcae486ba738298c265ac1c3",
-    "content-hash": "eab35c5a36df0f1b6fced5b7f456a500",
+    "hash": "3bd72559973a7b9648b18b9883f65327",
+    "content-hash": "2986a3654b35636505b77139f846a663",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -177,6 +177,45 @@
                 "uri"
             ],
             "time": "2016-02-18 21:54:00"
+        },
+        {
+            "name": "julien731/wp-dismissible-notices-handler",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/julien731/WP-Dismissible-Notices-Handler.git",
+                "reference": "9008fae6c3a1fa119738e199f62e256ca86dfac0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/julien731/WP-Dismissible-Notices-Handler/zipball/9008fae6c3a1fa119738e199f62e256ca86dfac0",
+                "reference": "9008fae6c3a1fa119738e199f62e256ca86dfac0",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.5.0"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "handler.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GNU GPL"
+            ],
+            "authors": [
+                {
+                    "name": "Julien Liabeuf",
+                    "email": "julien@liabeuf.fr",
+                    "homepage": "https://julienliabeuf.com",
+                    "role": "Lead Developer"
+                }
+            ],
+            "description": "A simple library to handle Ajax-dismissible admin notices for WordPress",
+            "homepage": "https://github.com/julien731/WP-Dismissible-Notices-Handler",
+            "time": "2016-03-27 12:21:24"
         },
         {
             "name": "psr/http-message",
@@ -2870,16 +2909,16 @@
         },
         {
             "name": "symfony/console",
-            "version": "v2.8.3",
+            "version": "v2.8.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "56cc5caf051189720b8de974e4746090aaa10d44"
+                "reference": "9a5aef5fc0d4eff86853d44202b02be8d5a20154"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/56cc5caf051189720b8de974e4746090aaa10d44",
-                "reference": "56cc5caf051189720b8de974e4746090aaa10d44",
+                "url": "https://api.github.com/repos/symfony/console/zipball/9a5aef5fc0d4eff86853d44202b02be8d5a20154",
+                "reference": "9a5aef5fc0d4eff86853d44202b02be8d5a20154",
                 "shasum": ""
             },
             "require": {
@@ -2926,7 +2965,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "https://symfony.com",
-            "time": "2016-02-28 16:20:50"
+            "time": "2016-03-17 09:19:04"
         },
         {
             "name": "symfony/options-resolver",
@@ -3044,16 +3083,16 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.8.3",
+            "version": "v2.8.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "2a4ee40acb880c56f29fb1b8886e7ffe94f3b995"
+                "reference": "584e52cb8f788a887553ba82db6caacb1d6260bb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/2a4ee40acb880c56f29fb1b8886e7ffe94f3b995",
-                "reference": "2a4ee40acb880c56f29fb1b8886e7ffe94f3b995",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/584e52cb8f788a887553ba82db6caacb1d6260bb",
+                "reference": "584e52cb8f788a887553ba82db6caacb1d6260bb",
                 "shasum": ""
             },
             "require": {
@@ -3089,7 +3128,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2016-02-23 07:41:20"
+            "time": "2016-03-04 07:54:35"
         },
         {
             "name": "tracy/tracy",
@@ -3150,6 +3189,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "julien731/wp-dismissible-notices-handler": 20,
         "phpunit/phpunit": 0,
         "apigen/apigen": 0,
         "10up/wp_mock": 20
