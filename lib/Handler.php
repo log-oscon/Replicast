@@ -267,10 +267,13 @@ abstract class Handler {
 		}
 
 		// Prepare data by object type
-		if ( $this->object_type === 'page' ) {
-			$data = $this->prepare_page( $data, $site );
-		} elseif ( $this->object_type === 'attachment' ) {
-			$data = $this->prepare_attachment( $data, $site );
+		switch ( $this->object_type ) {
+			case 'page':
+				$data = $this->prepare_page( $data, $site );
+				break;
+			case 'attachment':
+				$data = $this->prepare_attachment( $data, $site );
+				break;
 		}
 
 		/**
@@ -328,10 +331,13 @@ abstract class Handler {
 		}
 
 		// Prepare data by object type
-		if ( $this->object_type === 'page' ) {
-			$data = $this->prepare_page( $data, $site );
-		} elseif ( $this->object_type === 'attachment' ) {
-			$data = $this->prepare_attachment( $data, $site );
+		switch ( $this->object_type ) {
+			case 'page':
+				$data = $this->prepare_page( $data, $site );
+				break;
+			case 'attachment':
+				$data = $this->prepare_attachment( $data, $site );
+				break;
 		}
 
 		/**
