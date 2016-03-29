@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "ae63688ffb5f5f2bf96b785394b56ef2",
-    "content-hash": "56cc5e190e936ab9e3302dd7b2c4389f",
+    "hash": "ac77266e6d7270bfe3dcbbfb95dfb026",
+    "content-hash": "30e9de17b1d36b0cfcc7dbc3f6104798",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -3186,7 +3186,14 @@
             "time": "2016-02-28 21:39:42"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "alias": "1.0.x-dev",
+            "alias_normalized": "1.0.9999999.9999999-dev",
+            "version": "9999999-dev",
+            "package": "julien731/wp-dismissible-notices-handler"
+        }
+    ],
     "minimum-stability": "stable",
     "stability-flags": {
         "julien731/wp-dismissible-notices-handler": 20,
