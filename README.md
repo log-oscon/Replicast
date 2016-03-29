@@ -72,3 +72,46 @@ Observações:
     Client error: `DELETE http://cms.sonaesierra.dev/colombo/wp-json/wp/v2/posts/3604` resulted in a `410 Gone` response: {"code":"rest_already_deleted","message":"The post has already been deleted.","data":{"status":410}} 
     410: Gone
     ```
+
+
+### Sonae Sierra
+
+| Stores           | Estado | Observações |
+|------------------|:------:|-------------|
+| Título           |    X   |             |
+| Texto            |    X   |             |
+| Categorias       |    X   |             |
+| Tags             |    X   |             |
+| Logo             |        |             |
+| Gallery          |        |             |
+| Contacts         |    X   |             |
+| Shopping Hours   |    X   |             |
+| Store Management |    X   | [1]         |
+
+Observações:  
+1. O campo "Relationship Group" só é sincronizado se o termo seleccionado já existir no site remoto;
+
+
+| What's On - Event | Estado | Observações |
+|-------------------|:------:|-------------|
+| Título            |    X   |             |
+| Texto             |    X   |             |
+| Categorias        |    X   |             |
+| Tags              |    X   |             |
+| Hero Image        |        |             |
+| Related           |    X   |             |
+| Event Details     |    X   |             |
+| Featured Image    |        |             |
+
+
+| What's On - Article | Estado | Observações |
+|---------------------|:------:|-------------|
+| Título              |    X   |             |
+| Texto               |    X   |             |
+| Categorias          |    X   |             |
+| Tags                |    X   |             |
+| Hero Image          |        |             |
+| Related             |    X   |             |
+| Featured Image      |        |             |
+
+
