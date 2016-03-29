@@ -253,7 +253,7 @@ class Plugin {
 	 * The reference to the class that orchestrates the hooks with the plugin.
 	 *
 	 * @since     1.0.0
-	 * @return    Replicast_Loader    Orchestrates the hooks of the plugin.
+	 * @return    \Replicast\Loader    Orchestrates the hooks of the plugin.
 	 */
 	public function get_loader() {
 		return $this->loader;

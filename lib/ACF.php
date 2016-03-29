@@ -60,16 +60,16 @@ class ACF {
 	 */
 	public function register() {
 
-		\add_filter( 'acf/update_value/type=relationship',     array( $this, 'relationship_persistence' ), 10, 3 );
-		\add_filter( 'replicast_expose_object_protected_meta', array( $this, 'expose_protected_meta' ), 10 );
-		\add_filter( 'replicast_get_object_post_meta',         array( $this, 'get_post_meta' ), 10, 3 );
-		\add_filter( 'replicast_suppress_meta_from_update',    array( $this, 'suppress_meta_from_update' ), 10 );
+		\add_filter( 'acf/update_value/type=relationship',         array( $this, 'relationship_persistence' ), 10, 3 );
+		\add_filter( 'replicast_expose_object_protected_meta',     array( $this, 'expose_object_protected_meta' ), 10 );
+		\add_filter( 'replicast_get_object_post_meta',             array( $this, 'get_post_meta' ), 10, 3 );
+		\add_filter( 'replicast_suppress_object_meta_from_update', array( $this, 'suppress_object_meta_from_update' ), 10 );
 
 		foreach ( Admin\SiteAdmin::get_post_types() as $post_type ) {
-			\add_filter( "replicast_prepare_{$post_type}_for_create", array( $this, 'prepare_post_meta' ), 10, 2 );
-			\add_filter( "replicast_prepare_{$post_type}_for_update", array( $this, 'prepare_post_meta' ), 10, 2 );
-			\add_filter( "replicast_prepare_{$post_type}_for_create", array( $this, 'prepare_post_relationship_persistence' ), 10, 2 );
-			\add_filter( "replicast_prepare_{$post_type}_for_update", array( $this, 'prepare_post_relationship_persistence' ), 10, 2 );
+			\add_filter( "replicast_prepare_{$post_type}_for_create", array( $this, 'prepare_meta' ), 10, 2 );
+			\add_filter( "replicast_prepare_{$post_type}_for_update", array( $this, 'prepare_meta' ), 10, 2 );
+			\add_filter( "replicast_prepare_{$post_type}_for_create", array( $this, 'prepare_relationship_persistence' ), 10, 2 );
+			\add_filter( "replicast_prepare_{$post_type}_for_update", array( $this, 'prepare_relationship_persistence' ), 10, 2 );
 		};
 
 	}
@@ -155,7 +155,7 @@ class ACF {
 	 * @since     1.0.0
 	 * @return    array    Exposed meta keys.
 	 */
-	public function expose_protected_meta() {
+	public function expose_object_protected_meta() {
 		return array( static::REPLICAST_ACF_INFO );
 	}
 
@@ -198,14 +198,14 @@ class ACF {
 	}
 
 	/**
-	 * Prepare post ACF meta.
+	 * Prepare ACF meta.
 	 *
 	 * @since     1.0.0
-	 * @param     array                $data    Prepared post data.
+	 * @param     array                $data    Prepared data.
 	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Possibly-modified post data.
+	 * @return    array                         Possibly-modified data.
 	 */
-	public function prepare_post_meta( $data, $site ) {
+	public function prepare_meta( $data, $site ) {
 
 		if ( empty( $data['replicast'] ) ) {
 			return $data;
@@ -215,9 +215,25 @@ class ACF {
 			return $data;
 		}
 
+		/**
+		 * Filter for suppressing ACF meta by field type.
+		 *
+		 * @since     1.0.0
+		 * @param     array    Name of the suppressed field type(s).
+		 * @param     array    Object meta.
+		 * @return    array    Possibly-modified name of the suppressed field type(s).
+		 */
+		$blacklist = \apply_filters( 'replicast_suppress_object_acf_meta', array(), $data['replicast']['meta'] );
+
 		foreach ( $data['replicast']['meta'] as $key => $meta ) {
 
 			if ( empty( $meta['raw'] ) ) {
+				continue;
+			}
+
+			$field_type = \acf_extract_var( $meta['raw'], 'type' );
+
+			if ( in_array( $field_type, $blacklist ) ) {
 				continue;
 			}
 
@@ -228,7 +244,6 @@ class ACF {
 				$meta_value = $meta['rendered'][0];
 			}
 
-			$field_type  = \acf_extract_var( $meta['raw'], 'type' );
 			$field_value = \acf_extract_var( $meta['raw'], 'value' );
 
 			switch ( $field_type ) {
@@ -377,11 +392,11 @@ class ACF {
 	 * Prepare removed relations.
 	 *
 	 * @since     1.0.0
-	 * @param     array                $data    Prepared post data.
+	 * @param     array                $data    Prepared data.
 	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Possibly-modified post data.
+	 * @return    array                         Possibly-modified data.
 	 */
-	public function prepare_post_relationship_persistence( $data, $site ) {
+	public function prepare_relationship_persistence( $data, $site ) {
 
 		if ( empty( $data['replicast'] ) ) {
 			return $data;
@@ -432,7 +447,7 @@ class ACF {
 	 * @since     1.0.0
 	 * @return    array     Suppressed meta keys.
 	 */
-	public function suppress_meta_from_update() {
+	public function suppress_object_meta_from_update() {
 		return array( static::REPLICAST_ACF_INFO );
 	}
 
