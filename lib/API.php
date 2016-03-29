@@ -494,14 +494,12 @@ class API {
 
 		}
 
-		if ( ! empty( $prepared_ids ) ) {
-			foreach ( $prepared_ids as $taxonomy => $ids ) {
-				\wp_set_object_terms(
-					$object->ID,
-					$ids,
-					$taxonomy
-				);
-			}
+		foreach ( $prepared_ids as $taxonomy => $ids ) {
+			\wp_set_object_terms(
+				$object->ID,
+				$ids,
+				$taxonomy
+			);
 		}
 
 	}
