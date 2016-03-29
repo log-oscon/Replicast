@@ -76,20 +76,22 @@ Observações:
 
 ### Sonae Sierra
 
-| Stores           | Estado | Observações |
-|------------------|:------:|-------------|
-| Título           |    X   |             |
-| Texto            |    X   |             |
-| Categorias       |    X   |             |
-| Tags             |    X   |             |
-| Logo             |        |             |
-| Gallery          |        |             |
-| Contacts         |    X   |             |
-| Shopping Hours   |    X   |             |
-| Store Management |    X   | [1]         |
+| Stores              | Estado | Observações |
+|---------------------|:------:|-------------|
+| Título              |    X   |             |
+| Texto               |    X   |             |
+| Categorias          |    X   |             |
+| Tags                |    X   |             |
+| Logo                |        |             |
+| Gallery             |        |             |
+| Contacts            |    X   |             |
+| Shopping Hours      |    X   |             |
+| Store Management    |    X   | [1]         |
+| Editing Permissions |    -   | [2]         |
 
 Observações:  
-1. O campo "Relationship Group" só é sincronizado se o termo seleccionado já existir no site remoto;
+1. O campo "Relationship Group" só é sincronizado se o termo seleccionado já existir no site remoto;  
+2. Não está contemplada a sincronização de utilizadores. Para além disso, não existe o conceito de "Editing Permissions" no CIDB;
 
 
 | What's On - Event | Estado | Observações |
