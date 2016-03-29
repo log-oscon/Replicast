@@ -232,6 +232,9 @@ class ACF {
 			$field_value = \acf_extract_var( $meta['raw'], 'value' );
 
 			switch ( $field_type ) {
+				case 'taxonomy':
+					$meta_value = $this->prepare_taxonomy( $field_value, $site );
+					break;
 				case 'image':
 					$meta_value = $this->prepare_image( $field_value, $site );
 					break;
@@ -248,24 +251,72 @@ class ACF {
 	}
 
 	/**
+	 * Prepare ACF taxonomy fields.
+	 *
+	 * @since     1.0.0
+	 * @param     array                $field_value    The meta value.
+	 * @param     \Replicast\Client    $site           Site object.
+	 * @return    string                               Possibly-modified serialized meta value.
+	 */
+	private function prepare_taxonomy( $field_value, $site ) {
+
+		$meta_value = '';
+
+		if ( empty( $field_value ) ) {
+			$field_value = array();
+		}
+
+		if ( ! is_array( $field_value ) ) {
+			$field_value = array( $field_value );
+		}
+
+		foreach ( $field_value as $term ) {
+
+			if ( is_numeric( $term ) ) {
+				$term = \get_term_by( 'id', $term['term_id'], $term['taxonomy'] );
+			}
+
+			if ( ! $term ) {
+				continue;
+			}
+
+			// Get replicast info
+			$replicast_info = API::get_replicast_info( $term );
+
+			// Update object ID
+			if ( ! empty( $replicast_info ) ) {
+				$meta_value[] = $replicast_info[ $site->get_id() ]['id'];
+			}
+
+		}
+
+		if ( ! empty( $meta_value ) && is_array( $meta_value ) ) {
+			$meta_value = \maybe_serialize( $meta_value );
+		}
+
+		return $meta_value;
+	}
+
+	/**
 	 * Prepare ACF image fields.
 	 *
 	 * @since     1.0.0
 	 * @param     array                $field_value    The meta value.
 	 * @param     \Replicast\Client    $site           Site object.
-	 * @return    string                               Possibly-modified meta value.
+	 * @return    string                               Possibly-modified non-serialized meta value.
 	 */
 	private function prepare_image( $field_value, $site ) {
+
 		$meta_value = '';
 
-		$image = \get_post( $field_value['ID'] );
+		$post = \get_post( $field_value['ID'] );
 
-		if ( ! $image ) {
+		if ( ! $post ) {
 			return $meta_value;
 		}
 
 		// Get replicast info
-		$replicast_info = API::get_replicast_info( $image );
+		$replicast_info = API::get_replicast_info( $post );
 
 		// Update object ID
 		if ( ! empty( $replicast_info ) ) {
@@ -281,13 +332,18 @@ class ACF {
 	 * @since     1.0.0
 	 * @param     array                $field_value    The meta value.
 	 * @param     \Replicast\Client    $site           Site object.
-	 * @return    string                               Possibly-modified meta value.
+	 * @return    string                               Possibly-modified and serialized meta value.
 	 */
 	private function prepare_relationship( $field_value, $site ) {
+
 		$meta_value = '';
 
 		if ( empty( $field_value ) ) {
 			$field_value = array();
+		}
+
+		if ( ! is_array( $field_value ) ) {
+			$field_value = array( $field_value );
 		}
 
 		foreach ( $field_value as $related_post ) {
