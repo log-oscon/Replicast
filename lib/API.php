@@ -641,7 +641,9 @@ class API {
 
 		if ( isset( $object->term_id ) ) {
 			return $object->term_id;
-		} elseif ( isset( $object->ID ) ) {
+		}
+
+		if ( isset( $object->ID ) ) {
 			return $object->ID;
 		}
 
