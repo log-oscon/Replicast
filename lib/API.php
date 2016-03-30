@@ -417,7 +417,7 @@ class API {
 		$meta_type = static::get_meta_type( $object );
 
 		/**
-		 * Filter for suppressing specific meta keys from update.
+		 * Filter for suppressing specific meta keys.
 		 *
 		 * @since     1.0.0
 		 * @param     array     Name(s) of the suppressed meta keys.
@@ -426,7 +426,7 @@ class API {
 		 * @param     int       The object ID.
 		 * @return    array     Possibly-modified name(s) of the suppressed meta keys.
 		 */
-		$blacklist = \apply_filters( 'replicast_suppress_object_meta_from_update', array(), $values, $meta_type, $object->ID );
+		$blacklist = \apply_filters( 'replicast_suppress_object_meta', array(), $values, $meta_type, $object->ID );
 
 		// Update metadata
 		foreach ( $values as $meta_key => $meta_values ) {
