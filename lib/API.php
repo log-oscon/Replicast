@@ -78,9 +78,9 @@ class API {
 	 */
 	public static function get_rest_fields( $object, $field_name, $request ) {
 		return array(
-			'meta'           => static::get_object_meta( $object, $request ),
-			'term'           => static::get_object_term( $object, $request ),
-			'featured_media' => static::get_object_featured_media( $object, $request ),
+			'meta'  => static::get_object_meta( $object, $request ),
+			'term'  => static::get_object_term( $object, $request ),
+			'media' => static::get_object_media( $object, $request ),
 		);
 	}
 
@@ -270,14 +270,14 @@ class API {
 	}
 
 	/**
-	 * Retrieve object featured media.
+	 * Retrieve object media.
 	 *
 	 * @since     1.0.0
 	 * @param     array               $object     Details of current content object.
 	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
-	 * @return    array                           Object featured media.
+	 * @return    array                           Object media.
 	 */
-	public static function get_object_featured_media( $object, $request ) {
+	public static function get_object_media( $object, $request ) {
 
 		if ( empty( $object['featured_media'] ) ) {
 			return array();
@@ -294,10 +294,9 @@ class API {
 		 * @since     1.0.0
 		 * @param     array    Name(s) of the suppressed image sizes.
 		 * @param     array    List of registered image sizes.
-		 * @param     int      The attachment ID.
 		 * @return    array    Possibly-modified name(s) of the suppressed image sizes.
 		 */
-		$blacklist = \apply_filters( 'replicast_suppress_featured_media_sizes', array(), $image_sizes, $attachment_id );
+		$blacklist = \apply_filters( 'replicast_suppress_media_sizes', array(), $image_sizes );
 
 		$prepared_image_sizes = array();
 		foreach ( $image_sizes as $size => $value ) {
@@ -398,8 +397,8 @@ class API {
 		}
 
 		// Update featured media
-		if ( ! empty( $values['featured_media'] ) ) {
-			static::update_object_featured_media( $values['featured_media'], $object );
+		if ( ! empty( $values['media'] ) ) {
+			static::update_object_media( $values['media'], $object );
 		}
 
 	}
@@ -568,13 +567,13 @@ class API {
 	}
 
 	/**
-	 * Update object featured media.
+	 * Update object media.
 	 *
 	 * @since     1.0.0
 	 * @param     array     $values    The values of the field.
 	 * @param     object    $object    The object from the response.
 	 */
-	public static function update_object_featured_media( $values, $object ) {
+	public static function update_object_media( $values, $object ) {
 
 		$attachment_id = ! empty( $values['id'] ) ? $values['id'] : '';
 
