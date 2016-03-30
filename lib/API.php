@@ -190,7 +190,6 @@ class API {
 		}
 
 		// Get a hierarchical list of object terms
-		// FIXME: we should soft cache this
 		$terms = static::get_object_terms_hierarchical( $object['id'], $prepared_data );
 
 		/**
@@ -218,9 +217,10 @@ class API {
 	 */
 	private static function get_object_terms_hierarchical( $object_id, $taxonomies ) {
 
+		// FIXME: we should soft cache this
+
 		$hierarchical_terms = array();
 
-		// FIXME: we should soft cache this
 		$terms = \wp_get_object_terms( $object_id, $taxonomies );
 
 		if ( empty( $terms ) ) {
@@ -296,12 +296,12 @@ class API {
 		 * @param     array    List of registered image sizes.
 		 * @return    array    Possibly-modified name(s) of the suppressed image sizes.
 		 */
-		$blacklist = \apply_filters( 'replicast_suppress_media_sizes', array(), $image_sizes );
+		$suppressed_media_sizes = \apply_filters( 'replicast_suppress_media_sizes', array(), $image_sizes );
 
 		$prepared_image_sizes = array();
 		foreach ( $image_sizes as $size => $value ) {
 
-			if ( in_array( $size, $blacklist ) ) {
+			if ( in_array( $size, $suppressed_media_sizes ) ) {
 				continue;
 			}
 
@@ -350,6 +350,8 @@ class API {
 	 * @return    array    Data for all currently-registered image sizes.
 	 */
 	private static function get_image_sizes() {
+
+		// FIXME: we should soft cache this
 
 		global $_wp_additional_image_sizes;
 
