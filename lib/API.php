@@ -332,8 +332,8 @@ class API {
 
 		return array_merge(
 			array(
-				'id'       => $attachment_id,
-				'filename' => $filename,
+				'id'   => $attachment_id,
+				'name' => $filename,
 			),
 			$prepared_data
 		);
@@ -582,7 +582,7 @@ class API {
 		// Create an attachment if no ID was given
 		if ( empty( $attachment_id ) ) {
 
-			$filename   = $values['filename'];
+			$filename   = $values['name'];
 			$upload_dir = \wp_upload_dir();
 
 			// Create a transparent 1x1 gif
