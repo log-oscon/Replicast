@@ -198,53 +198,53 @@ class PostAdmin extends Admin {
 	 * @param     string    $content    Post thumbnail markup.
 	 * @param     int       $post_id    Post ID.
 	 * @return    string                Possibly-modified post thumbnail markup.
-	*/
+	 */
 	public function update_post_thumbnail( $content, $post_id ) {
 
-		$thumb_id = \get_post_thumbnail_id( $post_id );
+		$object_id = \get_post_thumbnail_id( $post_id );
 
-		if ( empty( $thumb_id ) ) {
+		if ( empty( $object_id ) ) {
 			return $content;
 		}
 
-		$thumb_meta = \get_post_meta( $thumb_id );
+		// Get thumbnail metadata
+		$metadata = \get_post_meta( $object_id, '_wp_attachment_metadata', true );
 
-		if ( empty( $thumb_meta ) ) {
+		if ( empty( $metadata ) ) {
 			return $content;
 		}
 
-		if ( empty( $thumb_meta[ Plugin::REPLICAST_OBJECT_INFO ] ) ) {
+		if ( empty( $metadata['sizes'] ) ) {
 			return $content;
 		}
 
-		$remote_info = \maybe_unserialize( $thumb_meta[ Plugin::REPLICAST_OBJECT_INFO ] );
-
-		if ( empty( $remote_info['sizes'] ) ) {
+		if ( empty( $metadata['sizes']['post-thumbnail'] ) ) {
 			return $content;
-		}
-
-		if ( empty( $remote_info['sizes']['post-thumbnail'] ) ) {
-			return $content;
-		}
-
-		$image_title = '';
-		if ( ! empty( $thumb_meta['_wp_attachment_metadata'] ) ) {
-			$image_info  = \maybe_unserialize( $thumb_meta['_wp_attachment_metadata'][0] );
-			$image_title = $image_info['title'];
 		}
 
 		$thumb_html = sprintf(
-			'<img width="%s" height="%s" src="%s" class="attachment-post-thumbnail size-post-thumbnail" alt="%s">',
-			\esc_attr( $remote_info['sizes']['post-thumbnail'][1] ),
-			\esc_attr( $remote_info['sizes']['post-thumbnail'][2] ),
-			\esc_attr( $remote_info['sizes']['post-thumbnail'][0] ),
-			\esc_attr( $image_title )
+			'<img width="%s" height="%s" src="%s" class="attachment-post-thumbnail size-post-thumbnail">',
+			\esc_attr( $metadata['sizes']['post-thumbnail']['width'] ),
+			\esc_attr( $metadata['sizes']['post-thumbnail']['height'] ),
+			\esc_attr( $metadata['sizes']['post-thumbnail']['file'] )
 		);
 
+		// Get remote info
+		$remote_info = \get_post_meta( $object_id, Plugin::REPLICAST_OBJECT_INFO, true );
+
+		if ( ! empty( $remote_info ) ) {
+			$remote_info = \maybe_unserialize( $remote_info );
+
+			$thumb_html = sprintf(
+				'<a href="%s" title="%s" id="set-post-thumbnail" class="thickbox">%s</a>',
+				\esc_url( $remote_info['edit_link'] ),
+				\esc_attr__( 'Edit', 'replicast' ),
+				$thumb_html
+			);
+		}
+
 		return sprintf(
-			'<p class="hide-if-no-js"><a href="%s" title="%s" id="set-post-thumbnail" class="thickbox">%s</a></p>',
-			\esc_url( $remote_info['edit_link'] ),
-			\esc_attr__( 'Edit', 'replicast' ),
+			'<p class="hide-if-no-js">%s</p>',
 			$thumb_html
 		);
 	}
@@ -263,13 +263,13 @@ class PostAdmin extends Admin {
 			return;
 		}
 
-		$thumb_id = \get_post_thumbnail_id( $object_id );
+		$object_id = \get_post_thumbnail_id( $object_id );
 
-		if ( ! $thumb_id ) {
+		if ( ! $object_id ) {
 			return;
 		}
 
-		\delete_post_meta( $thumb_id, Plugin::REPLICAST_REMOTE_IDS );
+		\delete_post_meta( $object_id, Plugin::REPLICAST_REMOTE_IDS );
 
 	}
 

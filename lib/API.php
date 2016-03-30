@@ -307,7 +307,7 @@ class API {
 		// Get metadata
 		$metadata = \get_post_meta( $object_id, '_wp_attachment_metadata', true );
 
-		// Update file url
+		// Replace relative url with absolute url
 		$metadata['file'] = \wp_get_attachment_url( $object_id );
 
 		if ( ! empty( $metadata['sizes'] ) ) {
@@ -318,20 +318,21 @@ class API {
 					continue;
 				}
 
-				// Update size file url
+				// Replace relative url with absolute url
 				$metadata['sizes'][ $size ]['file'] = \wp_get_attachment_image_src( $object_id, $size )[0];
 
 			}
 		}
 
-		return array_merge(
-			array(
-				Plugin::REPLICAST_OBJECT_INFO => array(
-					'edit_link' => \get_edit_post_link( $object_id ),
-					'rest_url'  => \rest_url( sprintf( '/wp/v2/media/%s', $object_id ) ),
-				),
-			),
-			$metadata
+		return array(
+			'id'                          => $object_id, // This object ID is going to be replaced by the remote ID
+			'mime-type'                   => \get_post_mime_type( $object_id ),
+			'metadata'                    => $metadata,
+			Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
+				'object_id' => $object_id, // Save original object ID
+				'edit_link' => \get_edit_post_link( $object_id ),
+				'rest_url'  => \rest_url( sprintf( '/wp/v2/media/%s', $object_id ) ),
+			) ),
 		);
 	}
 
@@ -538,29 +539,12 @@ class API {
 		// Create an attachment if no ID was given
 		if ( empty( $attachment_id ) ) {
 
-			$filename   = $values['name'];
-			$upload_dir = \wp_upload_dir();
-
-			// Create a transparent 1x1 gif
-			$image = hex2bin( '47494638396101000100900000ff000000000021f90405100000002c00000000010001000002020401003b' );
-
-			// Check folder permission and define file location
-			if( \wp_mkdir_p( $upload_dir['path'] ) ) {
-				$file = implode( '/', array( $upload_dir['path'], $filename ) );
-			} else {
-				$file = implode( '/', array( $upload_dir['basedir'], $filename ) );
-			}
-
-			// Create the image  file on the server
-			file_put_contents( $file, $image );
-
-			// Check image file type
-			$filetype = \wp_check_filetype( $filename, null );
+			$file = \esc_url( $values['metadata']['file'] );
 
 			// Set attachment data
 			$attachment = array(
-				'post_mime_type' => $filetype['type'],
-				'post_title'     => \sanitize_file_name( $filename ),
+				'post_mime_type' => $values['mime-type'],
+				'post_title'     => \sanitize_file_name( basename( $file ) ),
 				'post_content'   => '',
 				'post_status'    => 'inherit'
 			);
@@ -569,18 +553,12 @@ class API {
 			$attachment_id = \wp_insert_attachment( $attachment, $file, $object->ID );
 
 			// Assign metadata to attachment
-			\wp_update_attachment_metadata( $attachment_id, $values['image_meta'] );
+			\wp_update_attachment_metadata( $attachment_id, $values['metadata'] );
 
 		}
 
 		// Save remote object info
-		if ( ! empty( $values[ Plugin::REPLICAST_OBJECT_INFO ] ) ) {
-			\update_post_meta(
-				$attachment_id,
-				Plugin::REPLICAST_OBJECT_INFO,
-				\maybe_unserialize( $values[ Plugin::REPLICAST_OBJECT_INFO ] )
-			);
-		}
+		\update_post_meta( $attachment_id, Plugin::REPLICAST_OBJECT_INFO, $values[ Plugin::REPLICAST_OBJECT_INFO ] );
 
 		// Assign featured media to post
 		\set_post_thumbnail( $object->ID, $attachment_id );
