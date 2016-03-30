@@ -359,7 +359,7 @@ abstract class Handler {
 	 * @return    array    The object data.
 	 */
 	protected function get_object_data() {
-		return $this->rest_do_request();
+		return $this->_do_request();
 	}
 
 	/**
@@ -371,7 +371,7 @@ abstract class Handler {
 	 * @access    private
 	 * @return    \WP_REST_Response    Response object.
 	 */
-	private function rest_do_request() {
+	private function _do_request() {
 
 		global $wp_rest_server;
 
