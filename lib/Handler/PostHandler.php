@@ -12,9 +12,8 @@
 
 namespace Replicast\Handler;
 
-use \Replicast\Handler\CategoryHandler;
-use \Replicast\Handler\TagHandler;
-use \GuzzleHttp\Exception\RequestException;
+use Replicast\API;
+use Replicast\Handler;
 
 /**
  * Handles ´post´ content type replication.
@@ -33,199 +32,202 @@ class PostHandler extends Handler {
 	 * @param    \WP_Post    $post    Post object.
 	 */
 	public function __construct( \WP_Post $post ) {
-		$post_type       = \get_post_type_object( $post->post_type );
-		$this->rest_base = ! empty( $post_type->rest_base ) ? $post_type->rest_base : $post_type->name;
-		$this->object    = $post;
-		$this->data      = $this->get_object_data();
+		$post_type         = \get_post_type_object( $post->post_type );
+		$this->rest_base   = ! empty( $post_type->rest_base ) ? $post_type->rest_base : $post_type->name;
+		$this->object_type = $post_type;
+		$this->object      = $post;
+		$this->data        = $this->get_object_data();
 	}
 
 	/**
-	 * Get post from a site.
+	 * Prepare page for create, update or delete.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     array                $data    Prepared page data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified page data.
 	 */
-	public function get( $site ) {}
+	public function prepare_page( $data, $site ) {
 
-	/**
-	 * Create post on a site.
-	 *
-	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
-	 */
-	public function post( $site ) {
-
-		$result = array();
-
-		try {
-
-			// Do request
-			$response = $this->do_request( Handler::CREATABLE, $site );
-
-			// Get the remote object data
-			$remote_object = json_decode( $response->getBody()->getContents() );
-
-			if ( $remote_object ) {
-
-				// Update replicast info
-				$this->update_replicast_info( $site, $remote_object );
-
-				$result = array(
-					'status_code'   => $response->getStatusCode(),
-					'reason_phrase' => $response->getReasonPhrase(),
-					'message'       => sprintf(
-						'%s %s',
-						sprintf(
-							\__( 'Post published on %s.', 'replicast' ),
-							$site->get_name()
-						),
-						sprintf(
-							'<a href="%s" title="%s" target="_blank">%s</a>',
-							\esc_url( $remote_object->link ),
-							\esc_attr( $site->get_name() ),
-							\__( 'View post', 'replicast' )
-						)
-					)
-				);
-
-			}
-
-		} catch ( RequestException $ex ) {
-			if ( $ex->hasResponse() ) {
-				return array(
-					'status_code'   => $ex->getResponse()->getStatusCode(),
-					'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-					'message'       => $ex->getMessage()
-				);
-			}
-		} catch ( \Exception $ex ) {
-			return array(
-				'message' => $ex->getMessage()
-			);
+		// Unset page template if empty
+		// @see https://github.com/WP-API/WP-API/blob/develop/lib/endpoints/class-wp-rest-posts-controller.php#L1553
+		if ( empty( $data['template'] ) ) {
+			unset( $data['template'] );
 		}
 
-		return $result;
+		return $data;
 	}
 
 	/**
-	 * Update post on a site.
+	 * Prepare attachment for create, update or delete.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     array                $data    Prepared attachment data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified attachment data.
 	 */
-	public function put( $site ) {
+	public function prepare_attachment( $data, $site ) {
 
-		$result = array();
+		// Force attachment status to be 'publish'
+		// FIXME: review this later on
+ 		if ( ! empty( $data['status'] ) && $data['status'] === 'inherit' ) {
+			$data['status'] = 'publish';
+ 		}
 
-		try {
+		// Update the "uploaded to" post ID with the associated remote post ID, if exists
+		if ( $data['type'] !== 'attachment' && ! empty( $data['post'] ) ) {
 
-			// Do request
-			$response = $this->do_request( Handler::EDITABLE, $site );
+			// Get replicast info
+			$replicast_info = API::get_replicast_info( \get_post( $data['post'] ) );
 
-			// Get the remote object data
-			$remote_object = json_decode( $response->getBody()->getContents() );
+			$data['post'] = $replicast_info[ $site->get_id() ]['id'];
 
-			if ( $remote_object ) {
-
-				// Update replicast info
-				$this->update_replicast_info( $site, $remote_object );
-
-				$result = array(
-					'status_code'   => $response->getStatusCode(),
-					'reason_phrase' => $response->getReasonPhrase(),
-					'message'       => sprintf(
-						'%s %s',
-						sprintf(
-							\__( 'Post updated on %s.', 'replicast' ),
-							$site->get_name()
-						),
-						sprintf(
-							'<a href="%s" title="%s" target="_blank">%s</a>',
-							\esc_url( $remote_object->link ),
-							\esc_attr( $site->get_name() ),
-							\__( 'View post', 'replicast' )
-						)
-					)
-				);
-
-			}
-
-		} catch ( RequestException $ex ) {
-			if ( $ex->hasResponse() ) {
-				return array(
-					'status_code'   => $ex->getResponse()->getStatusCode(),
-					'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-					'message'       => $ex->getMessage()
-				);
-			}
-		} catch ( \Exception $ex ) {
-			return array(
-				'message' => $ex->getMessage()
-			);
+		} else {
+			$data['post'] = '';
 		}
 
-		return $result;
+		return $data;
+	}
+
+	/**
+	 * Prepare post terms.
+	 *
+	 * @since     1.0.0
+	 * @param     array                $data    Prepared page data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified terms.
+	 */
+	public function prepare_post_terms( $data, $site ) {
+
+		unset( $data['categories'] );
+		unset( $data['tags'] );
+
+		if ( empty( $data['replicast'] ) ) {
+			return $data;
+		}
+
+		if ( empty( $data['replicast']['term'] ) ) {
+			return $data;
+		}
+
+		foreach ( $data['replicast']['term'] as $key => $term ) {
+
+			// Get replicast info
+			$replicast_info = API::get_replicast_info( $term );
+
+			// Update object ID
+			$term->term_id = '';
+
+			if ( ! empty( $replicast_info ) ) {
+				$term->term_id = $replicast_info[ $site->get_id() ]['id'];
+			}
+
+			$data['replicast']['term'][ $key ] = $term;
+
+			// Check if term has children
+			if ( empty( $term->children ) ) {
+				continue;
+			}
+
+			$this->prepare_post_child_terms( $term->term_id, $data['replicast']['term'][ $key ]->children, $site );
+
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Prepare post child terms.
+	 *
+	 * @since     1.0.0
+	 * @param     int                  $parent_id    The parent term ID.
+	 * @param     array                $terms        The term data.
+	 * @param     \Replicast\Client    $site         Site object.
+	 * @return    array                              Possibly-modified child terms.
+	 */
+	private function prepare_post_child_terms( $parent_id, &$terms, $site ) {
+
+		foreach ( $terms as $key => $term ) {
+
+			// Get replicast info
+			$replicast_info = API::get_replicast_info( $term );
+
+			// Update object ID's
+			$term->term_id = '';
+			$term->parent  = '';
+
+			if ( ! empty( $replicast_info ) ) {
+				$term->term_id = $replicast_info[ $site->get_id() ]['id'];
+				$term->parent  = $parent_id;
+			}
+
+			$terms[ $key ] = $term;
+
+			// Check if term has children
+			if ( empty( $term->children ) ) {
+				continue;
+			}
+
+			$this->prepare_post_child_terms( $term->term_id, $terms[ $key ]->children, $site );
+
+		}
 
 	}
 
 	/**
-	 * Delete post from a site.
+	 * Prepare post featured media.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
+	 * @param     array                $data    Prepared post data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified post data.
 	 */
-	public function delete( $site ) {
+	public function prepare_featured_media( $data, $site ) {
 
-		$result = array();
+		// Update the "featured image" post ID with the associated remote post ID, if exists
+		if ( ! empty( $data['featured_media'] ) ) {
 
-		try {
+			// Get replicast info
+			$replicast_info = API::get_replicast_info( \get_post( $data['featured_media'] ) );
 
-			// Do request
-			$response = $this->do_request( Handler::DELETABLE, $site );
+			$data['featured_media'] = $replicast_info[ $site->get_id() ]['id'];
 
-			// Get the remote object data
-			$remote_object = json_decode( $response->getBody()->getContents() );
-
-			if ( $remote_object ) {
-
-				// The API returns 'publish' but we force the status to be 'trash' for better
-				// management of the next actions over the object. Like, recovering (PUT request)
-				// or permanently delete the object from remote location.
-				$remote_object->status = 'trash';
-
-				// Update replicast info
-				$this->update_replicast_info( $site, $remote_object );
-
-				$result = array(
-					'status_code'   => $response->getStatusCode(),
-					'reason_phrase' => $response->getReasonPhrase(),
-					'message'       => sprintf(
-						\__( 'Post trashed on %s.', 'replicast' ),
-						$site->get_name()
-					)
-				);
-
-			}
-
-		} catch ( RequestException $ex ) {
-			if ( $ex->hasResponse() ) {
-				return array(
-					'status_code'   => $ex->getResponse()->getStatusCode(),
-					'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-					'message'       => $ex->getMessage()
-				);
-			}
-		} catch ( \Exception $ex ) {
-			return array(
-				'message' => $ex->getMessage()
-			);
 		}
 
-		return $result;
+		return $data;
+	}
+
+	/**
+	 * Update post terms.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     int            $site_id    Site ID.
+	 * @param     object|null    $data       Object data.
+	 */
+	public function update_post_terms( $site_id, $data ) {
+
+		if ( empty( $data->replicast ) ) {
+			return;
+		}
+
+		if ( empty( $data->replicast->term ) ) {
+			return;
+		}
+
+		foreach ( $data->replicast->term as $term_data ) {
+
+			// Get term object
+			$term = \get_term_by( 'id', $term_data->term_id, $term_data->taxonomy );
+
+			if ( ! $term ) {
+				return;
+			}
+
+			// Update replicast info
+			API::update_replicast_info( $term, $site_id, $term_data );
+
+		}
 
 	}
 

@@ -1,26 +1,26 @@
 <?php
 
 /**
- * Site term wrapper
+ * Client wrapper
  *
  * @link       http://log.pt/
  * @since      1.0.0
  *
  * @package    Replicast
- * @subpackage Replicast/lib/Model
+ * @subpackage Replicast/lib
  */
 
-namespace Replicast\Model;
+namespace Replicast;
 
 /**
- * Site term wrapper.
+ * Client wrapper.
  *
  * @since      1.0.0
  * @package    Replicast
- * @subpackage Replicast/lib/Model
+ * @subpackage Replicast/lib
  * @author     log.OSCON, Lda. <engenharia@log.pt>
  */
-class Site {
+class Client {
 
 	/**
 	 * Term object.

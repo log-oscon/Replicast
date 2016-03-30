@@ -12,7 +12,7 @@
 
 namespace Replicast\Handler;
 
-use \GuzzleHttp\Exception\RequestException;
+use Replicast\Handler;
 
 /**
  * Handles ´category´ content type replication.
@@ -36,41 +36,5 @@ class CategoryHandler extends Handler {
 		$this->attributes = array( 'context' => 'embed' );
 		$this->data       = $this->get_object_data();
 	}
-
-	/**
-	 * Get category from a site.
-	 *
-	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
-	 */
-	public function get( $site ) {}
-
-	/**
-	 * Create category on a site.
-	 *
-	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
-	 */
-	public function post( $site ) {}
-
-	/**
-	 * Update category on a site.
-	 *
-	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
-	 */
-	public function put( $site ) {}
-
-	/**
-	 * Delete category from a site.
-	 *
-	 * @since     1.0.0
-	 * @param     \Replicast\Model\Site    $site    Site object.
-	 * @return    array                             Response object.
-	 */
-	public function delete( $site ) {}
 
 }

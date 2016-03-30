@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Site taxonomy
+ * Site taxonomy functionality
  *
  * @link       http://log.pt/
  * @since      1.0.0
@@ -13,7 +13,7 @@
 namespace Replicast\Admin;
 
 /**
- * Site taxonomy.
+ * Site taxonomy functionality.
  *
  * @since      1.0.0
  * @package    Replicast

@@ -12,9 +12,9 @@
 
 namespace Replicast;
 
-use \Replicast\Admin\Site;
-use \Replicast\Handler\PostHandler;
-use \GuzzleHttp\Client;
+use Replicast\Client;
+use Replicast\Admin\Site;
+use Replicast\Handler\PostHandler;
 
 /**
  * The dashboard-specific functionality of the plugin.
@@ -111,7 +111,7 @@ class Admin {
 			return;
 		}
 
-		$remote_info = $this->get_remote_info( $object_id );
+		$remote_info = static::get_remote_info( $object_id );
 
 		$html = sprintf(
 			'<span class="dashicons dashicons-%s"></span>',
@@ -201,7 +201,7 @@ class Admin {
 		}
 
 		// Check if the current object is an original or a duplicate
-		if ( ! $this->get_remote_info( $args[2] ) ) {
+		if ( ! static::get_remote_info( $args[2] ) ) {
 			return $allcaps;
 		}
 
@@ -223,7 +223,7 @@ class Admin {
 	public function hide_row_actions( $defaults, $object ) {
 
 		// Check if the current object is an original or a duplicate
-		if ( ! $remote_info = $this->get_remote_info( $object->ID ) ) {
+		if ( ! $remote_info = static::get_remote_info( $object->ID ) ) {
 			return $defaults;
 		}
 
@@ -266,10 +266,11 @@ class Admin {
 	 * the status is changed to publish.
 	 *
 	 * @since    1.0.0
-	 * @param    int         $post_id    The post ID.
-	 * @param    \WP_Post    $post       The \WP_Post object.
+	 * @param    int         $post_id                      The post ID.
+	 * @param    \WP_Post    $post                         The \WP_Post object.
+	 * @param    \WP_Post    $post_before    (optional)    The \WP_Post object before the update. Only for attachments.
 	 */
-	public function on_save_post( $post_id, \WP_Post $post ) {
+	public function on_save_post( $post_id, \WP_Post $post, $post_before = null ) {
 
 		// Bail out if not admin and bypass REST API requests
 		if ( ! \is_admin() ) {
@@ -301,12 +302,28 @@ class Admin {
 			return;
 		}
 
+		// Admin notices
+		$notices = array();
+
 		// Get sites for replication
 		$sites = $this->get_sites( $post );
 
+		//
+		if ( \has_post_thumbnail( $post_id ) ) {
+			$featured_media_id = \get_post_thumbnail_id( $post_id );
+
+			$featured_media_handler = new PostHandler( \get_post( $featured_media_id ) );
+			$featured_media_handler->handle_save( $sites );
+		}
+
 		// Prepares post data for replication
-		$request = new PostHandler( $post );
-		$request->handle_update( $sites );
+		$post_handler = new PostHandler( $post );
+		$notices = $post_handler->handle_save( $sites );
+
+		// Set admin notices
+		if ( ! empty( $notices ) ) {
+			$this->set_admin_notice( $notices );
+		}
 
 	}
 
@@ -340,12 +357,62 @@ class Admin {
 			return;
 		}
 
+		// Admin notices
+		$notices = array();
+
 		// Get sites for replication
 		$sites = $this->get_sites( $post );
 
-		// Prepares data for replication
-		$request = new PostHandler( $post );
-		$request->handle_delete( $sites );
+		// Prepares post data for replication
+		$handler = new PostHandler( $post );
+		$notices = $handler->handle_delete( $sites );
+
+		// Set admin notices
+		if ( ! empty( $notices ) ) {
+			$this->set_admin_notice( $notices );
+		}
+
+	}
+
+	/**
+	 * Fired when a post, page or attachment is permanently deleted.
+	 *
+	 * @since    1.0.0
+	 * @param    int    $post_id    The post ID.
+	 */
+	public function on_delete_post( $post_id ) {
+
+		// Bail out if not admin and bypass REST API requests
+		if ( ! \is_admin() ) {
+			return;
+		}
+
+		// If current user can't delete posts, return
+		if ( ! \current_user_can( 'delete_posts' ) ) {
+			return;
+		}
+
+		// Retrieves post data given a post ID
+		$post = \get_post( $post_id );
+
+		if ( ! $post ) {
+			return;
+		}
+
+		// Admin notices
+		$notices = array();
+
+		// Get sites for replication
+		$sites = $this->get_sites( $post );
+
+		// Prepares post data for replication
+		$handler = new PostHandler( $post );
+		$notices = $handler->handle_delete( $sites, true );
+
+		// Set admin notices
+		if ( ! empty( $notices ) ) {
+			$this->set_admin_notice( $notices );
+		}
 
 	}
 
@@ -385,8 +452,8 @@ class Admin {
 	 * Returns a site.
 	 *
 	 * @since     1.0.0
-	 * @param     int|\WP_Term             $term    The term ID or the term object.
-	 * @return    \Replicast\Model\Site             A site object.
+	 * @param     int|\WP_Term    $term    The term ID or the term object.
+	 * @return    \Replicast\Client        A site object.
 	 */
 	public static function get_site( $term ) {
 
@@ -396,14 +463,14 @@ class Admin {
 
 		$site = \wp_cache_get( $term->term_id, 'replicast_sites' );
 
-		if ( ! $site || ! $site instanceof \Replicast\Model\Site ) {
+		if ( ! $site || ! $site instanceof Client ) {
 
-			$client = new Client( array(
+			$client = new \GuzzleHttp\Client( array(
 				'base_uri' => \untrailingslashit( \get_term_meta( $term->term_id, 'site_url', true ) ),
 				'debug'    => \apply_filters( 'replicast_client_debug', defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG )
 			) );
 
-			$site = new Model\Site( $term, $client );
+			$site = new Client( $term, $client );
 
 			\wp_cache_set( $term->term_id, $site, 'replicast_sites', 600 );
 		}
@@ -419,8 +486,70 @@ class Admin {
 	 * @return    mixed                  Single metadata value, or array of values.
 	 *                                   If the $meta_type or $object_id parameters are invalid, false is returned.
 	 */
-	private function get_remote_info( $object_id ) {
+	public static function get_remote_info( $object_id ) {
 		return \get_post_meta( $object_id, Plugin::REPLICAST_REMOTE, true );
+	}
+
+	/**
+	 * Set admin notices.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     array    $notices    Array of notices.
+	 */
+	private function set_admin_notice( $notices ) {
+
+		$current_user = \wp_get_current_user();
+		$rendered     = array();
+
+		foreach ( $notices as $notice ) {
+
+			$status_code   = ! empty( $notice['status_code'] )   ? $notice['status_code']   : '';
+			$reason_phrase = ! empty( $notice['reason_phrase'] ) ? $notice['reason_phrase'] : '';
+			$message       = ! empty( $notice['message'] )       ? $notice['message']       : \__( 'Something went wrong.', 'replicast' );
+
+			$rendered[] = array(
+				'type'    => $this->get_notice_type_by_status_code( $status_code ),
+				'message' => $message
+			);
+
+			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
+				error_log( sprintf(
+					"\n%s\n%s\n%s",
+					sprintf( \__( 'Status Code: %s', 'replicast' ), $status_code ),
+					sprintf( \__( 'Reason: %s', 'replicast' ), $reason_phrase ),
+					sprintf( \__( 'Message: %s', 'replicast' ), $message )
+				) );
+			}
+
+		}
+
+		\set_transient( 'replicast_notices_' . $current_user->ID, $rendered, 180 );
+
+	}
+
+	/**
+	 * Get the admin notice type based on a HTTP request/response status code.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     string    $status_code    HTTP request/response status code.
+	 * @return    string                    Possible values: error | success | warning.
+	 */
+	private function get_notice_type_by_status_code( $status_code ) {
+
+		// FIXME
+		// Maybe this should be more simpler. For instance, all 2xx status codes should be treated as success.
+		// What happens with a 3xx status code?
+
+		switch ( $status_code ) {
+			case '200': // Update
+			case '201': // Create
+				return 'success';
+			default:
+				return 'error';
+		}
+
 	}
 
 }
