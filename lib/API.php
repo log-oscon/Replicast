@@ -106,7 +106,7 @@ class API {
 		 * @param     int       The object ID.
 		 * @return    array     Possibly-modified name(s) of the exposed meta keys.
 		 */
-		$whitelist = \apply_filters( 'replicast_expose_object_protected_meta', array(), $meta_type, $object['id'] );
+		$exposed_meta = \apply_filters( 'replicast_expose_object_protected_meta', array(), $meta_type, $object['id'] );
 
 		// Get object metadata
 		$meta = \get_metadata( $meta_type, $object['id'] );
@@ -122,7 +122,7 @@ class API {
 		$prepared_data = array();
 		foreach ( $meta as $meta_key => $meta_value ) {
 
-			if ( \is_protected_meta( $meta_key ) && ! in_array( $meta_key, $whitelist ) ) {
+			if ( \is_protected_meta( $meta_key ) && ! in_array( $meta_key, $exposed_meta ) ) {
 				continue;
 			}
 
@@ -172,7 +172,7 @@ class API {
 		 * @param     int      The object ID.
 		 * @return    array    Possibly-modified name(s) of the suppressed taxonomies.
 		 */
-		$blacklist = \apply_filters( 'replicast_suppress_object_taxonomies', array(), $taxonomies, $object['id'] );
+		$suppressed_taxonomies = \apply_filters( 'replicast_suppress_object_taxonomies', array(), $taxonomies, $object['id'] );
 
 		$prepared_data = array();
 		foreach ( $taxonomies as $taxonomy_key => $taxonomy_key ) {
@@ -181,7 +181,7 @@ class API {
 				continue;
 			}
 
-			if ( in_array( $taxonomy_key, $blacklist ) ) {
+			if ( in_array( $taxonomy_key, $suppressed_taxonomies ) ) {
 				continue;
 			}
 
@@ -425,12 +425,12 @@ class API {
 		 * @param     int       The object ID.
 		 * @return    array     Possibly-modified name(s) of the suppressed meta keys.
 		 */
-		$blacklist = \apply_filters( 'replicast_suppress_object_meta', array(), $values, $meta_type, $object->ID );
+		$suppressed_meta = \apply_filters( 'replicast_suppress_object_meta', array(), $values, $meta_type, $object->ID );
 
 		// Update metadata
 		foreach ( $values as $meta_key => $meta_values ) {
 
-			if ( in_array( $meta_key, $blacklist ) ) {
+			if ( in_array( $meta_key, $suppressed_meta ) ) {
 				continue;
 			}
 

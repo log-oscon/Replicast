@@ -223,7 +223,7 @@ class ACF {
 		 * @param     array    Object meta.
 		 * @return    array    Possibly-modified name of the suppressed field type(s).
 		 */
-		$blacklist = \apply_filters( 'replicast_suppress_acf_meta', array(), $data['replicast']['meta'] );
+		$suppressed_meta = \apply_filters( 'replicast_suppress_acf_meta', array(), $data['replicast']['meta'] );
 
 		foreach ( $data['replicast']['meta'] as $key => $meta ) {
 
@@ -233,7 +233,7 @@ class ACF {
 
 			$field_type = \acf_extract_var( $meta['raw'], 'type' );
 
-			if ( in_array( $field_type, $blacklist ) ) {
+			if ( in_array( $field_type, $suppressed_meta ) ) {
 				continue;
 			}
 
