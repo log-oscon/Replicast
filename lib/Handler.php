@@ -552,7 +552,7 @@ abstract class Handler {
 		$signature = $this->generate_signature( $method, $config, $timestamp, $args );
 
 		// Auth headers
-		$headers['X-API-KEY'      ] = $config['apy_key'];
+		$headers['X-API-KEY']       = $config['apy_key'];
 		$headers['X-API-TIMESTAMP'] = $timestamp;
 		$headers['X-API-SIGNATURE'] = $signature;
 
