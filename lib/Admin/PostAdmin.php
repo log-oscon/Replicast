@@ -217,7 +217,7 @@ class PostAdmin extends Admin {
 			return $content;
 		}
 
-		$remote_info = \maybe_unserialize( $thumb_meta[ Plugin::REPLICAST_OBJECT_INFO ][0] );
+		$remote_info = \maybe_unserialize( $thumb_meta[ Plugin::REPLICAST_OBJECT_INFO ] );
 
 		if ( empty( $remote_info['sizes'] ) ) {
 			return $content;

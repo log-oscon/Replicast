@@ -78,9 +78,9 @@ class API {
 	 */
 	public static function get_rest_fields( $object, $field_name, $request ) {
 		return array(
-			'meta'  => static::get_object_meta( $object, $request ),
-			'term'  => static::get_object_term( $object, $request ),
-			'media' => static::get_object_media( $object, $request ),
+			'meta'           => static::get_object_meta( $object, $request ),
+			'term'           => static::get_object_term( $object, $request ),
+			'featured_media' => static::get_object_featured_media( $object, $request ),
 		);
 	}
 
@@ -270,113 +270,69 @@ class API {
 	}
 
 	/**
-	 * Retrieve object media.
+	 * Retrieve object featured media.
 	 *
 	 * @since     1.0.0
 	 * @param     array               $object     Details of current content object.
 	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
 	 * @return    array                           Object media.
 	 */
-	public static function get_object_media( $object, $request ) {
+	public static function get_object_featured_media( $object, $request ) {
 
 		if ( empty( $object['featured_media'] ) ) {
 			return array();
 		}
 
-		$attachment_id = $object['featured_media'];
+		return static::get_media( $object['featured_media'] );
+	}
 
-		// Get image size information
-		$image_sizes = static::get_image_sizes();
+	/**
+	 * Prepares a media object.
+	 *
+	 * @since     1.0.0
+	 * @param     int    $object_id    The object ID.
+	 * @return    array
+	 */
+	public static function get_media( $object_id ) {
 
 		/**
 		 * Filter for suppressing image sizes.
 		 *
 		 * @since     1.0.0
 		 * @param     array    Name(s) of the suppressed image sizes.
-		 * @param     array    List of registered image sizes.
 		 * @return    array    Possibly-modified name(s) of the suppressed image sizes.
 		 */
-		$suppressed_media_sizes = \apply_filters( 'replicast_suppress_media_sizes', array(), $image_sizes );
+		$suppressed_image_sizes = \apply_filters( 'replicast_suppress_image_sizes', array() );
 
-		$prepared_image_sizes = array();
-		foreach ( $image_sizes as $size => $value ) {
+		// Get metadata
+		$metadata = \get_post_meta( $object_id, '_wp_attachment_metadata', true );
 
-			if ( in_array( $size, $suppressed_media_sizes ) ) {
-				continue;
+		// Update file url
+		$metadata['file'] = \wp_get_attachment_url( $object_id );
+
+		if ( ! empty( $metadata['sizes'] ) ) {
+			foreach ( $metadata['sizes'] as $size => $value ) {
+
+				if ( in_array( $size, $suppressed_image_sizes ) ) {
+					unset( $metadata['sizes'][ $size ] );
+					continue;
+				}
+
+				// Update size file url
+				$metadata['sizes'][ $size ]['file'] = \wp_get_attachment_image_src( $object_id, $size )[0];
+
 			}
-
-			$prepared_image_sizes[ $size ] = \wp_get_attachment_image_src( $attachment_id, $size );
-
 		}
-
-		$prepared_data = array();
-
-		// Get image metadata
-		$attachment_metadata = \get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
-		if ( ! empty( $attachment_metadata['image_meta'] ) ) {
-			$prepared_data['image_meta'] = $attachment_metadata['image_meta'];
-		}
-
-		// Get image filename
-		$filename = basename( \get_attached_file( $attachment_id ) );
-		if ( empty( $filename ) ) {
-			$filename = \sanitize_title_with_dashes( $object['title']['rendered'] );
-		}
-
-		// Add remote object info
-		$prepared_data[ Plugin::REPLICAST_OBJECT_INFO ] = array( \maybe_serialize( array(
-			'sizes'     => $prepared_image_sizes,
-			'edit_link' => \get_edit_post_link( $attachment_id ),
-			'rest_url'  => \rest_url( sprintf( '/wp/v2/media/%s', $attachment_id ) ),
-		) ) );
 
 		return array_merge(
 			array(
-				'id'   => $attachment_id,
-				'name' => $filename,
+				Plugin::REPLICAST_OBJECT_INFO => array(
+					'edit_link' => \get_edit_post_link( $object_id ),
+					'rest_url'  => \rest_url( sprintf( '/wp/v2/media/%s', $object_id ) ),
+				),
 			),
-			$prepared_data
+			$metadata
 		);
-	}
-
-	/**
-	 * Get size information for all currently-registered image sizes.
-	 *
-	 * @global    $_wp_additional_image_sizes
-	 * @uses      \get_intermediate_image_sizes()
-	 *
-	 * @since     1.0.0
-	 * @access    private
-	 * @return    array    Data for all currently-registered image sizes.
-	 */
-	private static function get_image_sizes() {
-
-		// FIXME: we should soft cache this
-
-		global $_wp_additional_image_sizes;
-
-		$sizes = array();
-		foreach ( \get_intermediate_image_sizes() as $_size ) {
-
-			if ( in_array( $_size, array( 'thumbnail', 'medium', 'medium_large', 'large' ) ) ) {
-
-				$sizes[ $_size ]['width']  = \get_option( "{$_size}_size_w" );
-				$sizes[ $_size ]['height'] = \get_option( "{$_size}_size_h" );
-				$sizes[ $_size ]['crop']   = (bool) \get_option( "{$_size}_crop" );
-
-			} elseif ( isset( $_wp_additional_image_sizes[ $_size ] ) ) {
-
-				$sizes[ $_size ] = array(
-					'width'  => $_wp_additional_image_sizes[ $_size ]['width'],
-					'height' => $_wp_additional_image_sizes[ $_size ]['height'],
-					'crop'   => $_wp_additional_image_sizes[ $_size ]['crop'],
-				);
-
-			}
-
-		}
-
-		return $sizes;
 	}
 
 	/**
@@ -399,8 +355,8 @@ class API {
 		}
 
 		// Update featured media
-		if ( ! empty( $values['media'] ) ) {
-			static::update_object_media( $values['media'], $object );
+		if ( ! empty( $values['featured_media'] ) ) {
+			static::update_object_featured_media( $values['featured_media'], $object );
 		}
 
 	}
@@ -569,13 +525,13 @@ class API {
 	}
 
 	/**
-	 * Update object media.
+	 * Update object featured media.
 	 *
 	 * @since     1.0.0
 	 * @param     array     $values    The values of the field.
 	 * @param     object    $object    The object from the response.
 	 */
-	public static function update_object_media( $values, $object ) {
+	public static function update_object_featured_media( $values, $object ) {
 
 		$attachment_id = ! empty( $values['id'] ) ? $values['id'] : '';
 
@@ -622,7 +578,7 @@ class API {
 			\update_post_meta(
 				$attachment_id,
 				Plugin::REPLICAST_OBJECT_INFO,
-				\maybe_unserialize( $values[ Plugin::REPLICAST_OBJECT_INFO ][0] )
+				\maybe_unserialize( $values[ Plugin::REPLICAST_OBJECT_INFO ] )
 			);
 		}
 
