@@ -208,13 +208,11 @@ class PostAdmin extends Admin {
 		}
 
 		// Get remote info
-		$remote_info = \get_post_meta( $object_id, Plugin::REPLICAST_OBJECT_INFO, true );
+		$remote_info = $this->get_remote_info( $attachment_id );
 
 		if ( empty( $remote_info ) ) {
 			return $content;
 		}
-
-		$remote_info = \maybe_unserialize( $remote_info );
 
 		// Get thumbnail metadata
 		$metadata = \get_post_meta( $object_id, '_wp_attachment_metadata', true );

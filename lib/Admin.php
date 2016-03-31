@@ -168,7 +168,12 @@ class Admin {
 	 *                                    If the $meta_type or $object_id parameters are invalid, false is returned.
 	 */
 	public function get_remote_info( $object_id, $meta_type = 'post' ) {
-		return \get_metadata( $meta_type, $object_id, Plugin::REPLICAST_OBJECT_INFO, true );
+
+		if( empty( $metadata = \get_metadata( $meta_type, $object_id, Plugin::REPLICAST_OBJECT_INFO, true ) ) ) {
+			return $metadata;
+		}
+
+		return \maybe_unserialize( $metadata );
 	}
 
 	/**
