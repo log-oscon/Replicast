@@ -401,7 +401,7 @@ class PostAdmin extends Admin {
 		}
 
 		if ( empty( $remote_info = $this->get_remote_info( $attachment_id ) ) ) {
-			return $url;
+			return $response;
 		}
 
 		// FIXME: maybe I can save the attachment remote permalink and use it
