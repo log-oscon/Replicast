@@ -152,8 +152,7 @@ class PostAdmin extends Admin {
 	 */
 	public function hide_row_actions( $defaults, $object ) {
 
-		// Check if the current object is an original or a duplicate
-		if ( ! $remote_info = $this->get_remote_info( $object->ID ) ) {
+		if ( empty( $remote_info = $this->get_remote_info( $object->ID ) ) ) {
 			return $defaults;
 		}
 
@@ -207,10 +206,7 @@ class PostAdmin extends Admin {
 			return $content;
 		}
 
-		// Get remote info
-		$remote_info = $this->get_remote_info( $attachment_id );
-
-		if ( empty( $remote_info ) ) {
+		if ( empty( $remote_info = $this->get_remote_info( $object_id ); ) ) {
 			return $content;
 		}
 
