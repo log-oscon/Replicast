@@ -206,7 +206,7 @@ class PostAdmin extends Admin {
 			return $content;
 		}
 
-		if ( empty( $remote_info = $this->get_remote_info( $object_id ); ) ) {
+		if ( empty( $remote_info = $this->get_remote_info( $object_id ) ) ) {
 			return $content;
 		}
 
