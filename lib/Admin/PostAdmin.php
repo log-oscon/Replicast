@@ -207,6 +207,15 @@ class PostAdmin extends Admin {
 			return $content;
 		}
 
+		// Get remote info
+		$remote_info = \get_post_meta( $object_id, Plugin::REPLICAST_OBJECT_INFO, true );
+
+		if ( empty( $remote_info ) ) {
+			return $content;
+		}
+
+		$remote_info = \maybe_unserialize( $remote_info );
+
 		// Get thumbnail metadata
 		$metadata = \get_post_meta( $object_id, '_wp_attachment_metadata', true );
 
@@ -214,37 +223,27 @@ class PostAdmin extends Admin {
 			return $content;
 		}
 
-		if ( empty( $metadata['sizes'] ) ) {
-			return $content;
-		}
+		$width  = $metadata['width'];
+		$height = $metadata['height'];
+		$file   = $metadata['file'];
 
-		if ( empty( $metadata['sizes']['post-thumbnail'] ) ) {
-			return $content;
+		if ( ! empty( $metadata['sizes'] ) && ! empty( $metadata['sizes']['post-thumbnail'] ) ) {
+			$width  = $metadata['sizes']['post-thumbnail']['width'];
+			$height = $metadata['sizes']['post-thumbnail']['height'];
+			$file   = $metadata['sizes']['post-thumbnail']['file'];
 		}
 
 		$thumb_html = sprintf(
 			'<img width="%s" height="%s" src="%s" class="attachment-post-thumbnail size-post-thumbnail">',
-			\esc_attr( $metadata['sizes']['post-thumbnail']['width'] ),
-			\esc_attr( $metadata['sizes']['post-thumbnail']['height'] ),
-			\esc_attr( $metadata['sizes']['post-thumbnail']['file'] )
+			\esc_attr( $width ),
+			\esc_attr( $height ),
+			\esc_attr( $file )
 		);
 
-		// Get remote info
-		$remote_info = \get_post_meta( $object_id, Plugin::REPLICAST_OBJECT_INFO, true );
-
-		if ( ! empty( $remote_info ) ) {
-			$remote_info = \maybe_unserialize( $remote_info );
-
-			$thumb_html = sprintf(
-				'<a href="%s" title="%s" id="set-post-thumbnail" class="thickbox">%s</a>',
-				\esc_url( $remote_info['edit_link'] ),
-				\esc_attr__( 'Edit', 'replicast' ),
-				$thumb_html
-			);
-		}
-
 		return sprintf(
-			'<p class="hide-if-no-js">%s</p>',
+			'<p class="hide-if-no-js"><a href="%s" title="%s" id="set-post-thumbnail" class="thickbox">%s</a></p>',
+			\esc_url( $remote_info['edit_link'] ),
+			\esc_attr__( 'Edit', 'replicast' ),
 			$thumb_html
 		);
 	}
