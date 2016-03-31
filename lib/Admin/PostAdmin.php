@@ -273,37 +273,60 @@ class PostAdmin extends Admin {
 	}
 
 	/**
-	 * Filter remote attachments on Media Library AJAX calls.
+	 * Hide remote attachments on media library grid mode.
 	 *
 	 * @since     1.0.0
-	 * @param     array    $query    Main query variables.
-	 * @return    array              Possibly-modified main query variables.
+	 * @param     array    $query_args    Query args.
+	 * @return    array                   Possibly-modified query args.
 	 */
-	public function hide_attachments( $query ) {
+	public function hide_attachments_on_grid_mode( $query_args ) {
 
-		// Meta query to filter remote attachments
-		$meta_query = array(
-			'key'     => Plugin::REPLICAST_OBJECT_INFO,
-			'compare' => 'NOT EXISTS',
-		);
-
-		/**
-		 * Extend the meta query to filter remote attachments on Media Library AJAX calls.
-		 *
-		 * @since     1.0.0
-		 * @param     array    Meta query variables.
-		 * @param     array    Main query variables.
-		 * @return    array    Possibly-modified array of meta query variables.
-		 */
-		$meta_query = \apply_filters( 'replicast_hide_attachments', $meta_query, $query );
-
-		if ( ! empty( $query['meta_query'] ) && ! isset( $query['meta_query']['relation'] ) ) {
-			$query['meta_query']['relation'] = 'AND';
+		if ( ! \is_admin() ) {
+			return $query_args;
 		}
 
-		return array_merge_recursive(
-			array( 'meta_query' => array( $meta_query ) ),
-			$query
+		if ( $query_args['post_type'] !== 'attachment' ) {
+			return $query_args;
+		}
+
+		return array_merge(
+			array( 'meta_query' => $this->hide_attachments() ),
+			$query_args
+		);
+	}
+
+	/**
+	 * Hide remote attachments on media library list mode.
+	 *
+	 * @since    1.0.0
+	 * @param    \WP_Query    $query    Query object.
+	 */
+	public function hide_attachments_on_list_mode( $query ) {
+
+		if ( ! \is_admin() ) {
+			return;
+		}
+
+		if ( \get_query_var( 'post_type' ) !== 'attachment' ) {
+			return;
+		}
+
+		$query->set( 'meta_query', $this->hide_attachments() );
+
+	}
+
+	/**
+	 * Meta query for hiding remote attachments.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 */
+	private function hide_attachments() {
+		return array(
+			array(
+				'key'     => Plugin::REPLICAST_OBJECT_INFO,
+				'compare' => 'NOT EXISTS',
+			)
 		);
 	}
 
