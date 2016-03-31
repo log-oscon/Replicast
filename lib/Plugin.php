@@ -149,13 +149,15 @@ class Plugin {
 		$this->loader->add_action( 'before_delete_post', $post, 'on_delete_post' );
 
 		// Admin UI - Posts
-		$this->loader->add_action( 'manage_posts_custom_column', $post, 'manage_custom_column', 10, 2 );
-		$this->loader->add_action( 'manage_pages_custom_column', $post, 'manage_custom_column', 10, 2 );
-		$this->loader->add_filter( 'manage_pages_columns',       $post, 'manage_columns', 10, 2 );
-		$this->loader->add_filter( 'manage_posts_columns',       $post, 'manage_columns', 10, 2 );
-		$this->loader->add_filter( 'user_has_cap',               $post, 'hide_edit_link', 10, 4 );
-		$this->loader->add_filter( 'post_row_actions',           $post, 'hide_row_actions', 99, 2 );
-		$this->loader->add_filter( 'page_row_actions',           $post, 'hide_row_actions', 99, 2 );
+		$this->loader->add_action( 'manage_posts_custom_column',  $post, 'manage_custom_column', 10, 2 );
+		$this->loader->add_action( 'manage_pages_custom_column',  $post, 'manage_custom_column', 10, 2 );
+		$this->loader->add_filter( 'manage_pages_columns',        $post, 'manage_columns', 10, 2 );
+		$this->loader->add_filter( 'manage_posts_columns',        $post, 'manage_columns', 10, 2 );
+		$this->loader->add_filter( 'user_has_cap',                $post, 'hide_edit_link', 10, 4 );
+		$this->loader->add_filter( 'post_row_actions',            $post, 'hide_row_actions', 99, 2 );
+		$this->loader->add_filter( 'page_row_actions',            $post, 'hide_row_actions', 99, 2 );
+		$this->loader->add_filter( 'wp_get_attachment_image_src', $post, 'get_attachment_image_src', 10, 3 );
+		$this->loader->add_filter( 'wp_get_attachment_url',       $post, 'get_attachment_url', 10, 2 );
 
 		// Admin UI - Featured Image
 		$this->loader->add_filter( 'admin_post_thumbnail_html',   $post, 'update_post_thumbnail', 10, 2 );

@@ -329,6 +329,66 @@ class PostAdmin extends Admin {
 	}
 
 	/**
+	 * Filter the image src.
+	 *
+	 * @see  image_downsize
+	 *
+	 * @since     1.0.0
+	 * @param     array|false     $image            Either array with src, width & height, icon src, or false.
+	 * @param     int             $attachment_id    Image attachment ID.
+	 * @param     string|array    $size             Size of image. Image size or array of width and height values
+	 *                                              (in that order).
+	 * @return    array                             Array with src, width & height, icon src.
+	 */
+	public function get_attachment_image_src( $image, $attachment_id, $size ) {
+
+		if ( empty( $this->get_remote_info( $attachment_id ) ) ) {
+			return $image;
+		}
+
+        // Get attachment metadata
+		$metadata = \get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
+
+		$url             = $metadata['file'];
+		$width           = $metadata['width'];
+		$height          = $metadata['height'];
+		$is_intermediate = false;
+
+		if ( $intermediate = \image_get_intermediate_size( $attachment_id, $size ) ) {
+			$url             = $intermediate['file'];
+			$width           = $intermediate['width'];
+			$height          = $intermediate['height'];
+			$is_intermediate = true;
+		} elseif( ! empty( $metadata['sizes'] ) && ! empty( $metadata['sizes'][ $size ] ) ) {
+			$url    = $metadata['sizes'][ $size ]['file'];
+			$width  = $metadata['sizes'][ $size ]['width'];
+			$height = $metadata['sizes'][ $size ]['height'];
+		}
+
+		return array( $url, $width, $height, $is_intermediate );
+	}
+
+	/**
+	 * Filter the attachment URL.
+	 *
+	 * @since     1.0.0
+	 * @param     string    $url              URL for the given attachment.
+	 * @param     int       $attachment_id    Attachment ID.
+	 * @return                                Possibly-modified URL for the given attachment
+	 */
+	public function get_attachment_url( $url, $attachment_id ) {
+
+		if ( empty( $this->get_remote_info( $attachment_id ) ) ) {
+			return $url;
+		}
+
+		// Get attachment metadata
+		$metadata = \get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
+
+		return $metadata['file'];
+	}
+
+	/**
 	 * Triggered whenever a post is published, or if it is edited and
 	 * the status is changed to publish.
 	 *
