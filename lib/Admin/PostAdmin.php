@@ -385,7 +385,42 @@ class PostAdmin extends Admin {
 		// Get attachment metadata
 		$metadata = \get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
 
-		return $metadata['file'];
+		return basename( $metadata['file'] );
+	}
+
+	/**
+	 * Filter the attachment data prepared for JavaScript.
+	 *
+	 * @since     1.0.0
+	 * @param     array         $response      Array of prepared attachment data.
+	 * @param     int|object    $attachment    Attachment ID or object.
+	 * @param     array         $meta          Array of attachment meta data.
+	 * @return    array                        Possibly-modified array of prepared attachment data.
+	 */
+	public function prepare_attachment_for_js( $response, $attachment, $meta ) {
+
+		$attachment_id = $attachment;
+		if ( ! is_numeric( $attachment_id ) ) {
+			$attachment_id = $attachment->ID;
+		}
+
+		if ( empty( $remote_info = $this->get_remote_info( $attachment_id ) ) ) {
+			return $url;
+		}
+
+		// FIXME: maybe I can save the attachment remote permalink and use it
+		// here just like I'm using the edit_link
+		unset( $response['link'] );
+
+		$response['editLink'] = $remote_info['edit_link'];
+
+		// if ( ! empty( $meta['sizes'] ) ) {
+		// 	foreach ( $response['sizes'] as $size => $value ) {
+		// 		$response['sizes'][ $size ]['url'] = $meta['sizes'][ $size ]['url'];
+		// 	}
+		// }
+
+		return $response;
 	}
 
 	/**
