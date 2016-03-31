@@ -330,6 +330,7 @@ class API {
 			'metadata'                    => $metadata,
 			Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
 				'object_id' => $object_id, // Save original object ID
+				'permalink' => \get_attachment_link( $object_id ),
 				'edit_link' => \get_edit_post_link( $object_id ),
 				'rest_url'  => \rest_url( sprintf( '/wp/v2/media/%s', $object_id ) ),
 			) ),

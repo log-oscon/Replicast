@@ -404,10 +404,8 @@ class PostAdmin extends Admin {
 			return $response;
 		}
 
-		// FIXME: maybe I can save the attachment remote permalink and use it
-		// here just like I'm using the edit_link
-		unset( $response['link'] );
-
+		// Update links
+		$response['link']     = $remote_info['permalink'];
 		$response['editLink'] = $remote_info['edit_link'];
 
 		// if ( ! empty( $meta['sizes'] ) ) {
