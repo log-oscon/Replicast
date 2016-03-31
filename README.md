@@ -58,10 +58,11 @@ Observações:
 
 
 ### Outros
-* <del>Melhorar mecanismo de gestão de sites (unificar campos Site URL e REST API URL)</del>
-* Validar campos obrigatórios na criação de um "Site"
-* Melhorar mecanismo de gestão de mensagens de admin
-* Melhorar mecanismo de logs
+* <del>Melhorar mecanismo de gestão de sites (unificar campos Site URL e REST API URL)</del>  
+* Evitar que o campo de meta REPLICAST_OBJECT_INFO seja retornado pelo site remoto na resposta ao pedido do central  
+* Validar campos obrigatórios na criação de um "Site"  
+* Melhorar mecanismo de gestão de mensagens de admin  
+* Melhorar mecanismo de logs  
 
 ### Notas
 * Os campos meta de um attachment só são sincronizados num segundo pedido. 
