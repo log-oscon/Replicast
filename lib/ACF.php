@@ -64,7 +64,7 @@ class ACF {
 		\add_filter( 'replicast_expose_object_protected_meta', array( $this, 'expose_object_protected_meta' ), 10 );
 		\add_filter( 'replicast_suppress_object_meta',         array( $this, 'suppress_object_meta' ), 10 );
 
-		\add_filter( 'replicast_get_object_post_meta', array( $this, 'get_post_meta' ), 10, 3 );
+		\add_filter( 'replicast_get_post_meta', array( $this, 'get_post_meta' ), 10, 3 );
 
 		foreach ( Admin\SiteAdmin::get_post_types() as $post_type ) {
 			\add_filter( "replicast_prepare_{$post_type}_for_create", array( $this, 'prepare_meta' ), 10, 2 );

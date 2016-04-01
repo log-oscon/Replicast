@@ -138,7 +138,7 @@ class API {
 		 * @param     int       Object ID.
 		 * @return    array     Possibly-modified object meta.
 		 */
-		$prepared_data = \apply_filters( "replicast_get_object_{$meta_type}_meta", $prepared_data, $meta_type, $object['id'] );
+		$prepared_data = \apply_filters( "replicast_get_{$meta_type}_meta", $prepared_data, $meta_type, $object['id'] );
 
 		// Add remote object info
 		$prepared_data[ Plugin::REPLICAST_OBJECT_INFO ] = array( \maybe_serialize( array(
