@@ -157,22 +157,19 @@ class PostAdmin extends Admin {
 		}
 
 		/**
-		 * Extend the list of unsupported row action links.
+		 * Extend the list of supported row action links.
 		 *
 		 * @since     1.0.0
 		 * @param     array       An array of row actions.
 		 * @param     \WP_Post    The current object.
 		 * @return    array       Possibly-modified array of row actions.
 		 */
-		$defaults = \apply_filters( 'replicast_hide_row_actions', $defaults, $object );
+		$actions = \apply_filters( 'replicast_hide_row_actions', array( $defaults['view'] ), $defaults, $object );
 
 		// Force the removal of unsupported default actions
-		unset( $defaults['edit'] );
-		unset( $defaults['inline hide-if-no-js'] );
-		unset( $defaults['trash'] );
-
-		// New set of actions
-		$actions = array();
+		unset( $actions['edit'] );
+		unset( $actions['inline hide-if-no-js'] );
+		unset( $actions['trash'] );
 
 		// 'Edit link' points to the object original location
 		$actions['edit'] = sprintf(
@@ -181,11 +178,6 @@ class PostAdmin extends Admin {
 			\esc_attr__( 'Edit', 'replicast' ),
 			\__( 'Edit', 'replicast' )
 		);
-
-		// Re-order actions
-		foreach ( $defaults as $key => $value ) {
-			$actions[ $key ] = $value;
-		}
 
 		return $actions;
 	}

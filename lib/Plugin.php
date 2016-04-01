@@ -165,6 +165,7 @@ class Plugin {
 		$this->loader->add_filter( 'delete_post_meta',            $post, 'delete_post_thumbnail', 10, 3 );
 
 		// Admin UI - Media Library
+		$this->loader->add_filter( 'media_row_actions',           $post, 'hide_row_actions', 99, 2 );
 		$this->loader->add_filter( 'ajax_query_attachments_args', $post, 'hide_attachments_on_grid_mode' );
 		$this->loader->add_action( 'pre_get_posts',               $post, 'hide_attachments_on_list_mode' );
 
