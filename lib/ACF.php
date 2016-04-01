@@ -109,13 +109,13 @@ class ACF {
 			return $value;
 		}
 
-		$field_name     = $field['name'];
-		$prev_selection = \get_field( $field_name, $post_id );
-		$next_selection = ! empty( $value ) ? $value : array(); // This only contains object ID's
-		$ids_to_remove  = array();
+		$field_name    = $field['name'];
+		$prev_relation = \get_field( $field_name, $post_id );
+		$next_relation = ! empty( $value ) ? $value : array(); // This only contains object ID's
+		$ids_to_remove = array();
 
-		if ( $prev_selection ) {
-			foreach ( $prev_selection as $key => $selected_post ) {
+		if ( $prev_relation ) {
+			foreach ( $prev_relation as $key => $selected_post ) {
 
 				$selected_post_id = $selected_post;
 
@@ -123,7 +123,7 @@ class ACF {
 					$selected_post_id = $selected_post->ID;
 				}
 
-				if ( ! in_array( $selected_post_id, $next_selection ) ) {
+				if ( ! in_array( $selected_post_id, $next_relation ) ) {
 					$ids_to_remove[] = $selected_post_id;
 				}
 
