@@ -709,6 +709,27 @@ class API {
 	}
 
 	/**
+	 * Retrieve remote id from object.
+	 *
+	 * @since     1.0.0
+	 * @param  [type] $object [description]
+	 * @param     \Replicast\Client    $site           Site object.
+	 * @return [type]            [description]
+	 */
+	public static function get_replicast_id( $object, $site ) {
+
+		if ( ! is_numeric( $object ) ) {
+			$object = \get_post( $object );
+		}
+
+		if ( ! empty( $replicast_info = static::get_replicast_info( $object ) ) ) {
+			return $replicast_info[ $site->get_id() ]['id'];
+		}
+
+		return '';
+	}
+
+	/**
 	 * Retrieve remote info from object.
 	 *
 	 * @since     1.0.0

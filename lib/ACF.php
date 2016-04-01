@@ -536,6 +536,36 @@ class ACF {
 	 * @return    array                         Possibly-modified data.
 	 */
 	public function prepare_media( $data, $site ) {
+
+		if ( empty( $data['replicast'] ) ) {
+			return $data;
+		}
+
+		if ( empty( $data['replicast']['media'] ) ) {
+			return $data;
+		}
+
+		foreach ( $data['replicast']['media'] as $field_type => $values ) {
+
+			if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+				continue;
+			}
+
+			// Image
+			if ( $field_type === 'image' ) {
+				$data['replicast']['media'][ $field_type ]['id'] = API::get_replicast_id( $values['id'], $site );
+				continue;
+			}
+
+			// Gallery
+			foreach ( $values as $key => $media ) {
+				$data['replicast']['media'][ $field_type ][ $key ]['id'] = API::get_replicast_id( $media['id'], $site );
+			}
+
+		}
+
+		return $data;
+
 	}
 
 	/**
