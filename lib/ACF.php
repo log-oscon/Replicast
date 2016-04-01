@@ -73,6 +73,8 @@ class ACF {
 			\add_filter( "replicast_prepare_{$post_type}_for_update", array( $this, 'prepare_relationship_persistence' ), 10, 2 );
 		};
 
+		\add_filter( 'replicast_get_object_media', array( $this, 'get_object_media' ), 10, 2 );
+
 	}
 
 	/**
@@ -484,6 +486,42 @@ class ACF {
 
 			unset( $data['replicast']['meta'][ static::REPLICAST_ACF_INFO ] );
 			$data['replicast']['meta'][ static::REPLICAST_ACF_INFO ][] = $prepared_meta;
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Retrieve ACF media objects.
+	 *
+	 * @see  \Replicast\API::get_object_media
+	 *
+	 * @since     1.0.0
+	 * @param     array    $data       Object media.
+	 * @param     int      $post_id    The object ID.
+	 * @return    array                Possibly-modified object media.
+	 */
+	public function get_object_media( $data, $post_id ) {
+
+		$fields = \get_field_objects( $post_id );
+
+		if ( ! $fields ) {
+			return $data;
+		}
+
+		foreach( $fields as $field ) {
+
+			switch ( $field['type'] ) {
+				case 'gallery':
+					foreach ( $field['value'] as $image ) {
+						$data['gallery'][] = API::get_media( $image['ID'] );
+					}
+					break;
+				case 'image':
+					$data['image'] = API::get_media( $field['value']['ID'] );
+					break;
+			}
+
 		}
 
 		return $data;
