@@ -259,16 +259,16 @@ class ACF {
 
 			switch ( $field_type ) {
 				case 'taxonomy':
-					$meta_value = $this->prepare_taxonomy( $field_value, $site );
+					$meta_value = $this->prepare_taxonomy_meta( $field_value, $site );
 					break;
 				case 'gallery':
-					$meta_value = $this->prepare_gallery( $field_value, $site );
+					$meta_value = $this->prepare_gallery_meta( $field_value, $site );
 					break;
 				case 'image':
-					$meta_value = $this->prepare_image( $field_value, $site );
+					$meta_value = $this->prepare_image_meta( $field_value, $site );
 					break;
 				case 'relationship':
-					$meta_value = $this->prepare_relationship( $field_value, $site );
+					$meta_value = $this->prepare_relationship_meta( $field_value, $site );
 					break;
 			}
 
@@ -280,14 +280,14 @@ class ACF {
 	}
 
 	/**
-	 * Prepare ACF taxonomy fields.
+	 * Prepare ACF taxonomy meta.
 	 *
 	 * @since     1.0.0
 	 * @param     array                $field_value    The meta value.
 	 * @param     \Replicast\Client    $site           Site object.
 	 * @return    string                               Possibly-modified serialized meta value.
 	 */
-	private function prepare_taxonomy( $field_value, $site ) {
+	private function prepare_taxonomy_meta( $field_value, $site ) {
 
 		$meta_value = '';
 
@@ -327,14 +327,14 @@ class ACF {
 	}
 
 	/**
-	 * Prepare ACF gallery fields.
+	 * Prepare ACF gallery meta.
 	 *
 	 * @since     1.0.0
 	 * @param     array                $field_value    The meta value.
 	 * @param     \Replicast\Client    $site           Site object.
 	 * @return    string                               Possibly-modified non-serialized meta value.
 	 */
-	private function prepare_gallery( $field_value, $site ) {
+	private function prepare_gallery_meta( $field_value, $site ) {
 		$meta_value = '';
 
 		if ( empty( $field_value ) ) {
@@ -346,7 +346,7 @@ class ACF {
 		}
 
 		foreach ( $field_value as $related_image ) {
-			$meta_value[] = $this->prepare_image( $related_image, $site );
+			$meta_value[] = $this->prepare_image_meta( $related_image, $site );
 		}
 
 		if ( ! empty( $meta_value ) && is_array( $meta_value ) ) {
@@ -357,14 +357,14 @@ class ACF {
 	}
 
 	/**
-	 * Prepare ACF image fields.
+	 * Prepare ACF image meta.
 	 *
 	 * @since     1.0.0
 	 * @param     array                $field_value    The meta value.
 	 * @param     \Replicast\Client    $site           Site object.
 	 * @return    string                               Possibly-modified non-serialized meta value.
 	 */
-	private function prepare_image( $field_value, $site ) {
+	private function prepare_image_meta( $field_value, $site ) {
 
 		$meta_value = '';
 
@@ -390,14 +390,14 @@ class ACF {
 	}
 
 	/**
-	 * Prepare ACF relationship fields.
+	 * Prepare ACF relationship meta.
 	 *
 	 * @since     1.0.0
 	 * @param     array                $field_value    The meta value.
 	 * @param     \Replicast\Client    $site           Site object.
 	 * @return    string                               Possibly-modified and serialized meta value.
 	 */
-	private function prepare_relationship( $field_value, $site ) {
+	private function prepare_relationship_meta( $field_value, $site ) {
 
 		$meta_value = '';
 
