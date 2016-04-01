@@ -250,6 +250,9 @@ class ACF {
 				case 'taxonomy':
 					$meta_value = $this->prepare_taxonomy( $field_value, $site );
 					break;
+				case 'gallery':
+					$meta_value = $this->prepare_gallery( $field_value, $site );
+					break;
 				case 'image':
 					$meta_value = $this->prepare_image( $field_value, $site );
 					break;
@@ -303,6 +306,36 @@ class ACF {
 				$meta_value[] = $replicast_info[ $site->get_id() ]['id'];
 			}
 
+		}
+
+		if ( ! empty( $meta_value ) && is_array( $meta_value ) ) {
+			$meta_value = \maybe_serialize( $meta_value );
+		}
+
+		return $meta_value;
+	}
+
+	/**
+	 * Prepare ACF gallery fields.
+	 *
+	 * @since     1.0.0
+	 * @param     array                $field_value    The meta value.
+	 * @param     \Replicast\Client    $site           Site object.
+	 * @return    string                               Possibly-modified non-serialized meta value.
+	 */
+	private function prepare_gallery( $field_value, $site ) {
+		$meta_value = '';
+
+		if ( empty( $field_value ) ) {
+			$field_value = array();
+		}
+
+		if ( ! is_array( $field_value ) ) {
+			$field_value = array( $field_value );
+		}
+
+		foreach ( $field_value as $related_image ) {
+			$meta_value[] = $this->prepare_image( $related_image, $site );
 		}
 
 		if ( ! empty( $meta_value ) && is_array( $meta_value ) ) {
