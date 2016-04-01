@@ -277,14 +277,24 @@ abstract class Handler {
 		}
 
 		/**
-		 * Filter the prepared object data for creation.
+		 * Extend data for creation by object type.
 		 *
 		 * @since     1.0.0
 		 * @param     array                Prepared object data.
 		 * @param     \Replicast\Client    Site object.
 		 * @return    array                Possibly-modified object data.
 		 */
-		return \apply_filters( "replicast_prepare_{$this->object_type}_for_create", $data, $site );
+		$data = \apply_filters( "replicast_prepare_{$this->object_type}_for_create", $data, $site );
+
+		/**
+		 * Extend data for creation.
+		 *
+		 * @since     1.0.0
+		 * @param     array                Prepared object data.
+		 * @param     \Replicast\Client    Site object.
+		 * @return    array                Possibly-modified object data.
+		 */
+		return \apply_filters( "replicast_prepare_object_for_create", $data, $site );
 	}
 
 	/**
@@ -341,14 +351,24 @@ abstract class Handler {
 		}
 
 		/**
-		 * Filter the prepared object data for update.
+		 * Extend data for update by object type.
 		 *
 		 * @since     1.0.0
 		 * @param     array                Prepared object data.
 		 * @param     \Replicast\Client    Site object.
 		 * @return    array                Possibly-modified object data.
 		 */
-		return \apply_filters( "replicast_prepare_{$this->object_type}_for_update", $data, $site );
+		$data = \apply_filters( "replicast_prepare_{$this->object_type}_for_update", $data, $site );
+
+		/**
+		 * Extend data for update.
+		 *
+		 * @since     1.0.0
+		 * @param     array                Prepared object data.
+		 * @param     \Replicast\Client    Site object.
+		 * @return    array                Possibly-modified object data.
+		 */
+		return \apply_filters( "replicast_prepare_object_for_update", $data, $site );
 	}
 
 	/**
