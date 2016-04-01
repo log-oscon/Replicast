@@ -62,8 +62,9 @@ class ACF {
 
 		\add_filter( 'acf/update_value/type=relationship',     array( $this, 'relationship_persistence' ), 10, 3 );
 		\add_filter( 'replicast_expose_object_protected_meta', array( $this, 'expose_object_protected_meta' ), 10 );
-		\add_filter( 'replicast_get_object_post_meta',         array( $this, 'get_post_meta' ), 10, 3 );
 		\add_filter( 'replicast_suppress_object_meta',         array( $this, 'suppress_object_meta' ), 10 );
+
+		\add_filter( 'replicast_get_object_post_meta', array( $this, 'get_post_meta' ), 10, 3 );
 
 		foreach ( Admin\SiteAdmin::get_post_types() as $post_type ) {
 			\add_filter( "replicast_prepare_{$post_type}_for_create", array( $this, 'prepare_meta' ), 10, 2 );
@@ -156,6 +157,16 @@ class ACF {
 	 * @return    array    Exposed meta keys.
 	 */
 	public function expose_object_protected_meta() {
+		return array( static::REPLICAST_ACF_INFO );
+	}
+
+	/**
+	 * Suppress \Replicast\ACF meta keys.
+	 *
+	 * @since     1.0.0
+	 * @return    array     Suppressed meta keys.
+	 */
+	public function suppress_object_meta() {
 		return array( static::REPLICAST_ACF_INFO );
 	}
 
@@ -476,16 +487,6 @@ class ACF {
 		}
 
 		return $data;
-	}
-
-	/**
-	 * Suppress \Replicast\ACF meta keys.
-	 *
-	 * @since     1.0.0
-	 * @return    array     Suppressed meta keys.
-	 */
-	public function suppress_object_meta() {
-		return array( static::REPLICAST_ACF_INFO );
 	}
 
 }
