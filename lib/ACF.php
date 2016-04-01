@@ -60,21 +60,42 @@ class ACF {
 	 */
 	public function register() {
 
-		\add_filter( 'acf/update_value/type=relationship',     array( $this, 'relationship_persistence' ), 10, 3 );
 		\add_filter( 'replicast_expose_object_protected_meta', array( $this, 'expose_object_protected_meta' ), 10 );
 		\add_filter( 'replicast_suppress_object_meta',         array( $this, 'suppress_object_meta' ), 10 );
 
-		\add_filter( 'replicast_get_post_meta', array( $this, 'get_post_meta' ), 10, 3 );
+		\add_filter( 'acf/update_value/type=relationship',  array( $this, 'get_relations' ), 10, 3 );
+		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_relations' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_relations' ), 10, 2 );
 
-		foreach ( Admin\SiteAdmin::get_post_types() as $post_type ) {
-			\add_filter( "replicast_prepare_{$post_type}_for_create", array( $this, 'prepare_meta' ), 10, 2 );
-			\add_filter( "replicast_prepare_{$post_type}_for_update", array( $this, 'prepare_meta' ), 10, 2 );
-			\add_filter( "replicast_prepare_{$post_type}_for_create", array( $this, 'prepare_relationship_persistence' ), 10, 2 );
-			\add_filter( "replicast_prepare_{$post_type}_for_update", array( $this, 'prepare_relationship_persistence' ), 10, 2 );
-		};
+		\add_filter( 'replicast_get_object_meta',           array( $this, 'get_meta' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_meta' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_meta' ), 10, 2 );
 
-		\add_filter( 'replicast_get_object_media', array( $this, 'get_object_media' ), 10, 2 );
+		\add_filter( 'replicast_get_object_media',          array( $this, 'get_media' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_media' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_media' ), 10, 2 );
+		\add_action( 'replicast_update_object_media',       array( $this, 'update_media' ), 10, 2 );
 
+	}
+
+	/**
+	 * Expose \Replicast\ACF protected meta keys.
+	 *
+	 * @since     1.0.0
+	 * @return    array    Exposed meta keys.
+	 */
+	public function expose_object_protected_meta() {
+		return array( static::REPLICAST_ACF_INFO );
+	}
+
+	/**
+	 * Suppress \Replicast\ACF meta keys.
+	 *
+	 * @since     1.0.0
+	 * @return    array     Suppressed meta keys.
+	 */
+	public function suppress_object_meta() {
+		return array( static::REPLICAST_ACF_INFO );
 	}
 
 	/**
@@ -90,7 +111,7 @@ class ACF {
 	 * @param     array    $field      The field object.
 	 * @return    mixed                Possibly-modified value of the field.
 	 */
-	public function relationship_persistence( $value, $post_id, $field ) {
+	public function get_relations( $value, $post_id, $field ) {
 
 		// Bail out if not admin and bypass REST API requests
 		if ( ! \is_admin() ) {
@@ -153,35 +174,67 @@ class ACF {
 	}
 
 	/**
-	 * Expose \Replicast\ACF protected meta keys.
+	 * Prepare removed relations.
 	 *
 	 * @since     1.0.0
-	 * @return    array    Exposed meta keys.
+	 * @param     array                $data    Prepared data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified data.
 	 */
-	public function expose_object_protected_meta() {
-		return array( static::REPLICAST_ACF_INFO );
+	public function prepare_relations( $data, $site ) {
+
+		if ( empty( $data['replicast'] ) ) {
+			return $data;
+		}
+
+		if ( empty( $data['replicast']['meta'] ) ) {
+			return $data;
+		}
+
+		if ( empty( $data['replicast']['meta'][ static::REPLICAST_ACF_INFO ] ) ) {
+			return $data;
+		}
+
+		foreach ( $data['replicast']['meta'][ static::REPLICAST_ACF_INFO ] as $meta_values ) {
+
+			$meta_values   = \maybe_unserialize( $meta_values );
+			$prepared_meta = array();
+
+			foreach ( $meta_values as $meta_key => $meta_value ) {
+				foreach ( $meta_value as $related_post_id ) {
+
+					// Get replicast info
+					$replicast_info = API::get_replicast_info( \get_post( $related_post_id ) );
+
+					// Update object ID
+					if ( ! empty( $replicast_info ) ) {
+						$prepared_meta[ $meta_key ][] = $replicast_info[ $site->get_id() ]['id'];
+					}
+
+				}
+
+			}
+
+			if ( ! empty( $prepared_meta ) && is_array( $prepared_meta ) ) {
+				$prepared_meta = \maybe_serialize( $prepared_meta );
+			}
+
+			unset( $data['replicast']['meta'][ static::REPLICAST_ACF_INFO ] );
+			$data['replicast']['meta'][ static::REPLICAST_ACF_INFO ][] = $prepared_meta;
+		}
+
+		return $data;
 	}
 
 	/**
-	 * Suppress \Replicast\ACF meta keys.
+	 * Retrieve ACF meta.
 	 *
 	 * @since     1.0.0
-	 * @return    array     Suppressed meta keys.
+	 * @param     array     $values     Object meta.
+	 * @param     int       $post_id    The object ID.
+	 * @return    array                 Possibly-modified object meta.
 	 */
-	public function suppress_object_meta() {
-		return array( static::REPLICAST_ACF_INFO );
-	}
-
-	/**
-	 * Retrieve post ACF meta.
-	 *
-	 * @since     1.0.0
-	 * @param     array     $values       Object meta.
-	 * @param     string    $meta_type    The object meta type.
-	 * @param     int       $post_id      The object ID.
-	 * @return    array                   Possibly-modified object meta.
-	 */
-	public function get_post_meta( $values, $meta_type, $post_id ) {
+	public function get_meta( $values, $post_id ) {
 
 		$prepared_meta = array();
 
@@ -439,60 +492,7 @@ class ACF {
 	}
 
 	/**
-	 * Prepare removed relations.
-	 *
-	 * @since     1.0.0
-	 * @param     array                $data    Prepared data.
-	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Possibly-modified data.
-	 */
-	public function prepare_relationship_persistence( $data, $site ) {
-
-		if ( empty( $data['replicast'] ) ) {
-			return $data;
-		}
-
-		if ( empty( $data['replicast']['meta'] ) ) {
-			return $data;
-		}
-
-		if ( empty( $data['replicast']['meta'][ static::REPLICAST_ACF_INFO ] ) ) {
-			return $data;
-		}
-
-		foreach ( $data['replicast']['meta'][ static::REPLICAST_ACF_INFO ] as $meta_values ) {
-
-			$meta_values   = \maybe_unserialize( $meta_values );
-			$prepared_meta = array();
-
-			foreach ( $meta_values as $meta_key => $meta_value ) {
-				foreach ( $meta_value as $related_post_id ) {
-
-					// Get replicast info
-					$replicast_info = API::get_replicast_info( \get_post( $related_post_id ) );
-
-					// Update object ID
-					if ( ! empty( $replicast_info ) ) {
-						$prepared_meta[ $meta_key ][] = $replicast_info[ $site->get_id() ]['id'];
-					}
-
-				}
-
-			}
-
-			if ( ! empty( $prepared_meta ) && is_array( $prepared_meta ) ) {
-				$prepared_meta = \maybe_serialize( $prepared_meta );
-			}
-
-			unset( $data['replicast']['meta'][ static::REPLICAST_ACF_INFO ] );
-			$data['replicast']['meta'][ static::REPLICAST_ACF_INFO ][] = $prepared_meta;
-		}
-
-		return $data;
-	}
-
-	/**
-	 * Retrieve ACF media objects.
+	 * Get ACF media.
 	 *
 	 * @see  \Replicast\API::get_object_media
 	 *
@@ -501,7 +501,7 @@ class ACF {
 	 * @param     int      $post_id    The object ID.
 	 * @return    array                Possibly-modified object media.
 	 */
-	public function get_object_media( $data, $post_id ) {
+	public function get_media( $data, $post_id ) {
 
 		$fields = \get_field_objects( $post_id );
 
@@ -525,6 +525,27 @@ class ACF {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Prepare ACF media.
+	 *
+	 * @since     1.0.0
+	 * @param     array                $data    Prepared data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified data.
+	 */
+	public function prepare_media( $data, $site ) {
+	}
+
+	/**
+	 * Update ACF media.
+	 *
+	 * @since     1.0.0
+	 * @param     array     $values       The values of the field.
+	 * @param     object    $object_id    The object ID.
+	 */
+	public static function update_media( $values, $object_id ) {
 	}
 
 }

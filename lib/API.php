@@ -130,7 +130,7 @@ class API {
 		}
 
 		/**
-		 * Filter object meta.
+		 * Extend object meta by meta type.
 		 *
 		 * @since     1.0.0
 		 * @param     array     Object meta.
@@ -139,6 +139,16 @@ class API {
 		 * @return    array     Possibly-modified object meta.
 		 */
 		$prepared_data = \apply_filters( "replicast_get_{$meta_type}_meta", $prepared_data, $meta_type, $object['id'] );
+
+		/**
+		 * Extend object meta.
+		 *
+		 * @since     1.0.0
+		 * @param     array    Object meta.
+		 * @param     int      Object ID.
+		 * @return    array    Possibly-modified object meta.
+		 */
+		$prepared_data = \apply_filters( 'replicast_get_object_meta', $prepared_data, $object['id'] );
 
 		// Add remote object info
 		$prepared_data[ Plugin::REPLICAST_OBJECT_INFO ] = array( \maybe_serialize( array(
@@ -193,7 +203,7 @@ class API {
 		$terms = static::get_object_terms_hierarchical( $object['id'], $prepared_data );
 
 		/**
-		 * Filter object terms.
+		 * Extend object terms.
 		 *
 		 * @since     1.0.0
 		 * @param     array    Hierarchical list of object terms.
