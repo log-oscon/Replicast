@@ -199,7 +199,11 @@ class PostHandler extends Handler {
 			return $data;
 		}
 
-		if ( empty( $data['replicast']['featured_media'] ) ) {
+		if ( empty( $data['replicast']['media'] ) ) {
+			return $data;
+		}
+
+		if ( empty( $data['replicast']['media']['featured_media'] ) ) {
 			return $data;
 		}
 
@@ -207,10 +211,10 @@ class PostHandler extends Handler {
 		$replicast_info = API::get_replicast_info( \get_post( $attachment_id ) );
 
 		// Update object ID
-		$data['replicast']['featured_media']['id'] = '';
+		$data['replicast']['media']['featured_media']['id'] = '';
 
 		if ( ! empty( $replicast_info ) ) {
-			$data['replicast']['featured_media']['id'] = $replicast_info[ $site->get_id() ]['id'];
+			$data['replicast']['media']['featured_media']['id'] = $replicast_info[ $site->get_id() ]['id'];
 		}
 
 		return $data;

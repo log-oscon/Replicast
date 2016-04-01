@@ -78,9 +78,9 @@ class API {
 	 */
 	public static function get_rest_fields( $object, $field_name, $request ) {
 		return array(
-			'meta'           => static::get_object_meta( $object, $request ),
-			'term'           => static::get_object_term( $object, $request ),
-			'featured_media' => static::get_object_featured_media( $object, $request ),
+			'meta'  => static::get_object_meta( $object, $request ),
+			'term'  => static::get_object_term( $object, $request ),
+			'media' => static::get_object_media( $object, $request ),
 		);
 	}
 
@@ -130,7 +130,7 @@ class API {
 		}
 
 		/**
-		 * Filter the obtained object meta.
+		 * Filter object meta.
 		 *
 		 * @since     1.0.0
 		 * @param     array     Object meta.
@@ -193,7 +193,7 @@ class API {
 		$terms = static::get_object_terms_hierarchical( $object['id'], $prepared_data );
 
 		/**
-		 * Filter the obtained object terms.
+		 * Filter object terms.
 		 *
 		 * @since     1.0.0
 		 * @param     array    Hierarchical list of object terms.
@@ -270,20 +270,31 @@ class API {
 	}
 
 	/**
-	 * Retrieve object featured media.
+	 * Retrieves object media.
 	 *
 	 * @since     1.0.0
 	 * @param     array               $object     Details of current content object.
 	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
 	 * @return    array                           Object media.
 	 */
-	public static function get_object_featured_media( $object, $request ) {
+	public static function get_object_media( $object, $request ) {
 
-		if ( empty( $object['featured_media'] ) ) {
-			return array();
+		$prepared_data = array();
+
+		// Get object featured media
+		if ( ! empty( $object['featured_media'] ) ) {
+			$prepared_data['featured_media'] = static::get_media( $object['featured_media'] );
 		}
 
-		return static::get_media( $object['featured_media'] );
+		/**
+		 * Filter object media.
+		 *
+		 * @since     1.0.0
+		 * @param     array    Object media.
+		 * @param     int      Object ID.
+		 * @return    array    Possibly-modified object media.
+		 */
+		return \apply_filters( 'replicast_get_object_media', $prepared_data, $object['id'] );
 	}
 
 	/**
@@ -291,7 +302,7 @@ class API {
 	 *
 	 * @since     1.0.0
 	 * @param     int    $object_id    The object ID.
-	 * @return    array
+	 * @return    array                Prepared media object.
 	 */
 	public static function get_media( $object_id ) {
 
@@ -356,9 +367,9 @@ class API {
 			static::update_object_term( $values['term'], $object );
 		}
 
-		// Update featured media
-		if ( ! empty( $values['featured_media'] ) ) {
-			static::update_object_featured_media( $values['featured_media'], $object );
+		// Update object media
+		if ( ! empty( $values['media'] ) ) {
+			static::update_object_media( $values['media'], $object );
 		}
 
 	}
@@ -533,12 +544,31 @@ class API {
 	 * @param     array     $values    The values of the field.
 	 * @param     object    $object    The object from the response.
 	 */
-	public static function update_object_featured_media( $values, $object ) {
+	public static function update_object_media( $values, $object ) {
 
-		$attachment_id = ! empty( $values['id'] ) ? $values['id'] : '';
+		// Update object featured media
+		if ( ! empty( $values['featured_media'] ) ) {
+			$attachment_id = static::update_media( $values['featured_media'] );
+
+			// Assign featured media to post
+			\set_post_thumbnail( $object->ID, $attachment_id );
+		}
+
+	}
+
+	/**
+	 * Updates a media object.
+	 *
+	 * @since     1.0.0
+	 * @param     array    $values    The values of the field.
+	 * @return    int                 The media object ID.
+	 */
+	public static function update_media( $values ) {
+
+		$object_id = ! empty( $values['id'] ) ? $values['id'] : '';
 
 		// Create an attachment if no ID was given
-		if ( empty( $attachment_id ) ) {
+		if ( empty( $object_id ) ) {
 
 			$file = \esc_url( $values['metadata']['file'] );
 
@@ -551,19 +581,17 @@ class API {
 			);
 
 			// Create the attachment
-			$attachment_id = \wp_insert_attachment( $attachment, $file, $object->ID );
+			$object_id = \wp_insert_attachment( $attachment, $file );
 
 			// Assign metadata to attachment
-			\wp_update_attachment_metadata( $attachment_id, $values['metadata'] );
+			\wp_update_attachment_metadata( $object_id, $values['metadata'] );
 
 		}
 
 		// Save remote object info
-		\update_post_meta( $attachment_id, Plugin::REPLICAST_OBJECT_INFO, $values[ Plugin::REPLICAST_OBJECT_INFO ] );
+		\update_post_meta( $object_id, Plugin::REPLICAST_OBJECT_INFO, $values[ Plugin::REPLICAST_OBJECT_INFO ] );
 
-		// Assign featured media to post
-		\set_post_thumbnail( $object->ID, $attachment_id );
-
+		return $object_id;
 	}
 
 	/**
