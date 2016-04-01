@@ -234,7 +234,7 @@ class ACF {
 		 * @param     array    Object meta.
 		 * @return    array    Possibly-modified name of the suppressed field type(s).
 		 */
-		$suppressed_meta = \apply_filters( 'replicast_suppress_acf_meta', array(), $data['replicast']['meta'] );
+		$suppressed_meta = \apply_filters( 'replicast_acf_suppress_meta', array(), $data['replicast']['meta'] );
 
 		foreach ( $data['replicast']['meta'] as $key => $meta ) {
 
