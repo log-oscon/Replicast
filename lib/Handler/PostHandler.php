@@ -253,14 +253,18 @@ class PostHandler extends Handler {
 			return;
 		}
 
-		if ( empty( $data->replicast->featured_media ) ) {
+		if ( empty( $data->replicast->media ) ) {
+			return;
+		}
+
+		if ( empty( $data->replicast->media->featured_media ) ) {
 			return;
 		}
 
 		$attachment_id = \get_post_thumbnail_id( $object_id );
 
 		// Update replicast info
-		API::update_replicast_info( \get_post( $attachment_id ), $site_id, $data->replicast->featured_media );
+		API::update_replicast_info( \get_post( $attachment_id ), $site_id, $data->replicast->media->featured_media );
 
 	}
 
