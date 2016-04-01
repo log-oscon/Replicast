@@ -272,6 +272,11 @@ class API {
 	/**
 	 * Retrieves object media.
 	 *
+	 * This method is used to build a data structure that contains all the information needed
+	 * to create a virtual media object on the remote site.
+	 *
+	 * Its basic use is to prepare the featured media object that is attached to an object, like a post.
+	 *
 	 * @since     1.0.0
 	 * @param     array               $object     Details of current content object.
 	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
@@ -279,22 +284,22 @@ class API {
 	 */
 	public static function get_object_media( $object, $request ) {
 
-		$prepared_data = array();
-
-		// Get object featured media
-		if ( ! empty( $object['featured_media'] ) ) {
-			$prepared_data['featured_media'] = static::get_media( $object['featured_media'] );
-		}
-
 		/**
-		 * Filter object media.
+		 * Extend object media.
 		 *
 		 * @since     1.0.0
 		 * @param     array    Object media.
 		 * @param     int      Object ID.
 		 * @return    array    Possibly-modified object media.
 		 */
-		return \apply_filters( 'replicast_get_object_media', $prepared_data, $object['id'] );
+		$prepared_data = \apply_filters( 'replicast_get_object_media', array(), $object['id'] );
+
+		// Get object featured media
+		if ( ! empty( $object['featured_media'] ) ) {
+			$prepared_data['featured_media'] = static::get_media( $object['featured_media'] );
+		}
+
+		return $prepared_data;
 	}
 
 	/**
@@ -538,7 +543,7 @@ class API {
 	}
 
 	/**
-	 * Update object featured media.
+	 * Update object media.
 	 *
 	 * @since     1.0.0
 	 * @param     array     $values    The values of the field.
@@ -553,6 +558,15 @@ class API {
 			// Assign featured media to post
 			\set_post_thumbnail( $object->ID, $attachment_id );
 		}
+
+		/**
+		 * Fires immediately after object media is updated.
+		 *
+		 * @since    1.0.0
+		 * @param    array     The values of the field.
+		 * @param    int       The object ID.
+		 */
+		\do_action( 'replicast_update_object_media', $values, $object->ID );
 
 	}
 

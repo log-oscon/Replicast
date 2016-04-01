@@ -59,6 +59,7 @@ Observações:
 
 ### Outros
 * <del>Melhorar mecanismo de gestão de sites (unificar campos Site URL e REST API URL)</del>  
+* Adicionar classe CSS ao body da página de edição para fazer alterações visuais (esconder campos) nos sites remotos  
 * Evitar que o campo de meta REPLICAST_OBJECT_INFO seja retornado pelo site remoto na resposta ao pedido do central  
 * Validar campos obrigatórios na criação de um "Site"  
 * Melhorar mecanismo de gestão de mensagens de admin  
