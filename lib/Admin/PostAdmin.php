@@ -166,7 +166,7 @@ class PostAdmin extends Admin {
 		 */
 		$actions = \apply_filters( 'replicast_hide_row_actions', array( $defaults['view'] ), $defaults, $object );
 
-		// Force the removal of unsupported default actions
+		// Remove unsupported actions
 		unset( $actions['edit'] );
 		unset( $actions['inline hide-if-no-js'] );
 		unset( $actions['trash'] );
@@ -399,6 +399,10 @@ class PostAdmin extends Admin {
 		// Update links
 		$response['link']     = $remote_info['permalink'];
 		$response['editLink'] = $remote_info['edit_link'];
+
+		// Remove unsupported actions
+		unset( $response['nonces']['update'] );
+		unset( $response['nonces']['delete'] );
 
 		// if ( ! empty( $meta['sizes'] ) ) {
 		// 	foreach ( $response['sizes'] as $size => $value ) {
