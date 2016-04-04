@@ -427,14 +427,14 @@ class ACF {
 			return $meta_value;
 		}
 
-		$post = \get_post( $field_value['ID'] );
+		$image = \get_post( $field_value['ID'] );
 
-		if ( ! $post ) {
+		if ( ! $image ) {
 			return $meta_value;
 		}
 
 		// Get replicast info
-		$replicast_info = API::get_replicast_info( $post );
+		$replicast_info = API::get_replicast_info( $image );
 
 		// Update object ID
 		if ( ! empty( $replicast_info ) ) {
@@ -558,8 +558,8 @@ class ACF {
 			}
 
 			// Gallery
-			foreach ( $values as $key => $media ) {
-				$data['replicast']['media'][ $field_type ][ $key ]['id'] = API::get_replicast_id( $media['id'], $site );
+			foreach ( $values as $key => $image ) {
+				$data['replicast']['media'][ $field_type ][ $key ]['id'] = API::get_replicast_id( $image['id'], $site );
 			}
 
 		}
