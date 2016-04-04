@@ -316,11 +316,11 @@ class ACF {
 				case 'taxonomy':
 					$meta_value = $this->prepare_taxonomy_meta( $field_value, $site );
 					break;
-				case 'gallery':
-					$meta_value = $this->prepare_gallery_meta( $field_value, $site );
-					break;
 				case 'image':
 					$meta_value = $this->prepare_image_meta( $field_value, $site );
+					break;
+				case 'gallery':
+					$meta_value = $this->prepare_gallery_meta( $field_value, $site );
 					break;
 				case 'relationship':
 					$meta_value = $this->prepare_relationship_meta( $field_value, $site );
@@ -382,36 +382,6 @@ class ACF {
 	}
 
 	/**
-	 * Prepare ACF gallery meta.
-	 *
-	 * @since     1.0.0
-	 * @param     array                $field_value    The meta value.
-	 * @param     \Replicast\Client    $site           Site object.
-	 * @return    string                               Possibly-modified non-serialized meta value.
-	 */
-	private function prepare_gallery_meta( $field_value, $site ) {
-		$meta_value = '';
-
-		if ( empty( $field_value ) ) {
-			$field_value = array();
-		}
-
-		if ( ! is_array( $field_value ) ) {
-			$field_value = array( $field_value );
-		}
-
-		foreach ( $field_value as $related_image ) {
-			$meta_value[] = $this->prepare_image_meta( $related_image, $site );
-		}
-
-		if ( ! empty( $meta_value ) && is_array( $meta_value ) ) {
-			$meta_value = \maybe_serialize( $meta_value );
-		}
-
-		return $meta_value;
-	}
-
-	/**
 	 * Prepare ACF image meta.
 	 *
 	 * @since     1.0.0
@@ -439,6 +409,36 @@ class ACF {
 		// Update object ID
 		if ( ! empty( $replicast_info ) ) {
 			return $replicast_info[ $site->get_id() ]['id'];
+		}
+
+		return $meta_value;
+	}
+
+	/**
+	 * Prepare ACF gallery meta.
+	 *
+	 * @since     1.0.0
+	 * @param     array                $field_value    The meta value.
+	 * @param     \Replicast\Client    $site           Site object.
+	 * @return    string                               Possibly-modified non-serialized meta value.
+	 */
+	private function prepare_gallery_meta( $field_value, $site ) {
+		$meta_value = '';
+
+		if ( empty( $field_value ) ) {
+			$field_value = array();
+		}
+
+		if ( ! is_array( $field_value ) ) {
+			$field_value = array( $field_value );
+		}
+
+		foreach ( $field_value as $related_image ) {
+			$meta_value[] = $this->prepare_image_meta( $related_image, $site );
+		}
+
+		if ( ! empty( $meta_value ) && is_array( $meta_value ) ) {
+			$meta_value = \maybe_serialize( $meta_value );
 		}
 
 		return $meta_value;
@@ -511,15 +511,25 @@ class ACF {
 
 		foreach( $fields as $field ) {
 
-			switch ( $field['type'] ) {
-				case 'gallery':
-					foreach ( $field['value'] as $image ) {
-						$data['gallery'][] = API::get_media( $image['ID'] );
-					}
-					break;
-				case 'image':
-					$data['image'] = API::get_media( $field['value']['ID'] );
-					break;
+			$field_type = $field['type'];
+
+			if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+				continue;
+			}
+
+			if ( empty( $field['value'] ) ) {
+				continue;
+			}
+
+			// Image
+			if ( $field_type === 'image' ) {
+				$data['image'] = API::get_media( $field['value']['ID'] );
+				continue;
+			}
+
+			// Gallery
+			foreach ( $field['value'] as $image ) {
+				$data['gallery'][] = API::get_media( $image['ID'] );
 			}
 
 		}
@@ -548,6 +558,10 @@ class ACF {
 		foreach ( $data['replicast']['media'] as $field_type => $values ) {
 
 			if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+				continue;
+			}
+
+			if ( empty( $values ) ) {
 				continue;
 			}
 
