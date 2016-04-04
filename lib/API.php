@@ -393,10 +393,10 @@ class API {
 	 * Update object meta.
 	 *
 	 * @since     1.0.0
-	 * @param     array     $values    The values of the field.
+	 * @param     array     $meta      The values of the field.
 	 * @param     object    $object    The object from the response.
 	 */
-	public static function update_object_meta( $values, $object ) {
+	public static function update_object_meta( $meta, $object ) {
 
 		// Get object meta type
 		$meta_type = static::get_meta_type( $object );
@@ -411,10 +411,10 @@ class API {
 		 * @param     int       The object ID.
 		 * @return    array     Possibly-modified name(s) of the suppressed meta keys.
 		 */
-		$suppressed_meta = \apply_filters( 'replicast_suppress_object_meta', array(), $values, $meta_type, $object->ID );
+		$suppressed_meta = \apply_filters( 'replicast_suppress_object_meta', array(), $meta, $meta_type, $object->ID );
 
 		// Update metadata
-		foreach ( $values as $meta_key => $meta_values ) {
+		foreach ( $meta as $meta_key => $meta_values ) {
 
 			if ( in_array( $meta_key, $suppressed_meta ) ) {
 				continue;
@@ -435,7 +435,7 @@ class API {
 		 * @param    string    The object meta type.
 		 * @param    int       The object ID.
 		 */
-		\do_action( "replicast_update_object_{$meta_type}_meta", $values, $meta_type, $object->ID );
+		\do_action( "replicast_update_object_{$meta_type}_meta", $meta, $meta_type, $object->ID );
 
 	}
 
@@ -556,14 +556,14 @@ class API {
 	 * Update object media.
 	 *
 	 * @since     1.0.0
-	 * @param     array     $values    The values of the field.
+	 * @param     array     $media     The values of the field.
 	 * @param     object    $object    The object from the response.
 	 */
-	public static function update_object_media( $values, $object ) {
+	public static function update_object_media( $media, $object ) {
 
 		// Update object featured media
-		if ( ! empty( $values['featured_media'] ) ) {
-			$attachment_id = static::update_media( $values['featured_media'] );
+		if ( ! empty( $media['featured_media'] ) ) {
+			$attachment_id = static::update_media( $media['featured_media'] );
 
 			// Assign featured media to post
 			\set_post_thumbnail( $object->ID, $attachment_id );
@@ -576,7 +576,7 @@ class API {
 		 * @param    array     The values of the field.
 		 * @param    int       The object ID.
 		 */
-		\do_action( 'replicast_update_object_media', $values, $object->ID );
+		\do_action( 'replicast_update_object_media', $media, $object->ID );
 
 	}
 
@@ -584,38 +584,38 @@ class API {
 	 * Updates a media object.
 	 *
 	 * @since     1.0.0
-	 * @param     array    $values    The values of the field.
-	 * @return    int                 The media object ID.
+	 * @param     array    $image    The values of the field.
+	 * @return    int                The media object ID.
 	 */
-	public static function update_media( $values ) {
+	public static function update_media( $image ) {
 
-		$object_id = ! empty( $values['id'] ) ? $values['id'] : '';
+		$image_id = ! empty( $image['id'] ) ? $image['id'] : '';
 
 		// Create an attachment if no ID was given
-		if ( empty( $object_id ) ) {
+		if ( empty( $image_id ) ) {
 
-			$file = \esc_url( $values['metadata']['file'] );
+			$file = \esc_url( $image['metadata']['file'] );
 
 			// Set attachment data
 			$attachment = array(
-				'post_mime_type' => $values['mime-type'],
+				'post_mime_type' => $image['mime-type'],
 				'post_title'     => \sanitize_file_name( basename( $file ) ),
 				'post_content'   => '',
 				'post_status'    => 'inherit'
 			);
 
 			// Create the attachment
-			$object_id = \wp_insert_attachment( $attachment, $file );
+			$image_id = \wp_insert_attachment( $attachment, $file );
 
 			// Assign metadata to attachment
-			\wp_update_attachment_metadata( $object_id, $values['metadata'] );
+			\wp_update_attachment_metadata( $image_id, $image['metadata'] );
 
 		}
 
 		// Save remote object info
-		\update_post_meta( $object_id, Plugin::REPLICAST_OBJECT_INFO, $values[ Plugin::REPLICAST_OBJECT_INFO ] );
+		\update_post_meta( $image_id, Plugin::REPLICAST_OBJECT_INFO, $image[ Plugin::REPLICAST_OBJECT_INFO ] );
 
-		return $object_id;
+		return $image_id;
 	}
 
 	/**
