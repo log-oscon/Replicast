@@ -590,4 +590,31 @@ abstract class Handler {
 
 	}
 
+	/**
+	 * Update object with remote ID.
+	 *
+	 * @since     1.0.0
+	 * @param     int       $site_id    Site ID.
+	 * @param     object    $data       Object data.
+	 */
+	abstract protected function update_object( $site_id, $data = null );
+
+	/**
+	 * Update terms with remote IDs.
+	 *
+	 * @since     1.0.0
+	 * @param     int       $site_id    Site ID.
+	 * @param     object    $data       Object data.
+	 */
+	abstract protected function update_terms( $site_id, $data = null );
+
+	/**
+	 * Update media with remote IDs.
+	 *
+	 * @since     1.0.0
+	 * @param     int       $site_id    Site ID.
+	 * @param     object    $data       Object data.
+	 */
+	abstract protected function update_media( $site_id, $data = null );
+
 }

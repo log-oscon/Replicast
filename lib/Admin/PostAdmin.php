@@ -480,14 +480,14 @@ class PostAdmin extends Admin {
 
 							$site_id = $site->get_id();
 
-							// Update replicast info
-							$handler->update_post_info( $site_id, $remote_data );
+							// Update object
+							$handler->update_object( $site_id, $remote_data );
 
-							// Update featured media
-							$handler->update_post_featured_media( $site_id, $remote_data );
+							// Update terms
+							$handler->update_terms( $site_id, $remote_data );
 
-							// Update post terms
-							$handler->update_post_terms( $site_id, $remote_data );
+							// Update media
+							$handler->update_media( $site_id, $remote_data );
 
 							// TODO: build notices
 
@@ -539,8 +539,8 @@ class PostAdmin extends Admin {
 						->then(
 							function ( $response ) use ( $site_id, $handler ) {
 
-								// Update replicast info
-								$handler->update_post_info( $site_id );
+								// Update object
+								$handler->update_object( $site_id );
 
 								// TODO: build notices
 
@@ -632,8 +632,8 @@ class PostAdmin extends Admin {
 								$remote_data = null;
 							}
 
-							// Update replicast info
-							$handler->update_post_info( $site->get_id(), $remote_data );
+							// Update object
+							$handler->update_object( $site->get_id(), $remote_data );
 
 							// TODO: build notices
 
@@ -729,8 +729,8 @@ class PostAdmin extends Admin {
 					->then(
 						function ( $response ) use ( $site, $handler ) {
 
-							// Update replicast info
-							$handler->update_post_info( $site->get_id() );
+							// Update object
+							$handler->update_object( $site->get_id() );
 
 							// TODO: build notices
 
