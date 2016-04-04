@@ -709,16 +709,16 @@ class API {
 	}
 
 	/**
-	 * Retrieve remote id from object.
+	 * Retrieve remote ID from object.
 	 *
 	 * @since     1.0.0
-	 * @param  [type] $object [description]
-	 * @param     \Replicast\Client    $site           Site object.
-	 * @return [type]            [description]
+	 * @param     object|int           $object    The object or the object ID.
+	 * @param     \Replicast\Client    $site      Site object.
+	 * @return    int|string                      The replicast ID. Empty, otherwise.
 	 */
 	public static function get_replicast_id( $object, $site ) {
 
-		if ( ! is_numeric( $object ) ) {
+		if ( is_numeric( $object ) ) {
 			$object = \get_post( $object );
 		}
 
