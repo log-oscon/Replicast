@@ -589,7 +589,31 @@ class ACF {
 	 * @param     array     $values       The values of the field.
 	 * @param     object    $object_id    The object ID.
 	 */
-	public static function update_media( $values, $object_id ) {
+	public static function update_media( $media, $object_id ) {
+
+		foreach ( $media as $field_type => $values ) {
+
+			if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+				continue;
+			}
+
+			if ( empty( $values ) ) {
+				continue;
+			}
+
+			// Image
+			if ( $field_type === 'image' ) {
+				API::update_media( $values );
+				continue;
+			}
+
+			// Gallery
+			foreach ( $values as $key => $image ) {
+				API::update_media( $image );
+			}
+
+		}
+
 	}
 
 }
