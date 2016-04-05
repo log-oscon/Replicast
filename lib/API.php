@@ -351,11 +351,10 @@ class API {
 		}
 
 		return array(
-			'id'                          => $object_id, // This object ID is going to be replaced by the remote ID
+			'id'                          => $object_id,
 			'mime-type'                   => \get_post_mime_type( $object_id ),
 			'metadata'                    => $metadata,
 			Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
-				'object_id' => $object_id, // Save original object ID
 				'permalink' => \get_attachment_link( $object_id ),
 				'edit_link' => \get_edit_post_link( $object_id ),
 				'rest_url'  => \rest_url( sprintf( '/wp/v2/media/%s', $object_id ) ),
@@ -384,7 +383,7 @@ class API {
 
 		// Update object media
 		if ( ! empty( $values['media'] ) ) {
-			static::update_object_media( $values['media'], $object );
+			// static::update_object_media( $values['media'], $object );
 		}
 
 	}
@@ -580,13 +579,19 @@ class API {
 	 */
 	public static function update_object_media( $media, $object ) {
 
-		// Update object featured media
-		if ( ! empty( $media['featured_media'] ) ) {
-			$attachment_id = static::update_media( $media['featured_media'] );
+		// Update media
+		foreach ( $media as $media_id => $media_data ) {
 
-			// Assign featured media to post
-			\set_post_thumbnail( $object->ID, $attachment_id );
+			if ( ! empty( $media_data['id'] ) ) {
+				continue;
+			}
+
+			$media[ $media_id ]['id'] = static::update_media( $media_data );
+
 		}
+
+		// // Assign featured media to post
+		// \set_post_thumbnail( $object->ID, $attachment_id );
 
 		/**
 		 * Fires immediately after object media is updated.
