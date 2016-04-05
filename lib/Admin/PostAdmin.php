@@ -90,7 +90,18 @@ class PostAdmin extends Admin {
 		 * @param     string    Column header title.
 		 * @return    string    Possibly-modified column header title.
 		 */
-		$title = \apply_filters( 'replicast_manage_columns_title', \__( 'Replicast', 'replicast' ) );
+		$replicast_title = \apply_filters( 'replicast_manage_columns_title', \__( 'Replicast', 'replicast' ) );
+
+		$sorted_columns = array(
+			'replicast' => sprintf(
+				'<span class="screen-reader-text">%s</span>',
+				\esc_attr( $replicast_title )
+			)
+		);
+
+		foreach ( $columns as $column_key => $column_title ) {
+			$sorted_columns[ $column_key ] = $column_title;
+		}
 
 		/**
 		 * Filter the columns displayed.
@@ -102,7 +113,7 @@ class PostAdmin extends Admin {
 		 */
 		return \apply_filters(
 			'replicast_manage_columns',
-			array_merge( $columns, array( 'replicast' => $title ) ),
+			$sorted_columns,
 			$post_type
 		);
 	}

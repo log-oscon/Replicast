@@ -1,3 +1,7 @@
-#post #remote_site-adder {
+.widefat .column-replicast {
+  width: 1em;
+}
+
+#remote_site-adder {
   display: none;
 }
