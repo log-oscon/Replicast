@@ -48,3 +48,11 @@ if ( ! defined( 'WPINC' ) ) {
     $plugin = new \Replicast\Plugin( 'replicast', '1.0.0' );
     $plugin->run();
 } );
+
+
+\add_filter( 'determine_current_user', function( $user_id ) {
+	global $current_user;
+	error_log(print_r($current_user,true));
+	error_log(print_r($user_id,true));
+	return $user_id;
+}, 99 );
