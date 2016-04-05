@@ -250,15 +250,20 @@ abstract class Handler {
 			unset( $data['id'] );
 		}
 
-		// Update featured media ID
-		if ( ! empty( $data['featured_media'] ) ) {
-			$data = $this->prepare_featured_media( $data, $site );
+		// Remove author
+		if ( ! empty( $data['author'] ) ) {
+			unset( $data['author'] );
 		}
 
 		// Check for date_gmt presence
 		// Note: date_gmt is necessary for post update and it's zeroed upon deletion
 		if ( empty( $data['date_gmt'] ) && ! empty( $data['date'] ) ) {
 			$data['date_gmt'] = \mysql_to_rfc3339( $data['date'] );
+		}
+
+		// Update featured media ID
+		if ( ! empty( $data['featured_media'] ) ) {
+			$data = $this->prepare_featured_media( $data, $site );
 		}
 
 		// Prepare terms
@@ -325,15 +330,20 @@ abstract class Handler {
 		// Update object ID
 		$data['id'] = $replicast_info[ $site->get_id() ]['id'];
 
-		// Update featured media ID
-		if ( ! empty( $data['featured_media'] ) ) {
-			$data = $this->prepare_featured_media( $data, $site );
+		// Remove author
+		if ( ! empty( $data['author'] ) ) {
+			unset( $data['author'] );
 		}
 
 		// Check for date_gmt presence
 		// Note: date_gmt is necessary for post update and it's zeroed upon deletion
 		if ( empty( $data['date_gmt'] ) && ! empty( $data['date'] ) ) {
 			$data['date_gmt'] = \mysql_to_rfc3339( $data['date'] );
+		}
+
+		// Update featured media ID
+		if ( ! empty( $data['featured_media'] ) ) {
+			$data = $this->prepare_featured_media( $data, $site );
 		}
 
 		// Prepare terms
