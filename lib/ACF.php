@@ -71,10 +71,8 @@ class ACF {
 		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_meta' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_meta' ), 10, 2 );
 
-		\add_filter( 'replicast_get_object_media',          array( $this, 'get_media' ), 10, 2 );
-		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_media' ), 10, 2 );
-		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_media' ), 10, 2 );
-		\add_action( 'replicast_update_object_media',       array( $this, 'update_media' ), 10, 2 );
+		\add_filter( 'replicast_get_object_media',    array( $this, 'get_media' ), 10, 2 );
+		\add_action( 'replicast_update_object_media', array( $this, 'update_media' ), 10, 2 );
 
 	}
 
@@ -545,51 +543,6 @@ class ACF {
 		}
 
 		return $data;
-	}
-
-	/**
-	 * Prepare ACF media.
-	 *
-	 * @since     1.0.0
-	 * @param     array                $data    Prepared data.
-	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Possibly-modified data.
-	 */
-	public function prepare_media( $data, $site ) {
-
-		if ( empty( $data['replicast'] ) ) {
-			return $data;
-		}
-
-		if ( empty( $data['replicast']['media'] ) ) {
-			return $data;
-		}
-
-		foreach ( $data['replicast']['media'] as $field_type => $values ) {
-
-			if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
-				continue;
-			}
-
-			if ( empty( $values ) ) {
-				continue;
-			}
-
-			// Image
-			if ( $field_type === 'image' ) {
-				$data['replicast']['media'][ $field_type ]['id'] = API::get_replicast_id( $values['id'], $site );
-				continue;
-			}
-
-			// Gallery
-			foreach ( $values as $key => $image ) {
-				$data['replicast']['media'][ $field_type ][ $key ]['id'] = API::get_replicast_id( $image['id'], $site );
-			}
-
-		}
-
-		return $data;
-
 	}
 
 	/**
