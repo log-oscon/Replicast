@@ -580,8 +580,13 @@ abstract class Handler {
 			$method = 'POST';
 		}
 
+		error_log(print_r('-- do_request',true));
+		error_log(print_r($args,true));
+
 		// Generate request signature
 		$signature = $this->generate_signature( $method, $config, $timestamp, $args );
+
+		error_log(print_r($signature,true));
 
 		// Auth headers
 		$headers['X-API-KEY']       = $config['apy_key'];
