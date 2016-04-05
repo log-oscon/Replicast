@@ -185,17 +185,17 @@ class API {
 		$suppressed_taxonomies = \apply_filters( 'replicast_suppress_object_taxonomies', array(), $taxonomies, $object['id'] );
 
 		$prepared_data = array();
-		foreach ( $taxonomies as $taxonomy_key => $taxonomy_key ) {
+		foreach ( $taxonomies as $taxonomy ) {
 
-			if ( in_array( $taxonomy_key, array( Plugin::TAXONOMY_SITE ) ) ) {
+			if ( in_array( $taxonomy, array( Plugin::TAXONOMY_SITE ) ) ) {
 				continue;
 			}
 
-			if ( in_array( $taxonomy_key, $suppressed_taxonomies ) ) {
+			if ( in_array( $taxonomy, $suppressed_taxonomies ) ) {
 				continue;
 			}
 
-			$prepared_data[ $taxonomy_key ] = $taxonomy_key;
+			$prepared_data[ $taxonomy ] = $taxonomy;
 
 		}
 
