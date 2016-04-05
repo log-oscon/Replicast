@@ -502,7 +502,7 @@ abstract class Handler {
 
 		error_log(print_r('--- generate_signature', true));
 		error_log(print_r($args,true));
-		error_log(print_r(hash( json_encode( $args ) . $config['api_secret'] ),true));
+		error_log(print_r(hash( 'sha256', json_encode( $args ) . $config['api_secret'] ),true));
 
 		/**
 		 * Filter the name of the selected hashing algorithm (e.g. "md5", "sha256", "haval160,4", etc..).
