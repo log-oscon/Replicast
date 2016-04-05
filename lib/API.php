@@ -505,7 +505,7 @@ class API {
 		 * @param    array     The values of the field.
 		 * @param    int       The object ID.
 		 */
-		\do_action( 'replicast_update_object_terms', $terms, $object->ID );
+		\do_action( 'replicast_update_object_term', $terms, $object->ID );
 
 	}
 
