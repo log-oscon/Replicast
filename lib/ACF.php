@@ -218,7 +218,11 @@ class ACF {
 			}
 
 			unset( $data['replicast']['meta'][ static::REPLICAST_ACF_INFO ] );
-			$data['replicast']['meta'][ static::REPLICAST_ACF_INFO ][] = $prepared_meta;
+
+			if ( ! empty( $prepared_meta ) ) {
+				$data['replicast']['meta'][ static::REPLICAST_ACF_INFO ][] = $prepared_meta;
+			}
+
 		}
 
 		return $data;
