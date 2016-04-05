@@ -261,10 +261,8 @@ abstract class Handler {
 			$data['date_gmt'] = \mysql_to_rfc3339( $data['date'] );
 		}
 
-		// Prepare post terms
-		if ( API::is_post( $this->object ) ) {
-			$data = $this->prepare_post_terms( $data, $site );
-		}
+		// Prepare terms
+		$data = $this->prepare_terms( $data, $site );
 
 		// Prepare data by object type
 		switch ( $this->object_type ) {
@@ -335,10 +333,8 @@ abstract class Handler {
 			$data['date_gmt'] = \mysql_to_rfc3339( $data['date'] );
 		}
 
-		// Prepare post terms
-		if ( API::is_post( $this->object ) ) {
-			$data = $this->prepare_post_terms( $data, $site );
-		}
+		// Prepare terms
+		$data = $this->prepare_terms( $data, $site );
 
 		// Prepare data by object type
 		switch ( $this->object_type ) {
