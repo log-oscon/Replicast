@@ -305,8 +305,8 @@ class API {
 		$prepared_data = \apply_filters( 'replicast_get_object_media', array(), $object['id'] );
 
 		// Get object featured media
-		if ( ! empty( $object['featured_media'] ) ) {
-			$prepared_data['featured_media'] = static::get_media( $object['featured_media'] );
+		if ( ! empty( $object['featured_media'] ) && ! array_key_exists( $object['featured_media'], $prepared_data ) ) {
+			$prepared_data[ $object['featured_media'] ] = static::get_media( $object['featured_media'] );
 		}
 
 		return $prepared_data;

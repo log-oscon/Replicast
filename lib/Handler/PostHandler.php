@@ -181,7 +181,7 @@ class PostHandler extends Handler {
 	}
 
 	/**
-	 * Prepare post featured media.
+	 * Prepare featured media.
 	 *
 	 * @since     1.0.0
 	 * @param     array                $data    Prepared post data.
@@ -190,10 +190,28 @@ class PostHandler extends Handler {
 	 */
 	public function prepare_featured_media( $data, $site ) {
 
-		$attachment_id = $data['featured_media'];
+		// Get replicast info
+		$replicast_info = API::get_replicast_info( \get_post( $data['featured_media'] ) );
 
-		// Unset default featured media data structure
-		unset( $data['featured_media'] );
+		// Update object ID
+		$data['featured_media'] = '';
+
+		if ( ! empty( $replicast_info ) ) {
+			$data['featured_media'] = $replicast_info[ $site->get_id() ]['id'];
+		}
+
+	}
+
+
+	/**
+	 * Prepare media.
+	 *
+	 * @since     1.0.0
+	 * @param     array                $data    Prepared post data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified post data.
+	 */
+	public function prepare_media( $data, $site ) {
 
 		if ( empty( $data['replicast'] ) ) {
 			return $data;
@@ -203,18 +221,18 @@ class PostHandler extends Handler {
 			return $data;
 		}
 
-		if ( empty( $data['replicast']['media']['featured_media'] ) ) {
-			return $data;
-		}
+		foreach( $data['replicast']['media'] as $media_id => $media ) {
 
-		// Get replicast info
-		$replicast_info = API::get_replicast_info( \get_post( $attachment_id ) );
+			// Get replicast info
+			$replicast_info = API::get_replicast_info( \get_post( $media_id ) );
 
-		// Update object ID
-		$data['replicast']['media']['featured_media']['id'] = '';
+			// Update object ID
+			$data['replicast']['media'][ $media_id ]['id'] = '';
 
-		if ( ! empty( $replicast_info ) ) {
-			$data['replicast']['media']['featured_media']['id'] = $replicast_info[ $site->get_id() ]['id'];
+			if ( ! empty( $replicast_info ) ) {
+				$data['replicast']['media'][ $media_id ]['id'] = $replicast_info[ $site->get_id() ]['id'];
+			}
+
 		}
 
 		return $data;
@@ -281,19 +299,7 @@ class PostHandler extends Handler {
 			return;
 		}
 
-		foreach ( $data->replicast->media as $key => $media_data ) {
-
-			// Get media object
-			$media = \get_post( $media_data->id );
-
-			if ( ! $media ) {
-				return;
-			}
-
-			// Update replicast info
-			API::update_replicast_info( $media, $site_id, $media_data );
-
-		}
+		// ...
 
 	}
 

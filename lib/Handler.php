@@ -264,6 +264,9 @@ abstract class Handler {
 		// Prepare terms
 		$data = $this->prepare_terms( $data, $site );
 
+		// Prepare media
+		$data = $this->prepare_media( $data, $site );
+
 		// Prepare data by object type
 		switch ( $this->object_type ) {
 			case 'page':
@@ -335,6 +338,9 @@ abstract class Handler {
 
 		// Prepare terms
 		$data = $this->prepare_terms( $data, $site );
+
+		// Prepare media
+		$data = $this->prepare_media( $data, $site );
 
 		// Prepare data by object type
 		switch ( $this->object_type ) {
