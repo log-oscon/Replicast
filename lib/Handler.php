@@ -488,21 +488,11 @@ abstract class Handler {
 		 */
 		$args = array(
 			'api_key'        => $config['apy_key'],
-			// 'ip'             => $_SERVER['SERVER_ADDR'],
 			'request_method' => $method,
 			'request_post'   => array(),
 			'request_uri'    => $request_uri,
 			'timestamp'      => $timestamp,
 		);
-
-		// TODO: find a proper way to use IP in local development
-		// if ( defined( 'WP_ENV' ) && WP_ENV === 'development' ) {
-		// 	unset( $args['ip'] );
-		// }
-
-		error_log(print_r('--- generate_signature', true));
-		error_log(print_r($args,true));
-		error_log(print_r(hash( 'sha256', json_encode( $args ) . $config['api_secret'] ),true));
 
 		/**
 		 * Filter the name of the selected hashing algorithm (e.g. "md5", "sha256", "haval160,4", etc..).
