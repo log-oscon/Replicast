@@ -95,14 +95,14 @@ class PostHandler extends Handler {
 	}
 
 	/**
-	 * Prepare post terms.
+	 * Prepare terms.
 	 *
 	 * @since     1.0.0
 	 * @param     array                $data    Prepared page data.
 	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    array                         Possibly-modified terms.
 	 */
-	public function prepare_post_terms( $data, $site ) {
+	public function prepare_terms( $data, $site ) {
 
 		// Unset default categories and tags data structures
 		unset( $data['categories'] );
@@ -135,7 +135,7 @@ class PostHandler extends Handler {
 				continue;
 			}
 
-			$this->prepare_post_child_terms( $term->term_id, $data['replicast']['term'][ $key ]->children, $site );
+			$this->prepare_child_terms( $term->term_id, $data['replicast']['term'][ $key ]->children, $site );
 
 		}
 
@@ -143,7 +143,7 @@ class PostHandler extends Handler {
 	}
 
 	/**
-	 * Prepare post child terms.
+	 * Prepare child terms.
 	 *
 	 * @since     1.0.0
 	 * @param     int                  $parent_id    The parent term ID.
@@ -151,7 +151,7 @@ class PostHandler extends Handler {
 	 * @param     \Replicast\Client    $site         Site object.
 	 * @return    array                              Possibly-modified child terms.
 	 */
-	private function prepare_post_child_terms( $parent_id, &$terms, $site ) {
+	private function prepare_child_terms( $parent_id, &$terms, $site ) {
 
 		foreach ( $terms as $key => $term ) {
 
@@ -174,7 +174,7 @@ class PostHandler extends Handler {
 				continue;
 			}
 
-			$this->prepare_post_child_terms( $term->term_id, $terms[ $key ]->children, $site );
+			$this->prepare_child_terms( $term->term_id, $terms[ $key ]->children, $site );
 
 		}
 
