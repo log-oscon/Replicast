@@ -200,6 +200,7 @@ class PostHandler extends Handler {
 			$data['featured_media'] = $replicast_info[ $site->get_id() ]['id'];
 		}
 
+		return $data;
 	}
 
 
