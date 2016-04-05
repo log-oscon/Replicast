@@ -62,6 +62,7 @@ Observações:
 * Adicionar classe CSS ao body da página de edição para fazer alterações visuais (esconder campos) nos sites remotos  
 * Evitar que o campo de meta REPLICAST_OBJECT_INFO seja retornado pelo site remoto na resposta ao pedido do central  
 * Validar campos obrigatórios na criação de um "Site"  
+  - Ver como é que o ACF faz para validar os campos que adiciona aos termos no Sierra Calendar - Authors
 * Melhorar mecanismo de gestão de mensagens de admin  
 * Melhorar mecanismo de logs  
 
