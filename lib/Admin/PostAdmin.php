@@ -26,48 +26,6 @@ use Replicast\Plugin;
  */
 class PostAdmin extends Admin {
 
-	/**
-	 * Show admin column contents.
-	 *
-	 * @since    1.0.0
-	 * @param    string    $column       The name of the column to display.
-	 * @param    int       $object_id    The current object ID.
-	 */
-	public function manage_custom_column( $column, $object_id ) {
-
-		if ( $column !== 'replicast' ) {
-			return;
-		}
-
-		$remote_info = $this->get_remote_info( $object_id );
-
-		$html = sprintf(
-			'<span class="dashicons dashicons-%s"></span>',
-			$remote_info ? 'yes' : 'no'
-		);
-
-		if ( ! empty( $remote_info['edit_link'] ) ) {
-			$html = sprintf(
-				'<a href="%s" title="%s">%s</a>',
-				\esc_url( $remote_info['edit_link'] ),
-				\esc_attr__( 'Edit', 'replicast' ),
-				$html
-			);
-		}
-
-		/**
-		 * Filter the column contents.
-		 *
-		 * @since     1.0.0
-		 * @param     string      Column contents.
-		 * @param     mixed       Single metadata value, or array of values.
-		 *                        If the $meta_type or $object_id parameters are invalid, false is returned.
-		 * @param     \WP_Post    The current object ID.
-		 * @return    string      Possibly-modified column contents.
-		 */
-		echo \apply_filters( 'manage_custom_column_html', $html, $remote_info, $object_id );
-
-	}
 
 	/**
 	 * Show admin column.
@@ -119,7 +77,50 @@ class PostAdmin extends Admin {
 	}
 
 	/**
-	 * Dynamically filter a user's capabilities.
+	 * Show admin column contents.
+	 *
+	 * @since    1.0.0
+	 * @param    string    $column       The name of the column to display.
+	 * @param    int       $object_id    The current object ID.
+	 */
+	public function manage_custom_column( $column, $object_id ) {
+
+		if ( $column !== 'replicast' ) {
+			return;
+		}
+
+		$remote_info = $this->get_remote_info( $object_id );
+
+		$html = sprintf(
+			'<span class="dashicons dashicons-%s"></span>',
+			$remote_info ? 'yes' : 'no'
+		);
+
+		if ( ! empty( $remote_info['edit_link'] ) ) {
+			$html = sprintf(
+				'<a href="%s" title="%s">%s</a>',
+				\esc_url( $remote_info['edit_link'] ),
+				\esc_attr__( 'Edit', 'replicast' ),
+				$html
+			);
+		}
+
+		/**
+		 * Filter the column contents.
+		 *
+		 * @since     1.0.0
+		 * @param     string      Column contents.
+		 * @param     mixed       Single metadata value, or array of values.
+		 *                        If the $meta_type or $object_id parameters are invalid, false is returned.
+		 * @param     \WP_Post    The current object ID.
+		 * @return    string      Possibly-modified column contents.
+		 */
+		echo \apply_filters( 'manage_custom_column_html', $html, $remote_info, $object_id );
+
+	}
+
+	/**
+	 * Suppress local editing.
 	 *
 	 * @since     1.0.0
 	 * @param     array       $allcaps    An array of all the user's capabilities.
@@ -128,7 +129,7 @@ class PostAdmin extends Admin {
 	 * @param     \WP_User    $user       The user object.
 	 * @return    array                   Possibly-modified array of all the user's capabilities.
 	 */
-	public function hide_edit_link( $allcaps, $caps, $args, $user ) {
+	public function suppress_local_edit( $allcaps, $caps, $args, $user ) {
 
 		// Bail out if not admin and bypass REST API requests
 		if ( ! \is_admin() ) {

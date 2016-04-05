@@ -2,6 +2,7 @@
   width: 1em;
 }
 
+#remote_site-tabs,
 #remote_site-adder {
   display: none;
 }
