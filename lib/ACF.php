@@ -515,6 +515,28 @@ class ACF {
 		return $terms;
 	}
 
+	public function update_term( $terms, $post_id ) {
+
+		foreach ( $terms as $term_data ) {
+
+			if ( empty( $term_data['meta'] ) ) {
+				continue;
+			}
+
+			foreach ( $term_data['meta'] as $key => $value ) {
+
+				// FIXME: this should be enabled when the media sync is implemented
+				if ( $key === 'image_thumbnail' || $key === 'image_hero' ) {
+					continue;
+				}
+
+				\update_field( $key, $value, "{$term_data['taxonomy']}_{$term_data['term_id']}" );
+			}
+
+		}
+
+	}
+
 	/**
 	 * Retrieve ACF media.
 	 *
