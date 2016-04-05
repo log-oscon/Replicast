@@ -71,6 +71,8 @@ class ACF {
 		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_meta' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_meta' ), 10, 2 );
 
+		\add_filter( 'replicast_get_object_term',           array( $this, 'get_term' ), 10, 2 );
+
 		\add_filter( 'replicast_get_object_media',    array( $this, 'get_media' ), 10, 2 );
 		// \add_action( 'replicast_update_object_media', array( $this, 'update_media' ), 10, 2 );
 
@@ -494,9 +496,26 @@ class ACF {
 	}
 
 	/**
-	 * Get ACF media.
+	 * Retrieve ACF terms "meta".
 	 *
-	 * @see  \Replicast\API::get_object_media
+	 * @since     1.0.0
+	 * @param     array     $values     Object terms.
+	 * @param     int       $post_id    The object ID.
+	 * @return    array                 Possibly-modified object terms.
+	 */
+	public function get_term( $terms, $post_id ) {
+
+		// FIXME: and how about child terms?
+
+		foreach ( $terms as $term ) {
+			$term->meta = \get_fields( "{$term->taxonomy}_{$term->term_id}" );
+		}
+
+		return $terms;
+	}
+
+	/**
+	 * Retrieve ACF media.
 	 *
 	 * @since     1.0.0
 	 * @param     array    $data       Object media.

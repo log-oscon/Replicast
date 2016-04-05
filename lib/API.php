@@ -247,7 +247,7 @@ class API {
 				continue;
 			}
 
-			$hierarchical_terms[ $term->term_id ] = $term;
+			$hierarchical_terms[ $term->term_id ]           = $term;
 			$hierarchical_terms[ $term->term_id ]->children = static::get_child_terms( $term->term_id, $terms );
 		}
 
@@ -256,6 +256,8 @@ class API {
 
 	/**
 	 * Retrieves a list of child terms.
+	 *
+	 * Recursive function.
 	 *
 	 * @since     1.0.0
 	 * @access    private
@@ -272,7 +274,7 @@ class API {
 				continue;
 			}
 
-			$children[ $term->term_id ] = $term;
+			$children[ $term->term_id ]           = $term;
 			$children[ $term->term_id ]->children = static::get_child_terms( $term->term_id, $terms );
 		}
 
