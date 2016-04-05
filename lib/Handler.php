@@ -488,7 +488,7 @@ abstract class Handler {
 		 */
 		$args = array(
 			'api_key'        => $config['apy_key'],
-			'ip'             => $_SERVER['SERVER_ADDR'],
+			// 'ip'             => $_SERVER['SERVER_ADDR'],
 			'request_method' => $method,
 			'request_post'   => array(),
 			'request_uri'    => $request_uri,
@@ -496,9 +496,13 @@ abstract class Handler {
 		);
 
 		// TODO: find a proper way to use IP in local development
-		if ( defined( 'WP_ENV' ) && WP_ENV === 'development' ) {
-			unset( $args['ip'] );
-		}
+		// if ( defined( 'WP_ENV' ) && WP_ENV === 'development' ) {
+		// 	unset( $args['ip'] );
+		// }
+
+		error_log(print_r('--- generate_signature', true));
+		error_log(print_r($args,true));
+		error_log(print_r(hash( json_encode( $args ) . $config['api_secret'] ),true));
 
 		/**
 		 * Filter the name of the selected hashing algorithm (e.g. "md5", "sha256", "haval160,4", etc..).
@@ -580,13 +584,8 @@ abstract class Handler {
 			$method = 'POST';
 		}
 
-		error_log(print_r('-- do_request',true));
-		error_log(print_r($args,true));
-
 		// Generate request signature
 		$signature = $this->generate_signature( $method, $config, $timestamp, $args );
-
-		error_log(print_r($signature,true));
 
 		// Auth headers
 		$headers['X-API-KEY']       = $config['apy_key'];
