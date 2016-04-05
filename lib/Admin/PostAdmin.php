@@ -553,7 +553,7 @@ class PostAdmin extends Admin {
 
 		} catch ( \Exception $ex ) {
 			// FIXME
-			error_log( '---- on_trash_post ----' );
+			error_log( '---- SAVE ----' );
 			error_log( print_r( $ex->getMessage(), true ) );
 		}
 
@@ -645,7 +645,7 @@ class PostAdmin extends Admin {
 
 		} catch ( \Exception $ex ) {
 			// FIXME
-			error_log( '---- on_trash_post ----' );
+			error_log( '---- TRASH ----' );
 			error_log( print_r( $ex->getMessage(), true ) );
 		}
 
@@ -742,7 +742,7 @@ class PostAdmin extends Admin {
 
 		} catch ( \Exception $ex ) {
 			// FIXME
-			error_log( '---- on_delete_post ----' );
+			error_log( '---- DELETE ----' );
 			error_log( print_r( $ex->getMessage(), true ) );
 		}
 
