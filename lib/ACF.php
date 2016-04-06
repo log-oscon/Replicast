@@ -184,14 +184,6 @@ class ACF {
 	 */
 	public function prepare_relations( $data, $site ) {
 
-		if ( empty( $data['replicast'] ) ) {
-			return $data;
-		}
-
-		if ( empty( $data['replicast']['meta'] ) ) {
-			return $data;
-		}
-
 		if ( empty( $data['replicast']['meta'][ static::REPLICAST_ACF_INFO ] ) ) {
 			return $data;
 		}
@@ -277,10 +269,6 @@ class ACF {
 	 * @return    array                         Possibly-modified data.
 	 */
 	public function prepare_meta( $data, $site ) {
-
-		if ( empty( $data['replicast'] ) ) {
-			return $data;
-		}
 
 		if ( empty( $data['replicast']['meta'] ) ) {
 			return $data;

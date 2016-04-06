@@ -108,10 +108,6 @@ class PostHandler extends Handler {
 		unset( $data['categories'] );
 		unset( $data['tags'] );
 
-		if ( empty( $data['replicast'] ) ) {
-			return $data;
-		}
-
 		if ( empty( $data['replicast']['term'] ) ) {
 			return $data;
 		}
@@ -213,10 +209,6 @@ class PostHandler extends Handler {
 	 * @return    array                         Possibly-modified post data.
 	 */
 	public function prepare_media( $data, $site ) {
-
-		if ( empty( $data['replicast'] ) ) {
-			return $data;
-		}
 
 		if ( empty( $data['replicast']['media'] ) ) {
 			return $data;
