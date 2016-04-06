@@ -10,14 +10,14 @@
 | Eliminação permanente               |    X   |             |
 | Meta                                |    X   |             |
 | Taxonomias (categorias, tags, etc.) |    X   |             |
-| Featured Image                      |    X   | [2][3][4]   |
+| Featured Image                      |    X   | [2][3]      |
 | Desactivar edição local             |    X   |             |
+| Gallery shortcode                   |        |             |
 
 Observações:  
 1. Foi desenvolvido um filtro que torna esta eliminação em eliminação permanente;  
-2. Localmente é criada uma imagem de 1x1 px que referencia a imagem remota;  
-3. No ecrã de edição do post local é mostrado o thumbnail da imagem remota com link para edição no site remoto;  
-4. Localmente as imagens "remotas" (1x1 px) não são mostradas;  
+2. No ecrã de edição do post local é mostrado o thumbnail da imagem remota com link para edição no site remoto;  
+3. Localmente as imagens "remotas" não são mostradas;  
 
 
 | Páginas                 | Estado | Observações |
@@ -34,7 +34,7 @@ Observações:
 |-------------------------|:------:|-------------|
 | Criação                 |    X   |             |
 | Edição                  |    X   |             |
-| Desactivar edição local |        |             |
+| Desactivar edição local |    X   |             |
 | Meta                    |    X   |             |
 
 
@@ -55,7 +55,9 @@ Observações:
 | Texto          |    X   |             |
 | Related Posts  |    X   |             |
 | Date Picker    |    X   |             |
-| Related Images |        |             |
+| Image          |        |             |
+| Gallery        |        |             |
+| Term "Meta"    |    X   |             |
 
 
 ### Outros
