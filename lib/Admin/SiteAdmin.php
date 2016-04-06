@@ -466,7 +466,7 @@ class SiteAdmin {
 			'taxonomy'        => $this->get_name(),
 			'selected'        => isset( $_GET[ $this->get_filter_key() ] ) ? \sanitize_text_field( $_GET[ $this->get_filter_key() ] ) : 0,
 			'hide_empty'      => 0,
-			'hide_if_empty'   => 0,
+			'hide_if_empty'   => 1,
 		) );
 
 	}
