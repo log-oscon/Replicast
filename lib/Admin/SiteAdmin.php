@@ -29,7 +29,7 @@ class SiteAdmin {
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @var       \Replicast\Plugin    Plugin instance.
+	 * @var       \Replicast\Plugin
 	 */
 	private $plugin;
 
@@ -38,7 +38,7 @@ class SiteAdmin {
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @var       string    Taxonomy name.
+	 * @var       string
 	 */
 	private $name;
 
@@ -47,7 +47,7 @@ class SiteAdmin {
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @var       object    Taxonomy object.
+	 * @var       object
 	 */
 	private $taxonomy;
 
@@ -56,7 +56,7 @@ class SiteAdmin {
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @var       array    Taxonomy meta fields.
+	 * @var       array
 	 */
 	private $fields = array();
 
@@ -89,6 +89,9 @@ class SiteAdmin {
 		\add_action( 'edited_' . $this->get_name(),  array( $this, 'update_fields' ) );
 		\add_action( 'delete_' . $this->get_name(),  array( $this, 'on_deleted_term' ) );
 
+		\add_action( 'restrict_manage_posts', array( $this, 'get_filter_dropdown' ) );
+		\add_action( 'pre_get_posts',         array( $this, 'filter_posts' ) );
+
 	}
 
 	/**
@@ -102,6 +105,17 @@ class SiteAdmin {
 	}
 
 	/**
+	 * Get the taxonomy filter key.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @return    string    Taxonomy filter key.
+	 */
+	public function get_filter_key() {
+		return 'replicast_' . $this->name . '_filter';
+	}
+
+	/**
 	 * Get the taxonomy object.
 	 *
 	 * @since     1.0.0
@@ -109,6 +123,18 @@ class SiteAdmin {
 	 */
 	public function get_taxonomy() {
 		return $this->taxonomy;
+	}
+
+	/**
+	 * Get the nonce key for a taxonomy field.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     string    $name    Field name.
+	 * @return    string             Nonce key identifier.
+	 */
+	private function get_nonce_key( $name ) {
+		return 'replicast_site_admin_' . $name . '_nonce';
 	}
 
 	/**
@@ -422,15 +448,68 @@ class SiteAdmin {
 	}
 
 	/**
-	 * Get the nonce key for a taxonomy field.
+	 * Generates a taxonomy dropdown filter for the supported post type(s).
 	 *
-	 * @since     1.0.0
-	 * @access    private
-	 * @param     string    $name    Field name.
-	 * @return    string             Nonce key identifier.
+	 * @since    1.0.0
 	 */
-	private function get_nonce_key( $name ) {
-		return 'replicast_site_admin_' . $name . '_nonce';
+	public function get_filter_dropdown() {
+
+		global $post_type;
+
+		if ( ! in_array( $post_type, static::get_post_types() ) ) {
+			return;
+		}
+
+		\wp_dropdown_categories( array(
+			'show_option_all' => \__( 'Show All Sites', 'replicast' ),
+			'name'            => $this->get_filter_key(),
+			'taxonomy'        => $this->get_name(),
+			'selected'        => isset( $_GET[ $this->get_filter_key() ] ) ? \sanitize_text_field( $_GET[ $this->get_filter_key() ] ) : 0,
+			'hide_empty'      => 0,
+			'hide_if_empty'   => 0,
+		) );
+
+	}
+
+	/**
+	 * Filter the supported post type(s).
+	 *
+	 * @since    1.0.0
+	 * @param    \WP_Query    $query    \WP_Query object.
+	 */
+	public function filter_posts( $query ) {
+
+		global $post_type, $pagenow;
+
+		if ( ! \is_admin() ) {
+			return;
+		}
+
+		// If we aren't currently on the edit screen, bail
+		if ( $pagenow !== 'edit.php' ) {
+			return;
+		}
+
+		if ( ! in_array( $post_type, static::get_post_types() ) ) {
+			return;
+		}
+
+		$tax_query = array();
+
+		// Add selected filter to query
+		if ( ! empty( $_GET[ $this->get_filter_key() ] ) ) {
+			$tax_query[] = array(
+				'taxonomy' => $this->get_name(),
+				'field'    => 'term_id',
+				'terms'    => array( \sanitize_text_field( $_GET[ $this->get_filter_key() ] ) )
+			);
+		}
+
+		if ( sizeof( $tax_query ) > 0 ) {
+			$tax_query['relation'] = 'AND';
+			$query->query_vars['tax_query'] = $tax_query;
+		}
+
 	}
 
 }
