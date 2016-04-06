@@ -635,10 +635,12 @@ class API {
 
 			$media[ $media_id ]['id'] = static::update_media( $media_data );
 
-		}
+			// Assign object featured media
+			if ( in_array( 'featured_media', $media_data['fields'] ) ) {
+				\set_post_thumbnail( $object->ID, $media[ $media_id ]['id'] );
+			}
 
-		// // Assign featured media to post
-		// \set_post_thumbnail( $object->ID, $attachment_id );
+		}
 
 		/**
 		 * Fires immediately after object media is updated.
