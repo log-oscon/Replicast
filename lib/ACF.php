@@ -107,12 +107,12 @@ class ACF {
 	 * that were removed in a private meta variable which is then processed.
 	 *
 	 * @since     1.0.0
-	 * @param     mixed    $value      The value of the field.
-	 * @param     int      $post_id    The object ID.
-	 * @param     array    $field      The field object.
-	 * @return    mixed                Possibly-modified value of the field.
+	 * @param     mixed    $value        The value of the field.
+	 * @param     int      $object_id    The object ID.
+	 * @param     array    $field        The field object.
+	 * @return    mixed                  Possibly-modified value of the field.
 	 */
-	public function get_relations( $value, $post_id, $field ) {
+	public function get_relations( $value, $object_id, $field ) {
 
 		// Bail out if not admin and bypass REST API requests
 		if ( ! \is_admin() ) {
@@ -120,12 +120,12 @@ class ACF {
 		}
 
 		// If post is an autosave, return
-		if ( \wp_is_post_autosave( $post_id ) ) {
+		if ( \wp_is_post_autosave( $object_id ) ) {
 			return $value;
 		}
 
 		// If post is a revision, return
-		if ( \wp_is_post_revision( $post_id ) ) {
+		if ( \wp_is_post_revision( $object_id ) ) {
 			return $value;
 		}
 
@@ -134,7 +134,7 @@ class ACF {
 		}
 
 		$field_name    = $field['name'];
-		$prev_relation = \get_field( $field_name, $post_id ); // FIXME: consider replacing it by get_post_meta
+		$prev_relation = \get_field( $field_name, $object_id ); // FIXME: consider replacing it by get_post_meta
 		$next_relation = ! empty( $value ) ? $value : array(); // This only contains object ID's
 		$ids_to_remove = array();
 
@@ -151,7 +151,7 @@ class ACF {
 		}
 
 		// Get meta
-		$meta = \get_post_meta( $post_id, static::REPLICAST_ACF_INFO, true );
+		$meta = \get_post_meta( $object_id, static::REPLICAST_ACF_INFO, true );
 
 		if ( ! $meta ) {
 			$meta = array();
@@ -159,7 +159,7 @@ class ACF {
 
 		// Add meta persistence
 		\update_post_meta(
-			$post_id,
+			$object_id,
 			static::REPLICAST_ACF_INFO,
 			array_merge( $meta, array(
 				$field_name => $ids_to_remove
@@ -223,11 +223,11 @@ class ACF {
 	 * Retrieve ACF meta.
 	 *
 	 * @since     1.0.0
-	 * @param     array     $values     Object meta.
-	 * @param     int       $post_id    The object ID.
-	 * @return    array                 Possibly-modified object meta.
+	 * @param     array     $values       Object meta.
+	 * @param     int       $object_id    The object ID.
+	 * @return    array                   Possibly-modified object meta.
 	 */
-	public function get_meta( $values, $post_id ) {
+	public function get_meta( $values, $object_id ) {
 
 		$prepared_meta = array();
 
@@ -242,7 +242,7 @@ class ACF {
 			 * FIXME: I don't know if it's a good idea use the raw/rendered keys like the core uses
 			 *        with posts and pages. Maybe we should use some key that relates to ACF?
 			 */
-			if ( $field = \get_field_object( $meta_key, $post_id ) ) {
+			if ( $field = \get_field_object( $meta_key, $object_id ) ) {
 				$prepared_meta[ $meta_key ] = array(
 					'raw'      => $field,
 					'rendered' => $meta_value,
@@ -487,11 +487,11 @@ class ACF {
 	 * ACF uses options (`wp_options` table) instead of using real term meta (`wp_termmeta` table).
 	 *
 	 * @since     1.0.0
-	 * @param     array     $terms      Object terms.
-	 * @param     int       $post_id    The object ID.
-	 * @return    array                 Possibly-modified object terms.
+	 * @param     array     $terms        Object terms.
+	 * @param     int       $object_id    The object ID.
+	 * @return    array                   Possibly-modified object terms.
 	 */
-	public function get_term( $terms, $post_id ) {
+	public function get_term( $terms, $object_id ) {
 
 		// FIXME: and how about child terms?
 
@@ -506,11 +506,11 @@ class ACF {
 	 * Update ACF terms "meta".
 	 *
 	 * @since     1.0.0
-	 * @param     array     $terms      Object terms.
-	 * @param     int       $post_id    The object ID.
-	 * @return    array                 Possibly-modified object terms.
+	 * @param     array     $terms        Object terms.
+	 * @param     int       $object_id    The object ID.
+	 * @return    array                   Possibly-modified object terms.
 	 */
-	public function update_term( $terms, $post_id ) {
+	public function update_term( $terms, $object_id ) {
 
 		foreach ( $terms as $term_data ) {
 
@@ -536,13 +536,13 @@ class ACF {
 	 * Retrieve ACF media.
 	 *
 	 * @since     1.0.0
-	 * @param     array    $data       Object media.
-	 * @param     int      $post_id    The object ID.
-	 * @return    array                Possibly-modified object media.
+	 * @param     array    $data         Object media.
+	 * @param     int      $object_id    The object ID.
+	 * @return    array                  Possibly-modified object media.
 	 */
-	public function get_media( $data, $post_id ) {
+	public function get_media( $data, $object_id ) {
 
-		$fields = \get_field_objects( $post_id );
+		$fields = \get_field_objects( $object_id );
 
 		if ( ! $fields ) {
 			return $data;
