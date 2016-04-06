@@ -39,20 +39,29 @@ class PostAdmin extends Admin {
 		\add_action( 'before_delete_post', array( $this, 'on_delete_post' ) );
 
 		// Admin UI - Posts
-		\add_filter( 'manage_pages_columns',         array( $this, 'manage_columns' ), 10, 2 );
-		\add_filter( 'manage_posts_columns',         array( $this, 'manage_columns' ), 10, 2 );
-		\add_action( 'manage_posts_custom_column',   array( $this, 'manage_custom_column' ), 10, 2 );
-		\add_action( 'manage_pages_custom_column',   array( $this, 'manage_custom_column' ), 10, 2 );
+		foreach ( SiteAdmin::get_post_types() as $post_type ) {
+
+			if ( \is_post_type_hierarchical( $post_type ) ) {
+				\add_filter( 'page_row_actions', array( $this, 'hide_row_actions' ), 10, 2 );
+			} else {
+				\add_filter( 'post_row_actions', array( $this, 'hide_row_actions' ), 10, 2 );
+			}
+
+			\add_filter( "manage_{$post_type}_posts_columns",       array( $this, 'manage_posts_columns' ), 10, 2 );
+			\add_action( "manage_{$post_type}_posts_custom_column", array( $this, 'manage_posts_custom_column' ), 10, 2 );
+		}
+
 		\add_filter( 'user_has_cap',                 array( $this, 'suppress_local_edit' ), 10, 4 );
-		\add_filter( 'post_row_actions',             array( $this, 'hide_row_actions' ), 10, 2 );
-		\add_filter( 'page_row_actions',             array( $this, 'hide_row_actions' ), 10, 2 );
 		\add_filter( 'wp_get_attachment_image_src',  array( $this, 'get_attachment_image_src' ), 10, 3 );
 		\add_filter( 'wp_get_attachment_url',        array( $this, 'get_attachment_url' ), 10, 2 );
 		\add_filter( 'wp_prepare_attachment_for_js', array( $this, 'prepare_attachment_for_js' ), 10, 3 );
 
 		// Admin UI - Taxonomies
 		foreach ( \get_taxonomies() as $taxonomy ) {
-			\add_filter( "{$taxonomy}_row_actions", array( $this, 'hide_row_actions' ), 10, 2 );
+			\add_filter( "{$taxonomy}_row_actions",          array( $this, 'hide_row_actions' ), 10, 2 );
+			\add_filter( "manage_edit-{$taxonomy}_columns",  array( $this, 'manage_taxonomies_columns' ) );
+			\add_filter( "manage_{$taxonomy}_custom_column", array( $this, 'manage_taxonomies_custom_column' ), 10, 3 );
+
 		}
 
 		// Admin UI - Featured Image
@@ -67,18 +76,68 @@ class PostAdmin extends Admin {
 	}
 
 	/**
-	 * Show admin column.
+	 * Filter posts columns.
 	 *
 	 * @since     1.0.0
 	 * @param     array     $columns      An array of column names.
 	 * @param     string    $post_type    The post type slug.
 	 * @return    array                   Possibly-modified array of column names.
 	 */
-	public function manage_columns( $columns, $post_type = 'page' ) {
+	public function manage_posts_columns( $columns, $post_type = 'page' ) {
 
 		if ( ! in_array( $post_type, SiteAdmin::get_post_types() ) ) {
 			return $columns;
 		}
+
+		/**
+		 * Filter the posts columns.
+		 *
+		 * @since     1.0.0
+		 * @param     array     An array of column names.
+		 * @param     string    The object type slug.
+		 * @return    array     Possibly-modified array of column names.
+		 */
+		return \apply_filters(
+			'replicast_posts_columns',
+			$this->manage_columns( $columns ),
+			$post_type
+		);
+	}
+
+	/**
+	 * Filter taxonomies columns.
+	 *
+	 * @since     1.0.0
+	 * @param     array     $columns      An array of column names.
+	 * @param     string    $post_type    The post type slug.
+	 * @return    array                   Possibly-modified array of column names.
+	 */
+	public function manage_taxonomies_columns( $columns ) {
+
+		/**
+		 * Filter the taxonomies columns.
+		 *
+		 * @since     1.0.0
+		 * @param     array    An array of column names.
+		 * @return    array    Possibly-modified array of column names.
+		 */
+		return \apply_filters(
+			'replicast_taxonomies_columns',
+			$this->manage_columns( $columns )
+		);
+	}
+
+	/**
+	 * Manage columns.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     array     $columns    An array of column names.
+	 * @return    array                 Possibly-modified array of column names.
+	 */
+	private function manage_columns( $columns ) {
+
+		$sorted_columns = array();
 
 		/**
 		 * Filter the column header title.
@@ -87,7 +146,7 @@ class PostAdmin extends Admin {
 		 * @param     string    Column header title.
 		 * @return    string    Possibly-modified column header title.
 		 */
-		$replicast_title = \apply_filters( 'replicast_manage_columns_title', \__( 'Replicast', 'replicast' ) );
+		$replicast_title = \apply_filters( 'replicast_column_title', \__( 'Replicast', 'replicast' ) );
 
 		$sorted_columns = array(
 			'replicast' => sprintf(
@@ -100,35 +159,55 @@ class PostAdmin extends Admin {
 			$sorted_columns[ $column_key ] = $column_title;
 		}
 
-		/**
-		 * Filter the columns displayed.
-		 *
-		 * @since     1.0.0
-		 * @param     array     An array of column names.
-		 * @param     string    The object type slug.
-		 * @return    array     Possibly-modified array of column names.
-		 */
-		return \apply_filters(
-			'replicast_manage_columns',
-			$sorted_columns,
-			$post_type
-		);
+		return $sorted_columns;
 	}
 
 	/**
-	 * Show admin column contents.
+	 * Renders the custom column contents for a supported post type.
 	 *
 	 * @since    1.0.0
-	 * @param    string    $column       The name of the column to display.
-	 * @param    int       $object_id    The current object ID.
+	 * @param    string    $column_name    The name of the column to display.
+	 * @param    int       $object_id      The current object ID.
 	 */
-	public function manage_custom_column( $column, $object_id ) {
+	public function manage_posts_custom_column( $column_name, $object_id ) {
 
-		if ( $column !== 'replicast' ) {
+		if ( $column_name !== 'replicast' ) {
 			return;
 		}
 
-		$remote_info = $this->get_remote_info( $object_id );
+		echo $this->manage_custom_column( $object_id, 'post' );
+	}
+
+	/**
+	 * Renders the custom column contents for a taxonomy.
+	 *
+	 * @since     1.0.0
+	 * @param     string    $content        The column contents.
+	 * @param     string    $column_name    The name of the column to display.
+	 * @param     int       $object_id      The current object ID.
+	 * @return    string                    Possibly-modified column contents.
+	 */
+	public function manage_taxonomies_custom_column( $content, $column_name, $object_id ) {
+
+		if ( $column_name !== 'replicast' ) {
+			return $content;
+		}
+
+		return $this->manage_custom_column( $object_id, 'term' );
+	}
+
+	/**
+	 * Custom column contents.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     int       $object_id    The current object ID.
+	 * @param     string    $meta_type    Type of object metadata.
+	 * @return    string                  Column contents.
+	 */
+	private function manage_custom_column( $object_id, $meta_type ) {
+
+		$remote_info = $this->get_remote_info( $object_id, $meta_type );
 
 		$html = sprintf(
 			'<span class="dashicons dashicons-%s"></span>',
@@ -145,7 +224,7 @@ class PostAdmin extends Admin {
 		}
 
 		/**
-		 * Filter the column contents.
+		 * Filter the custom column contents.
 		 *
 		 * @since     1.0.0
 		 * @param     string      Column contents.
@@ -154,8 +233,7 @@ class PostAdmin extends Admin {
 		 * @param     \WP_Post    The current object ID.
 		 * @return    string      Possibly-modified column contents.
 		 */
-		echo \apply_filters( 'manage_custom_column_html', $html, $remote_info, $object_id );
-
+		return \apply_filters( 'manage_column_html', $html, $remote_info, $object_id );
 	}
 
 	/**
