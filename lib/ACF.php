@@ -483,8 +483,11 @@ class ACF {
 	/**
 	 * Retrieve ACF terms "meta".
 	 *
+	 * The reason why we are using a separate object field to save term meta is because
+	 * ACF uses options (`wp_options` table) instead of using real term meta (`wp_termmeta` table).
+	 *
 	 * @since     1.0.0
-	 * @param     array     $values     Object terms.
+	 * @param     array     $terms      Object terms.
 	 * @param     int       $post_id    The object ID.
 	 * @return    array                 Possibly-modified object terms.
 	 */
@@ -493,21 +496,29 @@ class ACF {
 		// FIXME: and how about child terms?
 
 		foreach ( $terms as $term ) {
-			$term->meta = \get_fields( "{$term->taxonomy}_{$term->term_id}" );
+			$term->acf = \get_fields( "{$term->taxonomy}_{$term->term_id}" );
 		}
 
 		return $terms;
 	}
 
+	/**
+	 * Update ACF terms "meta".
+	 *
+	 * @since     1.0.0
+	 * @param     array     $terms      Object terms.
+	 * @param     int       $post_id    The object ID.
+	 * @return    array                 Possibly-modified object terms.
+	 */
 	public function update_term( $terms, $post_id ) {
 
 		foreach ( $terms as $term_data ) {
 
-			if ( empty( $term_data['meta'] ) ) {
+			if ( empty( $term_data['acf'] ) ) {
 				continue;
 			}
 
-			foreach ( $term_data['meta'] as $key => $value ) {
+			foreach ( $term_data['acf'] as $key => $value ) {
 
 				// FIXME: this should be enabled when the media sync is implemented
 				if ( $key === 'image_thumbnail' || $key === 'image_hero' ) {

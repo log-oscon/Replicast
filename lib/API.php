@@ -171,7 +171,7 @@ class API {
 	public static function get_object_term( $object, $request ) {
 
 		// Get a list of registered taxonomies
-		$taxonomies = \get_taxonomies();
+		$taxonomies = \get_taxonomies( array(), 'objects' );
 
 		/**
 		 * Filter for suppressing taxonomies.
@@ -185,17 +185,17 @@ class API {
 		$suppressed_taxonomies = \apply_filters( 'replicast_suppress_object_taxonomies', array(), $taxonomies, $object['id'] );
 
 		$prepared_data = array();
-		foreach ( $taxonomies as $taxonomy ) {
+		foreach ( $taxonomies as $taxonomy_name => $taxonomy ) {
 
-			if ( in_array( $taxonomy, array( Plugin::TAXONOMY_SITE ) ) ) {
+			if ( in_array( $taxonomy_name, array( Plugin::TAXONOMY_SITE ) ) ) {
 				continue;
 			}
 
-			if ( in_array( $taxonomy, $suppressed_taxonomies ) ) {
+			if ( in_array( $taxonomy_name, $suppressed_taxonomies ) ) {
 				continue;
 			}
 
-			$prepared_data[ $taxonomy ] = $taxonomy;
+			$prepared_data[ $taxonomy_name ] = $taxonomy;
 
 		}
 
@@ -231,7 +231,7 @@ class API {
 
 		$hierarchical_terms = array();
 
-		$terms = \wp_get_object_terms( $object_id, $taxonomies );
+		$terms = \wp_get_object_terms( $object_id, array_keys( $taxonomies ) );
 
 		if ( empty( $terms ) ) {
 			return array();
@@ -247,8 +247,19 @@ class API {
 				continue;
 			}
 
-			$hierarchical_terms[ $term->term_id ]           = $term;
-			$hierarchical_terms[ $term->term_id ]->children = static::get_child_terms( $term->term_id, $terms );
+			$term_id   = $term->term_id;
+			$taxonomy  = $taxonomies[ $term->taxonomy ];
+			$rest_base = ! empty( $taxonomy->rest_base ) ? $taxonomy->rest_base : $taxonomy->name;
+
+			$hierarchical_terms[ $term_id ] = $term;
+			$hierarchical_terms[ $term_id ]->meta = array(
+				Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
+					'object_id' => $term_id,
+					'edit_link' => \get_edit_term_link( $term_id, $taxonomy->name ),
+					'rest_url'  => \rest_url( sprintf( '/wp/v2/%s/%s', $rest_base, $term_id ) ),
+				) )
+			);
+			$hierarchical_terms[ $term_id ]->children = static::get_child_terms( $term_id, $terms );
 		}
 
 		return $hierarchical_terms;
@@ -274,8 +285,19 @@ class API {
 				continue;
 			}
 
-			$children[ $term->term_id ]           = $term;
-			$children[ $term->term_id ]->children = static::get_child_terms( $term->term_id, $terms );
+			$term_id   = $term->term_id;
+			$taxonomy  = $taxonomies[ $term->taxonomy ];
+			$rest_base = ! empty( $taxonomy->rest_base ) ? $taxonomy->rest_base : $taxonomy->name;
+
+			$children[ $term_id ] = $term;
+			$children[ $term_id ]->meta = array(
+				Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
+					'object_id' => $term_id,
+					'edit_link' => \get_edit_term_link( $term_id, $taxonomy->name ),
+					'rest_url'  => \rest_url( sprintf( '/wp/v2/%s/%s', $rest_base, $term_id ) ),
+				) )
+			);
+			$children[ $term_id ]->children = static::get_child_terms( $term_id, $terms );
 		}
 
 		return $children;

@@ -204,25 +204,33 @@ class PostAdmin extends Admin {
 	public function hide_row_actions( $defaults, $object ) {
 
 		$object_id = API::get_object_id( $object );
+		$meta_type = API::get_meta_type( $object );
 
-		if ( empty( $remote_info = $this->get_remote_info( $object_id ) ) ) {
+		if ( empty( $remote_info = $this->get_remote_info( $object_id, $meta_type ) ) ) {
 			return $defaults;
 		}
+
+		$actions = array( 'view' => $defaults['view'] );
+
+		/**
+		 * Extend the list of supported row action links by meta type.
+		 *
+		 * @since     1.0.0
+		 * @param     array    An array of row actions.
+		 * @param     int      The object ID.
+		 * @return    array    Possibly-modified array of row actions.
+		 */
+		$actions = \apply_filters( "replicast_hide_{$meta_type}_row_actions", $actions, $defaults, $object_id );
 
 		/**
 		 * Extend the list of supported row action links.
 		 *
 		 * @since     1.0.0
-		 * @param     array       An array of row actions.
-		 * @param     \WP_Post    The current object.
-		 * @return    array       Possibly-modified array of row actions.
+		 * @param     array    An array of row actions.
+		 * @param     int      The object ID.
+		 * @return    array    Possibly-modified array of row actions.
 		 */
-		$actions = \apply_filters( 'replicast_hide_row_actions', array( $defaults['view'] ), $defaults, $object );
-
-		// Remove unsupported actions
-		unset( $actions['edit'] );
-		unset( $actions['inline hide-if-no-js'] );
-		unset( $actions['trash'] );
+		$actions = \apply_filters( 'replicast_hide_row_actions', $actions, $defaults, $object_id );
 
 		// 'Edit link' points to the object original location
 		$actions['edit'] = sprintf(
