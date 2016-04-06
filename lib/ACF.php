@@ -141,11 +141,7 @@ class ACF {
 		if ( $prev_relation ) {
 			foreach ( $prev_relation as $key => $selected_post ) {
 
-				$selected_post_id = $selected_post;
-
-				if ( is_object( $selected_post ) ) {
-					$selected_post_id = $selected_post->ID;
-				}
+				$selected_post_id = is_object( $selected_post ) ? $selected_post->ID : $selected_post;
 
 				if ( ! in_array( $selected_post_id, $next_relation ) ) {
 					$ids_to_remove[] = $selected_post_id;
