@@ -583,7 +583,7 @@ class ACF {
 	 * @param     array     $values       The values of the field.
 	 * @param     object    $object_id    The object ID.
 	 */
-	public static function update_media( $media, $object_id ) {
+	public function update_media( $media, $object_id ) {
 
 		foreach ( $media as $field_type => $values ) {
 
