@@ -134,7 +134,7 @@ class ACF {
 		}
 
 		$field_name    = $field['name'];
-		$prev_relation = \get_field( $field_name, $post_id );
+		$prev_relation = \get_field( $field_name, $post_id ); // FIXME: consider replacing it by get_post_meta
 		$next_relation = ! empty( $value ) ? $value : array(); // This only contains object ID's
 		$ids_to_remove = array();
 
