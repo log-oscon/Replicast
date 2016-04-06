@@ -75,7 +75,7 @@ class ACF {
 		\add_filter( 'replicast_update_object_term',        array( $this, 'update_term' ), 10, 2 );
 
 		\add_filter( 'replicast_get_object_media',    array( $this, 'get_media' ), 10, 2 );
-		// \add_action( 'replicast_update_object_media', array( $this, 'update_media' ), 10, 2 );
+		\add_action( 'replicast_update_object_media', array( $this, 'update_media' ), 10, 2 );
 
 	}
 

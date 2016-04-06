@@ -339,6 +339,10 @@ class API {
 	/**
 	 * Prepares a media object.
 	 *
+	 * If the object ID does not exists it adds media information for creation purposes.
+	 * Otherwise, adds the ID and the field type in the structure that "saves" the
+	 * relation between the local IDs and the IDs on the remote site.
+	 *
 	 * @since     1.0.0
 	 * @param     int      $object_id    The object ID.
 	 * @param     array    $data         Object media.
@@ -346,7 +350,7 @@ class API {
 	 */
 	public static function get_media( $field_type, $object_id, $data ) {
 
-		// Add media object information for creation purposes
+		// Add media information for creation purposes
 		if ( ! array_key_exists( $object_id, $data ) ) {
 
 			/**
@@ -382,6 +386,10 @@ class API {
 				'id'        => $object_id,
 				'mime-type' => \get_post_mime_type( $object_id ),
 				'metadata'  => $metadata,
+				// 'fields'    => array(
+				// 	$field_type => array( $object_id ),
+				// ),
+				'fields'    => array( $field_type ),
 				Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
 					'permalink' => \get_attachment_link( $object_id ),
 					'edit_link' => \get_edit_post_link( $object_id ),
@@ -389,10 +397,16 @@ class API {
 				) ),
 			);
 
-		} else {
-			// ...
 		}
 
+		// $data[ $object_id ]['fields'] = array_merge_recursive(
+		// 	$data[ $object_id ]['fields'],
+		// 	array( $field_type => array( $object_id ) )
+		// );
+
+		$data[ $object_id ]['fields'] = array_merge( $data[ $object_id ]['fields'], array( $field_type ) );
+
+		return $data[ $object_id ];
 	}
 
 	/**
@@ -416,7 +430,7 @@ class API {
 
 		// Update object media
 		if ( ! empty( $values['media'] ) ) {
-			// static::update_object_media( $values['media'], $object );
+			static::update_object_media( $values['media'], $object );
 		}
 
 	}
