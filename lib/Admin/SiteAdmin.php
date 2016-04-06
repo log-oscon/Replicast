@@ -82,12 +82,12 @@ class SiteAdmin {
 		$this->register_taxonomy();
 		$this->register_fields();
 
-		\add_action( Plugin::TAXONOMY_SITE . '_add_form_fields',  array( $this, 'add_fields' ) );
-		\add_action( Plugin::TAXONOMY_SITE . '_edit_form_fields', array( $this, 'edit_fields' ) );
+		\add_action( $this->get_name() . '_add_form_fields',  array( $this, 'add_fields' ) );
+		\add_action( $this->get_name() . '_edit_form_fields', array( $this, 'edit_fields' ) );
 
-		\add_action( 'created_' . Plugin::TAXONOMY_SITE, array( $this, 'update_fields' ) );
-		\add_action( 'edited_' . Plugin::TAXONOMY_SITE,  array( $this, 'update_fields' ) );
-		\add_action( 'delete_' . Plugin::TAXONOMY_SITE,  array( $this, 'on_deleted_term' ) );
+		\add_action( 'created_' . $this->get_name(), array( $this, 'update_fields' ) );
+		\add_action( 'edited_' . $this->get_name(),  array( $this, 'update_fields' ) );
+		\add_action( 'delete_' . $this->get_name(),  array( $this, 'on_deleted_term' ) );
 
 	}
 
