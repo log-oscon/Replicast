@@ -35,6 +35,7 @@ Observações:
 | Criação                 |    X   |             |
 | Edição                  |    X   |             |
 | Desactivar edição local |        |             |
+| Meta                    |    X   |             |
 
 
 | Attachments                              | Estado | Observações |
@@ -58,6 +59,7 @@ Observações:
 
 
 ### Outros
+* Criar action ou método `is_rest` e usar esse método em vez do `! is_admin()`  
 * <del>Melhorar mecanismo de gestão de sites (unificar campos Site URL e REST API URL)</del>  
 * Adicionar classe CSS ao body da página de edição para fazer alterações visuais (esconder campos) nos sites remotos  
 * Evitar que o campo de meta REPLICAST_OBJECT_INFO seja retornado pelo site remoto na resposta ao pedido do central  
