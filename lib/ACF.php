@@ -562,23 +562,13 @@ class ACF {
 
 			// Image
 			if ( $field_type === 'image' ) {
-				$media_id = $field['value']['ID'];
-
-				if ( ! array_key_exists( $media_id, $data ) ) {
-					$data[ $media_id ] = API::get_media( $media_id );
-				}
-
+				$data[ $field['value']['ID'] ] = API::get_media( $field_type, $field['value']['ID'], $data );
 				continue;
 			}
 
 			// Gallery
 			foreach ( $field['value'] as $image ) {
-				$media_id = $image['ID'];
-
-				if ( ! array_key_exists( $media_id, $data ) ) {
-					$data[ $media_id ] = API::get_media( $media_id );
-				}
-
+				$data[ $image['ID'] ] = API::get_media( $field_type, $image['ID'], $data );
 			}
 
 		}

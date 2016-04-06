@@ -329,8 +329,8 @@ class API {
 		$prepared_data = \apply_filters( 'replicast_get_object_media', array(), $object['id'] );
 
 		// Get object featured media
-		if ( ! empty( $object['featured_media'] ) && ! array_key_exists( $object['featured_media'], $prepared_data ) ) {
-			$prepared_data[ $object['featured_media'] ] = static::get_media( $object['featured_media'] );
+		if ( ! empty( $object['featured_media'] )  ) {
+			$prepared_data[ $object['featured_media'] ] = static::get_media( 'featured_media', $object['featured_media'], $prepared_data );
 		}
 
 		return $prepared_data;
@@ -340,50 +340,59 @@ class API {
 	 * Prepares a media object.
 	 *
 	 * @since     1.0.0
-	 * @param     int    $object_id    The object ID.
-	 * @return    array                Prepared media object.
+	 * @param     int      $object_id    The object ID.
+	 * @param     array    $data         Object media.
+	 * @return    array                  Prepared media object.
 	 */
-	public static function get_media( $object_id ) {
+	public static function get_media( $field_type, $object_id, $data ) {
 
-		/**
-		 * Filter for suppressing image sizes.
-		 *
-		 * @since     1.0.0
-		 * @param     array    Name(s) of the suppressed image sizes.
-		 * @return    array    Possibly-modified name(s) of the suppressed image sizes.
-		 */
-		$suppressed_image_sizes = \apply_filters( 'replicast_suppress_image_sizes', array() );
+		// Add media object information for creation purposes
+		if ( ! array_key_exists( $object_id, $data ) ) {
 
-		// Get metadata
-		$metadata = \get_post_meta( $object_id, '_wp_attachment_metadata', true );
+			/**
+			 * Filter for suppressing image sizes.
+			 *
+			 * @since     1.0.0
+			 * @param     array    Name(s) of the suppressed image sizes.
+			 * @return    array    Possibly-modified name(s) of the suppressed image sizes.
+			 */
+			$suppressed_image_sizes = \apply_filters( 'replicast_suppress_image_sizes', array() );
 
-		// Replace relative url with absolute url
-		$metadata['file'] = \wp_get_attachment_url( $object_id );
+			// Get metadata
+			$metadata = \get_post_meta( $object_id, '_wp_attachment_metadata', true );
 
-		if ( ! empty( $metadata['sizes'] ) ) {
-			foreach ( $metadata['sizes'] as $size => $value ) {
+			// Replace relative url with absolute url
+			$metadata['file'] = \wp_get_attachment_url( $object_id );
 
-				if ( in_array( $size, $suppressed_image_sizes ) ) {
-					unset( $metadata['sizes'][ $size ] );
-					continue;
+			if ( ! empty( $metadata['sizes'] ) ) {
+				foreach ( $metadata['sizes'] as $size => $value ) {
+
+					if ( in_array( $size, $suppressed_image_sizes ) ) {
+						unset( $metadata['sizes'][ $size ] );
+						continue;
+					}
+
+					// Replace relative url with absolute url
+					$metadata['sizes'][ $size ]['file'] = \wp_get_attachment_image_src( $object_id, $size )[0];
+
 				}
-
-				// Replace relative url with absolute url
-				$metadata['sizes'][ $size ]['file'] = \wp_get_attachment_image_src( $object_id, $size )[0];
-
 			}
+
+			return array(
+				'id'        => $object_id,
+				'mime-type' => \get_post_mime_type( $object_id ),
+				'metadata'  => $metadata,
+				Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
+					'permalink' => \get_attachment_link( $object_id ),
+					'edit_link' => \get_edit_post_link( $object_id ),
+					'rest_url'  => \rest_url( sprintf( '/wp/v2/media/%s', $object_id ) ),
+				) ),
+			);
+
+		} else {
+			// ...
 		}
 
-		return array(
-			'id'                          => $object_id,
-			'mime-type'                   => \get_post_mime_type( $object_id ),
-			'metadata'                    => $metadata,
-			Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
-				'permalink' => \get_attachment_link( $object_id ),
-				'edit_link' => \get_edit_post_link( $object_id ),
-				'rest_url'  => \rest_url( sprintf( '/wp/v2/media/%s', $object_id ) ),
-			) ),
-		);
 	}
 
 	/**
