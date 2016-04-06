@@ -12,6 +12,8 @@
 
 namespace Replicast\Admin;
 
+use Replicast\Plugin;
+
 /**
  * The dashboard-specific functionality of the `remote_site` taxonomy.
  *
@@ -71,38 +73,21 @@ class SiteAdmin {
 	}
 
 	/**
-	 * Register taxonomy meta fields.
+	 * Register hooks.
 	 *
 	 * @since    1.0.0
 	 */
-	public function register_fields() {
+	public function register() {
 
-		$this->fields = array(
-			'api_url' => array(
-				'name'          => 'api_url',
-				'label'         => \__( 'REST API URL', 'replicast' ),
-				'type'          => 'text',
-				'instructions'  => \__( 'The remote REST API address.', 'replicast' ),
-				'default_value' => '',
-				'placeholder'   => \__( 'http://example.com/wp-json/wp/v2/', 'replicast' )
-			),
-			'api_key' => array(
-				'name'          => 'api_key',
-				'label'         => \__( 'REST API Key', 'replicast' ),
-				'type'          => 'text',
-				'instructions'  => \__( 'A REST API authentication key that allows posting privileges to the remote site.', 'replicast' ),
-				'default_value' => '',
-				'placeholder'   => ''
-			),
-			'api_secret' => array(
-				'name'          => 'api_secret',
-				'label'         => \__( 'REST API Secret', 'replicast' ),
-				'type'          => 'text',
-				'instructions'  => \__( 'A REST API authentication secret that is the counterpart to the REST API key.', 'replicast' ),
-				'default_value' => '',
-				'placeholder'   => ''
-			),
-		);
+		$this->register_taxonomy();
+		$this->register_fields();
+
+		\add_action( Plugin::TAXONOMY_SITE . '_add_form_fields',  array( $this, 'add_fields' ) );
+		\add_action( Plugin::TAXONOMY_SITE . '_edit_form_fields', array( $this, 'edit_fields' ) );
+
+		\add_action( 'created_' . Plugin::TAXONOMY_SITE, array( $this, 'update_fields' ) );
+		\add_action( 'edited_' . Plugin::TAXONOMY_SITE,  array( $this, 'update_fields' ) );
+		\add_action( 'delete_' . Plugin::TAXONOMY_SITE,  array( $this, 'on_deleted_term' ) );
 
 	}
 
@@ -173,7 +158,7 @@ class SiteAdmin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function register() {
+	public function register_taxonomy() {
 
 		/**
 		 * Filter for showing the taxonomy managing UI in the admin.
@@ -240,6 +225,42 @@ class SiteAdmin {
 				'hierarchical'       => true,
 				'capabilities'       => $capabilities,
 			)
+		);
+
+	}
+
+	/**
+	 * Register taxonomy meta fields.
+	 *
+	 * @since    1.0.0
+	 */
+	public function register_fields() {
+
+		$this->fields = array(
+			'api_url' => array(
+				'name'          => 'api_url',
+				'label'         => \__( 'REST API URL', 'replicast' ),
+				'type'          => 'text',
+				'instructions'  => \__( 'The remote REST API address.', 'replicast' ),
+				'default_value' => '',
+				'placeholder'   => \__( 'http://example.com/wp-json/wp/v2/', 'replicast' )
+			),
+			'api_key' => array(
+				'name'          => 'api_key',
+				'label'         => \__( 'REST API Key', 'replicast' ),
+				'type'          => 'text',
+				'instructions'  => \__( 'A REST API authentication key that allows posting privileges to the remote site.', 'replicast' ),
+				'default_value' => '',
+				'placeholder'   => ''
+			),
+			'api_secret' => array(
+				'name'          => 'api_secret',
+				'label'         => \__( 'REST API Secret', 'replicast' ),
+				'type'          => 'text',
+				'instructions'  => \__( 'A REST API authentication secret that is the counterpart to the REST API key.', 'replicast' ),
+				'default_value' => '',
+				'placeholder'   => ''
+			),
 		);
 
 	}

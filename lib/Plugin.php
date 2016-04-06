@@ -181,13 +181,7 @@ class Plugin {
 
 		$site = new Admin\SiteAdmin( $this, static::TAXONOMY_SITE );
 
-		$this->loader->add_action( 'init',                                      $site, 'register', 99 );
-		$this->loader->add_action( 'init',                                      $site, 'register_fields' );
-		$this->loader->add_action( static::TAXONOMY_SITE . '_add_form_fields',  $site, 'add_fields' );
-		$this->loader->add_action( static::TAXONOMY_SITE . '_edit_form_fields', $site, 'edit_fields' );
-		$this->loader->add_action( 'created_' . static::TAXONOMY_SITE,          $site, 'update_fields' );
-		$this->loader->add_action( 'edited_' . static::TAXONOMY_SITE,           $site, 'update_fields' );
-		$this->loader->add_action( 'delete_' . static::TAXONOMY_SITE,           $site, 'on_deleted_term' );
+		\add_action( 'init', array( $site, 'register' ), 99 );
 
 	}
 
@@ -201,7 +195,7 @@ class Plugin {
 
 		$api = new API( $this );
 
-		$this->loader->add_action( 'rest_api_init', $api, 'register_rest_fields' );
+		\add_action( 'rest_api_init', array( $api, 'register_rest_fields' ), 99 );
 
 	}
 
@@ -219,13 +213,11 @@ class Plugin {
 
 		$acf = new ACF( $this );
 
-		$this->loader->add_action( 'init', $acf, 'register', 99 );
+		\add_action( 'init', array( $acf, 'register' ), 99 );
 
 	}
 
 	/**
-	 * Run the loader to execute all of the hooks with WordPress.
-	 *
 	 * Load the dependencies, define the locale, and set the hooks for the Dashboard and
 	 * the public-facing side of the site.
 	 *
@@ -239,7 +231,6 @@ class Plugin {
 		$this->define_admin_hooks();
 		$this->define_admin_post_hooks();
 		$this->define_admin_site_hooks();
-
 		$this->define_acf_hooks();
 
 		$this->loader->run();
