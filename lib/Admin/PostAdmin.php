@@ -44,18 +44,23 @@ class PostAdmin extends Admin {
 		\add_action( 'manage_posts_custom_column',   array( $this, 'manage_custom_column' ), 10, 2 );
 		\add_action( 'manage_pages_custom_column',   array( $this, 'manage_custom_column' ), 10, 2 );
 		\add_filter( 'user_has_cap',                 array( $this, 'suppress_local_edit' ), 10, 4 );
-		\add_filter( 'post_row_actions',             array( $this, 'hide_row_actions' ), 99, 2 );
-		\add_filter( 'page_row_actions',             array( $this, 'hide_row_actions' ), 99, 2 );
+		\add_filter( 'post_row_actions',             array( $this, 'hide_row_actions' ), 10, 2 );
+		\add_filter( 'page_row_actions',             array( $this, 'hide_row_actions' ), 10, 2 );
 		\add_filter( 'wp_get_attachment_image_src',  array( $this, 'get_attachment_image_src' ), 10, 3 );
 		\add_filter( 'wp_get_attachment_url',        array( $this, 'get_attachment_url' ), 10, 2 );
 		\add_filter( 'wp_prepare_attachment_for_js', array( $this, 'prepare_attachment_for_js' ), 10, 3 );
+
+		// Admin UI - Taxonomies
+		foreach ( \get_taxonomies() as $taxonomy ) {
+			\add_filter( "{$taxonomy}_row_actions", array( $this, 'hide_row_actions' ), 10, 2 );
+		}
 
 		// Admin UI - Featured Image
 		\add_filter( 'admin_post_thumbnail_html',   array( $this, 'update_post_thumbnail' ), 10, 2 );
 		\add_filter( 'delete_post_meta',            array( $this, 'delete_post_thumbnail' ), 10, 3 );
 
 		// Admin UI - Media Library
-		\add_filter( 'media_row_actions',           array( $this, 'hide_row_actions' ), 99, 2 );
+		\add_filter( 'media_row_actions',           array( $this, 'hide_row_actions' ), 10, 2 );
 		\add_filter( 'ajax_query_attachments_args', array( $this, 'hide_attachments_on_grid_mode' ) );
 		\add_action( 'pre_get_posts',               array( $this, 'hide_attachments_on_list_mode' ) );
 
@@ -198,7 +203,9 @@ class PostAdmin extends Admin {
 	 */
 	public function hide_row_actions( $defaults, $object ) {
 
-		if ( empty( $remote_info = $this->get_remote_info( $object->ID ) ) ) {
+		$object_id = API::get_object_id( $object );
+
+		if ( empty( $remote_info = $this->get_remote_info( $object_id ) ) ) {
 			return $defaults;
 		}
 
