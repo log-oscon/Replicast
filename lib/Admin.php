@@ -46,6 +46,18 @@ class Admin {
 	}
 
 	/**
+	 * Register hooks.
+	 *
+	 * @since    1.0.0
+	 */
+	public function register() {
+
+		\add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
+		\add_action( 'admin_notices',         array( $this, 'display_admin_notices' ) );
+
+	}
+
+	/**
 	 * Register the stylesheets for the Dashboard.
 	 *
 	 * @since    1.0.0

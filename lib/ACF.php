@@ -60,8 +60,8 @@ class ACF {
 	 */
 	public function register() {
 
-		\add_filter( 'replicast_expose_object_protected_meta', array( $this, 'expose_object_protected_meta' ), 10 );
-		\add_filter( 'replicast_suppress_object_meta',         array( $this, 'suppress_object_meta' ), 10 );
+		\add_filter( 'replicast_expose_object_protected_meta', array( $this, 'expose_object_protected_meta' ) );
+		\add_filter( 'replicast_suppress_object_meta',         array( $this, 'suppress_object_meta' ) );
 
 		\add_filter( 'acf/update_value/type=relationship',  array( $this, 'get_relations' ), 10, 3 );
 		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_relations' ), 10, 2 );

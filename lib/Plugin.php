@@ -58,16 +58,6 @@ class Plugin {
 	const REPLICAST_OBJECT_INFO = '_replicast_object_info';
 
 	/**
-	 * The loader that's responsible for maintaining and registering all hooks that power
-	 * the plugin.
-	 *
-	 * @since     1.0.0
-	 * @access    protected
-	 * @var       \Replicast\Loader    Maintains and registers all hooks for the plugin.
-	 */
-	protected $loader;
-
-	/**
 	 * The unique identifier of this plugin.
 	 *
 	 * @since     1.0.0
@@ -88,9 +78,6 @@ class Plugin {
 	/**
 	 * Define the core functionality of the plugin.
 	 *
-	 * Create an instance of the loader which will be used to register the hooks
-	 * with WordPress.
-	 *
 	 * @since    1.0.0
 	 * @param    string    $name       Plugin name.
 	 * @param    string    $version    Plugin version.
@@ -98,7 +85,6 @@ class Plugin {
 	public function __construct( $name, $version ) {
 		$this->name    = $name;
 		$this->version = $version;
-		$this->loader  = new Loader();
 	}
 
 	/**
@@ -127,9 +113,7 @@ class Plugin {
 	private function define_admin_hooks() {
 
 		$admin = new Admin( $this );
-
-		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_styles' );
-		$this->loader->add_action( 'admin_notices',         $admin, 'display_admin_notices' );
+		\add_action( 'init', array( $admin, 'register' ), 99 );
 
 	}
 
@@ -142,32 +126,7 @@ class Plugin {
 	private function define_admin_post_hooks() {
 
 		$post = new Admin\PostAdmin( $this );
-
-		$this->loader->add_action( 'save_post',          $post, 'on_save_post', 10, 3 );
-		$this->loader->add_action( 'attachment_updated', $post, 'on_save_post', 10, 3 );
-		$this->loader->add_action( 'trashed_post',       $post, 'on_trash_post' );
-		$this->loader->add_action( 'before_delete_post', $post, 'on_delete_post' );
-
-		// Admin UI - Posts
-		$this->loader->add_filter( 'manage_pages_columns',         $post, 'manage_columns', 10, 2 );
-		$this->loader->add_filter( 'manage_posts_columns',         $post, 'manage_columns', 10, 2 );
-		$this->loader->add_action( 'manage_posts_custom_column',   $post, 'manage_custom_column', 10, 2 );
-		$this->loader->add_action( 'manage_pages_custom_column',   $post, 'manage_custom_column', 10, 2 );
-		$this->loader->add_filter( 'user_has_cap',                 $post, 'suppress_local_edit', 10, 4 );
-		$this->loader->add_filter( 'post_row_actions',             $post, 'hide_row_actions', 99, 2 );
-		$this->loader->add_filter( 'page_row_actions',             $post, 'hide_row_actions', 99, 2 );
-		$this->loader->add_filter( 'wp_get_attachment_image_src',  $post, 'get_attachment_image_src', 10, 3 );
-		$this->loader->add_filter( 'wp_get_attachment_url',        $post, 'get_attachment_url', 10, 2 );
-		$this->loader->add_filter( 'wp_prepare_attachment_for_js', $post, 'prepare_attachment_for_js', 10, 3 );
-
-		// Admin UI - Featured Image
-		$this->loader->add_filter( 'admin_post_thumbnail_html',   $post, 'update_post_thumbnail', 10, 2 );
-		$this->loader->add_filter( 'delete_post_meta',            $post, 'delete_post_thumbnail', 10, 3 );
-
-		// Admin UI - Media Library
-		$this->loader->add_filter( 'media_row_actions',           $post, 'hide_row_actions', 99, 2 );
-		$this->loader->add_filter( 'ajax_query_attachments_args', $post, 'hide_attachments_on_grid_mode' );
-		$this->loader->add_action( 'pre_get_posts',               $post, 'hide_attachments_on_list_mode' );
+		\add_action( 'init', array( $post, 'register' ), 99 );
 
 	}
 
@@ -180,7 +139,6 @@ class Plugin {
 	private function define_admin_site_hooks() {
 
 		$site = new Admin\SiteAdmin( $this, static::TAXONOMY_SITE );
-
 		\add_action( 'init', array( $site, 'register' ), 99 );
 
 	}
@@ -194,7 +152,6 @@ class Plugin {
 	private function define_api_hooks() {
 
 		$api = new API( $this );
-
 		\add_action( 'rest_api_init', array( $api, 'register_rest_fields' ), 99 );
 
 	}
@@ -212,7 +169,6 @@ class Plugin {
 		}
 
 		$acf = new ACF( $this );
-
 		\add_action( 'init', array( $acf, 'register' ), 99 );
 
 	}
@@ -233,7 +189,6 @@ class Plugin {
 		$this->define_admin_site_hooks();
 		$this->define_acf_hooks();
 
-		$this->loader->run();
 	}
 
 	/**
@@ -245,16 +200,6 @@ class Plugin {
 	 */
 	public function get_name() {
 		return $this->name;
-	}
-
-	/**
-	 * The reference to the class that orchestrates the hooks with the plugin.
-	 *
-	 * @since     1.0.0
-	 * @return    \Replicast\Loader    Orchestrates the hooks of the plugin.
-	 */
-	public function get_loader() {
-		return $this->loader;
 	}
 
 	/**
