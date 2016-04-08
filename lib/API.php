@@ -349,7 +349,7 @@ class API {
 	 * @param     mixed    $fields
 	 * @return    array                  Prepared media object.
 	 */
-	public static function get_media( $object_id, $data, $fields ) {
+	public static function get_media( $object_id, $data, $fields = array() ) {
 
 		if ( ! is_array( $fields ) ) {
 			$fields = array( $fields );
@@ -622,12 +622,8 @@ class API {
 	 */
 	public static function update_object_media( $media, $object ) {
 
-		// Update media
+		// Create media or update media metadata
 		foreach ( $media as $media_id => $media_data ) {
-
-			if ( ! empty( $media_data['id'] ) ) {
-				continue;
-			}
 
 			$media[ $media_id ]['id'] = static::update_media( $media_data );
 
