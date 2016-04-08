@@ -654,10 +654,10 @@ class API {
 	 */
 	public static function update_media( $image ) {
 
-		$image_id = ! empty( $image['id'] ) ? $image['id'] : '';
+		$attachment_id = ! empty( $image['id'] ) ? $image['id'] : '';
 
 		// Create an attachment if no ID was given
-		if ( empty( $image_id ) ) {
+		if ( empty( $attachment_id ) ) {
 
 			$file = \esc_url( $image['metadata']['file'] );
 
@@ -670,17 +670,17 @@ class API {
 			);
 
 			// Create the attachment
-			$image_id = \wp_insert_attachment( $attachment, $file );
+			$attachment_id = \wp_insert_attachment( $attachment, $file );
 
 			// Assign metadata to attachment
-			\wp_update_attachment_metadata( $image_id, $image['metadata'] );
+			\wp_update_attachment_metadata( $attachment_id, $image['metadata'] );
 
 		}
 
 		// Save remote object info
-		\update_post_meta( $image_id, Plugin::REPLICAST_OBJECT_INFO, $image[ Plugin::REPLICAST_OBJECT_INFO ] );
+		\update_post_meta( $attachment_id, Plugin::REPLICAST_OBJECT_INFO, $image[ Plugin::REPLICAST_OBJECT_INFO ] );
 
-		return $image_id;
+		return $attachment_id;
 	}
 
 	/**
@@ -771,27 +771,6 @@ class API {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Retrieve remote ID from object.
-	 *
-	 * @since     1.0.0
-	 * @param     object|int           $object    The object or the object ID.
-	 * @param     \Replicast\Client    $site      Site object.
-	 * @return    int|string                      The replicast ID. Empty, otherwise.
-	 */
-	public static function get_replicast_id( $object, $site ) {
-
-		if ( is_numeric( $object ) ) {
-			$object = \get_post( $object );
-		}
-
-		if ( ! empty( $replicast_info = static::get_remote_info( $object ) ) ) {
-			return $replicast_info[ $site->get_id() ]['id'];
-		}
-
-		return '';
 	}
 
 	/**
