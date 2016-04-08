@@ -254,7 +254,7 @@ class API {
 			$hierarchical_terms[ $term_id ] = $term;
 			$hierarchical_terms[ $term_id ]->meta = array(
 				Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
-					'object_id' => $term_id,
+					'object_id' => \get_term_meta( $term_id, Plugin::REPLICAST_OBJECT_ID, true ),
 					'edit_link' => \get_edit_term_link( $term_id, $taxonomy->name ),
 					'rest_url'  => \rest_url( sprintf( '/wp/v2/%s/%s', $rest_base, $term_id ) ),
 				) )
@@ -292,7 +292,7 @@ class API {
 			$children[ $term_id ] = $term;
 			$children[ $term_id ]->meta = array(
 				Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
-					'object_id' => $term_id,
+					'object_id' => \get_term_meta( $term_id, Plugin::REPLICAST_OBJECT_ID, true ),
 					'edit_link' => \get_edit_term_link( $term_id, $taxonomy->name ),
 					'rest_url'  => \rest_url( sprintf( '/wp/v2/%s/%s', $rest_base, $term_id ) ),
 				) )
@@ -393,6 +393,7 @@ class API {
 				'metadata'  => $metadata,
 				'fields'    => $fields,
 				Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
+					'object_id' => \get_post_meta( $object_id, Plugin::REPLICAST_OBJECT_ID, true ),
 					'permalink' => \get_attachment_link( $object_id ),
 					'edit_link' => \get_edit_post_link( $object_id ),
 					'rest_url'  => \rest_url( sprintf( '/wp/v2/media/%s', $object_id ) ),
@@ -503,7 +504,7 @@ class API {
 		$prepared_ids = array();
 
 		// Update terms
-		foreach ( $terms as $term_data ) {
+		foreach ( $terms as $term_id => $term_data ) {
 
 			// Check if taxonomy exists
 			if ( ! \taxonomy_exists( $term_data['taxonomy'] ) ) {
@@ -514,8 +515,8 @@ class API {
 				continue;
 			}
 
-			// Get term
-			$term = static::get_term( $term_data );
+			// Update term
+			$term = static::update_term( $term_id, $term_data );
 
 			$prepared_ids[ $term_data['taxonomy'] ][] = $term['term_id'];
 
@@ -563,10 +564,10 @@ class API {
 
 		$prepared_ids = array();
 
-		foreach ( $terms as $term_data ) {
+		foreach ( $terms as $term_id => $term_data ) {
 
-			// Get term
-			$term = static::get_term( $term_data, $parent_id );
+			// Update term
+			$term = static::update_term( $term_id, $term_data, $parent_id );
 
 			$prepared_ids[ $term_data['taxonomy'] ][] = $term['term_id'];
 
@@ -586,15 +587,16 @@ class API {
 	}
 
 	/**
-	 * Get term object.
+	 * Update term object.
 	 *
 	 * @since     1.0.0
 	 * @access    private
+	 * @param     int      $term_id      The original term ID.
 	 * @param     array    $term_data    The term data.
 	 * @param     int      $parent_id    The parent term ID.
 	 * @return    array                  An array containing, at least, the term_id and term_taxonomy_id.
 	 */
-	private static function get_term( $term_data, $parent_id = 0 ) {
+	private static function update_term( $term_id, $term_data, $parent_id = 0 ) {
 
 		$term = \wp_insert_term( $term_data['name'], $term_data['taxonomy'], array(
 			'description' => $term_data['description'],
@@ -609,6 +611,9 @@ class API {
 
 			$term = \get_term_by( 'id', $term->get_error_data(), $term_data['taxonomy'], 'ARRAY_A' );
 		}
+
+		// Save remote ID
+		\update_term_meta( $term['term_id'], Plugin::REPLICAST_OBJECT_ID, $term_id );
 
 		return $term;
 	}
@@ -625,7 +630,7 @@ class API {
 		// Create media or update media metadata
 		foreach ( $media as $media_id => $media_data ) {
 
-			$media[ $media_id ]['id'] = static::update_media( $media_data );
+			$media[ $media_id ]['id'] = static::update_media( $media_id, $media_data );
 
 			// Assign object featured media
 			if ( in_array( 'featured_media', $media_data['fields'] ) ) {
@@ -649,21 +654,23 @@ class API {
 	 * Updates a media object.
 	 *
 	 * @since     1.0.0
-	 * @param     array    $image    The values of the field.
-	 * @return    int                The media object ID.
+	 * @access    private
+	 * @param     int      $media_id      The original media ID.
+	 * @param     array    $media_data    The values of the field.
+	 * @return    int                     The media object ID.
 	 */
-	public static function update_media( $image ) {
+	private static function update_media( $media_id, $media_data ) {
 
-		$attachment_id = ! empty( $image['id'] ) ? $image['id'] : '';
+		$attachment_id = ! empty( $media_data['id'] ) ? $media_data['id'] : '';
 
 		// Create an attachment if no ID was given
 		if ( empty( $attachment_id ) ) {
 
-			$file = \esc_url( $image['metadata']['file'] );
+			$file = \esc_url( $media_data['metadata']['file'] );
 
 			// Set attachment data
 			$attachment = array(
-				'post_mime_type' => $image['mime-type'],
+				'post_mime_type' => $media_data['mime-type'],
 				'post_title'     => \sanitize_file_name( basename( $file ) ),
 				'post_content'   => '',
 				'post_status'    => 'inherit'
@@ -673,12 +680,15 @@ class API {
 			$attachment_id = \wp_insert_attachment( $attachment, $file );
 
 			// Assign metadata to attachment
-			\wp_update_attachment_metadata( $attachment_id, $image['metadata'] );
+			\wp_update_attachment_metadata( $attachment_id, $media_data['metadata'] );
+
+			// Save remote ID
+			\update_post_meta( $attachment_id, Plugin::REPLICAST_OBJECT_ID, $media_id );
 
 		}
 
 		// Save remote object info
-		\update_post_meta( $attachment_id, Plugin::REPLICAST_OBJECT_INFO, $image[ Plugin::REPLICAST_OBJECT_INFO ] );
+		\update_post_meta( $attachment_id, Plugin::REPLICAST_OBJECT_INFO, $media_data[ Plugin::REPLICAST_OBJECT_INFO ] );
 
 		return $attachment_id;
 	}
