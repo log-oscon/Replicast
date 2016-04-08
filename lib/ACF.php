@@ -556,25 +556,27 @@ class ACF {
 
 		foreach( $fields as $field ) {
 
-			$field_type = $field['type'];
+			$field_type  = $field['type'];
+			$field_value = $field['value'];
+			$field_name  = $field['name'];
 
 			if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
 				continue;
 			}
 
-			if ( empty( $field['value'] ) ) {
+			if ( empty( $field_value ) ) {
 				continue;
 			}
 
 			// Image
 			if ( $field_type === 'image' ) {
-				$data[ $field['value']['ID'] ] = API::get_media( $field['value']['ID'], $data, array( $field_type => $field['name'] ) );
+				$data[ $field_value['ID'] ] = API::get_media( $field_value['ID'], $data, array( $field_type => $field_name ) );
 				continue;
 			}
 
 			// Gallery
-			foreach ( $field['value'] as $image ) {
-				$data[ $image['ID'] ] = API::get_media( $image['ID'], $data, array( $field_type => $field['name'] ) );
+			foreach ( $field_value as $image ) {
+				$data[ $image['ID'] ] = API::get_media( $image['ID'], $data, array( $field_type => $field_name ) );
 			}
 
 		}
