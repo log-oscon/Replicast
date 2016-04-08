@@ -857,8 +857,8 @@ class API {
 	 * @param     int   $object_id    The object ID.
 	 * @return    int                 The central object ID.
 	 */
-	public function get_object_id( $object_id ) {
-		if ( ! empty( $original_id = \get_post_meta( object_id, Plugin::REPLICAST_OBJECT_ID, true ) ) ) {
+	public static function get_object_id( $object_id ) {
+		if ( ! empty( $original_id = \get_post_meta( $object_id, Plugin::REPLICAST_OBJECT_ID, true ) ) ) {
 			return $original_id;
 		}
 		return $object_id;
