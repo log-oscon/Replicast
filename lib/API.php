@@ -200,7 +200,7 @@ class API {
 		}
 
 		// Get a hierarchical list of object terms
-		$terms = static::get_object_terms_hierarchical( $object['id'], $prepared_data );
+		$prepared_data = static::get_object_terms_hierarchical( $object['id'], $prepared_data );
 
 		/**
 		 * Extend object terms.
@@ -210,7 +210,7 @@ class API {
 		 * @param     int      Object ID.
 		 * @return    array    Possibly-modified object terms.
 		 */
-		return \apply_filters( 'replicast_get_object_term', $terms, $object['id'] );
+		return \apply_filters( 'replicast_get_object_term', $prepared_data, $object['id'] );
 	}
 
 	/**
@@ -248,18 +248,19 @@ class API {
 			}
 
 			$term_id   = $term->term_id;
+			$ref       = static::get_object_id( $term_id );
 			$taxonomy  = $taxonomies[ $term->taxonomy ];
 			$rest_base = ! empty( $taxonomy->rest_base ) ? $taxonomy->rest_base : $taxonomy->name;
 
-			$hierarchical_terms[ $term_id ] = $term;
-			$hierarchical_terms[ $term_id ]->meta = array(
+			$hierarchical_terms[ $ref ] = $term;
+			$hierarchical_terms[ $ref ]->meta = array(
 				Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
-					'object_id' => \get_term_meta( $term_id, Plugin::REPLICAST_OBJECT_ID, true ),
+					'object_id' => $ref,
 					'edit_link' => \get_edit_term_link( $term_id, $taxonomy->name ),
 					'rest_url'  => \rest_url( sprintf( '/wp/v2/%s/%s', $rest_base, $term_id ) ),
 				) )
 			);
-			$hierarchical_terms[ $term_id ]->children = static::get_child_terms( $term_id, $terms );
+			$hierarchical_terms[ $ref ]->children = static::get_child_terms( $term_id, $terms );
 		}
 
 		return $hierarchical_terms;
@@ -286,18 +287,19 @@ class API {
 			}
 
 			$term_id   = $term->term_id;
+			$ref       = static::get_object_id( $term_id );
 			$taxonomy  = $taxonomies[ $term->taxonomy ];
 			$rest_base = ! empty( $taxonomy->rest_base ) ? $taxonomy->rest_base : $taxonomy->name;
 
-			$children[ $term_id ] = $term;
-			$children[ $term_id ]->meta = array(
+			$children[ $ref ] = $term;
+			$children[ $ref ]->meta = array(
 				Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
-					'object_id' => \get_term_meta( $term_id, Plugin::REPLICAST_OBJECT_ID, true ),
+					'object_id' => $ref,
 					'edit_link' => \get_edit_term_link( $term_id, $taxonomy->name ),
 					'rest_url'  => \rest_url( sprintf( '/wp/v2/%s/%s', $rest_base, $term_id ) ),
 				) )
 			);
-			$children[ $term_id ]->children = static::get_child_terms( $term_id, $terms );
+			$children[ $ref ]->children = static::get_child_terms( $term_id, $terms );
 		}
 
 		return $children;
@@ -318,6 +320,14 @@ class API {
 	 */
 	public static function get_object_media( $object, $request ) {
 
+		$prepared_data = array();
+
+		// Get object featured media
+		if ( ! empty( $object['featured_media'] )  ) {
+			$ref = static::get_object_id( $object['featured_media'] );;
+			$prepared_data[ $ref ] = static::get_media( $ref, $object['featured_media'], $prepared_data, 'featured_media' );
+		}
+
 		/**
 		 * Extend object media.
 		 *
@@ -326,14 +336,7 @@ class API {
 		 * @param     int      Object ID.
 		 * @return    array    Possibly-modified object media.
 		 */
-		$prepared_data = \apply_filters( 'replicast_get_object_media', array(), $object['id'] );
-
-		// Get object featured media
-		if ( ! empty( $object['featured_media'] )  ) {
-			$prepared_data[ $object['featured_media'] ] = static::get_media( $object['featured_media'], $prepared_data, 'featured_media' );
-		}
-
-		return $prepared_data;
+		return \apply_filters( 'replicast_get_object_media', $prepared_data, $object['id'] );
 	}
 
 	/**
@@ -344,12 +347,13 @@ class API {
 	 * relation between the local IDs and the IDs on the remote site.
 	 *
 	 * @since     1.0.0
+	 * @param     int      $ref          The reference ID.
 	 * @param     int      $object_id    The object ID.
 	 * @param     array    $data         Object media.
 	 * @param     mixed    $fields
 	 * @return    array                  Prepared media object.
 	 */
-	public static function get_media( $object_id, $data, $fields = array() ) {
+	public static function get_media( $ref, $object_id, $data, $fields = array() ) {
 
 		if ( ! is_array( $fields ) ) {
 			$fields = array( $fields );
@@ -393,7 +397,7 @@ class API {
 				'metadata'  => $metadata,
 				'fields'    => $fields,
 				Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
-					'object_id' => \get_post_meta( $object_id, Plugin::REPLICAST_OBJECT_ID, true ),
+					'object_id' => $ref,
 					'permalink' => \get_attachment_link( $object_id ),
 					'edit_link' => \get_edit_post_link( $object_id ),
 					'rest_url'  => \rest_url( sprintf( '/wp/v2/media/%s', $object_id ) ),
@@ -402,7 +406,7 @@ class API {
 
 		}
 
-		$data[ $object_id ]['fields'] = array_merge( $data[ $object_id ]['fields'], $fields );
+		$data[ $ref ]['fields'] = array_merge( $data[ $object_id ]['fields'], $fields );
 
 		return $data[ $object_id ];
 	}
@@ -694,13 +698,13 @@ class API {
 	}
 
 	/**
-	 * Get object ID.
+	 * Get the object ID.
 	 *
 	 * @since     1.0.0
 	 * @param     object|array    $object    The object.
 	 * @return    string                     The object ID.
 	 */
-	public static function get_object_id( $object ) {
+	public static function get_id( $object ) {
 
 		if ( isset( $object->term_id ) ) {
 			return $object->term_id;
@@ -794,7 +798,7 @@ class API {
 
 		$replicast_info = \get_metadata(
 			static::get_meta_type( $object ),
-			static::get_object_id( $object ),
+			static::get_id( $object ),
 			Plugin::REPLICAST_REMOTE_INFO,
 			true
 		);
@@ -830,7 +834,7 @@ class API {
 		// Save or delete the remote object info
 		if ( $remote_data ) {
 			$replicast_info[ $site_id ] = array(
-				'id'     => static::get_object_id( $remote_data ),
+				'id'     => static::get_id( $remote_data ),
 				'status' => isset( $remote_data->status ) ? $remote_data->status : '',
 			);
 		}
@@ -840,10 +844,24 @@ class API {
 
 		return \update_metadata(
 			static::get_meta_type( $object ),
-			static::get_object_id( $object ),
+			static::get_id( $object ),
 			Plugin::REPLICAST_REMOTE_INFO,
 			$replicast_info
 		);
+	}
+
+	/**
+	 * Retrieve the original object ID.
+	 *
+	 * @since     1.0.0
+	 * @param     int   $object_id    The object ID.
+	 * @return    int                 The central object ID.
+	 */
+	public function get_object_id( $object_id ) {
+		if ( ! empty( $original_id = \get_post_meta( object_id, Plugin::REPLICAST_OBJECT_ID, true ) ) ) {
+			return $original_id;
+		}
+		return $object_id;
 	}
 
 }

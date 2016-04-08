@@ -50,7 +50,7 @@ class Plugin {
 
 	/**
 	 * Identifies the meta variable that is sent to the remote site and
-	 * that contains information regarding the central object.
+	 * that contains information regarding the original object.
 	 *
 	 * @since    1.0.0
 	 * @var      string
@@ -58,7 +58,7 @@ class Plugin {
 	const REPLICAST_OBJECT_INFO = '_replicast_object_info';
 
 	/**
-	 * Identifies the meta variable that contains the central object ID.
+	 * Identifies the meta variable that contains the original object ID.
 	 *
 	 * @since    1.0.0
 	 * @var      string

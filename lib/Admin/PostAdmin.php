@@ -280,7 +280,7 @@ class PostAdmin extends Admin {
 	 */
 	public function hide_row_actions( $defaults, $object ) {
 
-		$object_id = API::get_object_id( $object );
+		$object_id = API::get_id( $object );
 		$meta_type = API::get_meta_type( $object );
 
 		if ( empty( $remote_info = $this->get_remote_info( $object_id, $meta_type ) ) ) {

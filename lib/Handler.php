@@ -443,7 +443,7 @@ abstract class Handler {
 			sprintf(
 				'/%s/%s',
 				$this->namespace,
-				\trailingslashit( $this->rest_base ) . API::get_object_id( $this->object )
+				\trailingslashit( $this->rest_base ) . API::get_id( $this->object )
 			)
 		);
 
@@ -556,7 +556,7 @@ abstract class Handler {
 		// Asynchronous request
 		if ( $method === static::CREATABLE && $this->object_type === 'attachment' ) {
 
-			$file_path = \get_attached_file( API::get_object_id( $this->object ) );
+			$file_path = \get_attached_file( API::get_id( $this->object ) );
 			$file_name = basename( $file_path );
 
 			$headers['Content-Type']        = $data['mime_type'];
