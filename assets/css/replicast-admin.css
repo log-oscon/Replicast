@@ -6,3 +6,12 @@
 #remote_site-adder {
   display: none;
 }
+
+#remote_site-all {
+  border: 0;
+  padding: 0;
+}
+
+#remote_site-all > ul {
+  margin: 0;
+}
