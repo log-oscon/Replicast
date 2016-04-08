@@ -475,10 +475,10 @@ class API {
 		 *
 		 * @since    1.0.0
 		 * @param    array     The values of the field.
-		 * @param    string    The object meta type.
 		 * @param    int       The object ID.
+		 * @param    string    The object meta type.
 		 */
-		\do_action( "replicast_update_object_{$meta_type}_meta", $meta, $meta_type, $object->ID );
+		\do_action( "replicast_update_object_{$meta_type}_meta", $meta, $object->ID, $meta_type );
 
 		/**
 		 * Fires immediately after object meta is updated.
