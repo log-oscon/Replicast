@@ -423,7 +423,10 @@ class ACF {
 		}
 
 		foreach ( $field_value as $related_image ) {
-			$meta_value[] = $this->prepare_image_meta( $related_image, $site );
+			$image_meta = $this->prepare_image_meta( $related_image, $site );
+			if ( ! empty( $image_meta ) ) {
+				$meta_value[] = $image_meta;
+			}
 		}
 
 		if ( ! empty( $meta_value ) && is_array( $meta_value ) ) {
