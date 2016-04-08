@@ -65,8 +65,7 @@ class PostAdmin extends Admin {
 		}
 
 		// Admin UI - Featured Image
-		\add_filter( 'admin_post_thumbnail_html',   array( $this, 'update_post_thumbnail' ), 10, 2 );
-		\add_filter( 'delete_post_meta',            array( $this, 'delete_post_thumbnail' ), 10, 3 );
+		\add_filter( 'admin_post_thumbnail_html', array( $this, 'update_post_thumbnail' ), 10, 2 );
 
 		// Admin UI - Media Library
 		\add_filter( 'media_row_actions',           array( $this, 'hide_row_actions' ), 10, 2 );
@@ -371,30 +370,6 @@ class PostAdmin extends Admin {
 			\esc_attr__( 'Edit', 'replicast' ),
 			$thumb_html
 		);
-	}
-
-	/**
-	 * Delete remote info from post thumbnail.
-	 *
-	 * @since    1.0.0
-	 * @param    array     $meta_ids     An array of deleted metadata entry IDs.
-	 * @param    int       $object_id    Object ID.
-	 * @param    string    $meta_key     Meta key.
-	 */
-	public function delete_post_thumbnail( $meta_ids, $object_id, $meta_key ) {
-
-		if ( $meta_key !== '_thumbnail_id' ) {
-			return;
-		}
-
-		$object_id = \get_post_thumbnail_id( $object_id );
-
-		if ( ! $object_id ) {
-			return;
-		}
-
-		\delete_post_meta( $object_id, Plugin::REPLICAST_REMOTE_IDS );
-
 	}
 
 	/**
