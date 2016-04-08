@@ -330,14 +330,14 @@ class API {
 
 		// Get object featured media
 		if ( ! empty( $object['featured_media'] )  ) {
-			$prepared_data[ $object['featured_media'] ] = static::get_media( 'featured_media', $object['featured_media'], $prepared_data );
+			$prepared_data[ $object['featured_media'] ] = static::get_media( $object['featured_media'], $prepared_data, 'featured_media' );
 		}
 
 		return $prepared_data;
 	}
 
 	/**
-	 * Prepares a media object.
+	 * Retrieves a media object.
 	 *
 	 * If the object ID does not exists it adds media information for creation purposes.
 	 * Otherwise, adds the ID and the field type in the structure that "saves" the
@@ -346,9 +346,14 @@ class API {
 	 * @since     1.0.0
 	 * @param     int      $object_id    The object ID.
 	 * @param     array    $data         Object media.
+	 * @param     mixed    $fields
 	 * @return    array                  Prepared media object.
 	 */
-	public static function get_media( $field_type, $object_id, $data ) {
+	public static function get_media( $object_id, $data, $fields ) {
+
+		if ( ! is_array( $fields ) ) {
+			$fields = array( $fields );
+		}
 
 		// Add media information for creation purposes
 		if ( ! array_key_exists( $object_id, $data ) ) {
@@ -386,10 +391,7 @@ class API {
 				'id'        => $object_id,
 				'mime-type' => \get_post_mime_type( $object_id ),
 				'metadata'  => $metadata,
-				// 'fields'    => array(
-				// 	$field_type => array( $object_id ),
-				// ),
-				'fields'    => array( $field_type ),
+				'fields'    => $fields,
 				Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
 					'permalink' => \get_attachment_link( $object_id ),
 					'edit_link' => \get_edit_post_link( $object_id ),
@@ -399,12 +401,7 @@ class API {
 
 		}
 
-		// $data[ $object_id ]['fields'] = array_merge_recursive(
-		// 	$data[ $object_id ]['fields'],
-		// 	array( $field_type => array( $object_id ) )
-		// );
-
-		$data[ $object_id ]['fields'] = array_merge( $data[ $object_id ]['fields'], array( $field_type ) );
+		$data[ $object_id ]['fields'] = array_merge( $data[ $object_id ]['fields'], $fields );
 
 		return $data[ $object_id ];
 	}

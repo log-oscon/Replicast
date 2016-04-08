@@ -565,13 +565,13 @@ class ACF {
 
 			// Image
 			if ( $field_type === 'image' ) {
-				$data[ $field['value']['ID'] ] = API::get_media( $field_type, $field['value']['ID'], $data );
+				$data[ $field['value']['ID'] ] = API::get_media( $field['value']['ID'], $data, array( $field_type => $field['name'] ) );
 				continue;
 			}
 
 			// Gallery
 			foreach ( $field['value'] as $image ) {
-				$data[ $image['ID'] ] = API::get_media( $field_type, $image['ID'], $data );
+				$data[ $image['ID'] ] = API::get_media( $image['ID'], $data, array( $field_type => $field['name'] ) );
 			}
 
 		}
@@ -588,25 +588,30 @@ class ACF {
 	 */
 	public function update_media( $media, $object_id ) {
 
-		foreach ( $media as $field_type => $values ) {
+		foreach ( $media as $media_id => $media_data ) {
 
-			if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+			if ( ! array_intersect( array( 'gallery', 'image' ), $media_data['fields'] ) ) {
 				continue;
 			}
 
-			if ( empty( $values ) ) {
-				continue;
-			}
+			foreach ( $media_data['fields'] as $field_type => $field_key ) {
 
-			// Image
-			if ( $field_type === 'image' ) {
-				API::update_media( $values );
-				continue;
-			}
+				$value = $media[ $media_id ]['id'];
 
-			// Gallery
-			foreach ( $values as $key => $image ) {
-				API::update_media( $image );
+				// Image
+				if ( $field_type === 'image' ) {
+					\update_field( $field_key, $value, $object_id );
+					continue;
+				}
+
+				// Gallery
+				$previous_values = \get_field( $field_key, $object_id );
+
+				if ( ! is_array( $previous_values ) ) {
+					$previous_values = array( $previous_values );
+				}
+
+				\update_field( $field_key, array_merge( $previous_values, array( $value ) ), $object_id );
 			}
 
 		}
