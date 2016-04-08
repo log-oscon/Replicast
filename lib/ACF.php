@@ -282,11 +282,12 @@ class ACF {
 
 		foreach ( $data['replicast']['meta'] as $key => $meta ) {
 
-			if ( empty( $meta['raw'] ) ) {
+			if ( empty( $meta['raw'] ) || empty( $meta['rendered'] ) ) {
 				continue;
 			}
 
 			$field_type = \acf_extract_var( $meta['raw'], 'type' );
+			$field_key  = \acf_extract_var( $meta['raw'], 'key' );
 
 			if ( in_array( $field_type, $suppressed_meta ) ) {
 				continue;
@@ -317,7 +318,9 @@ class ACF {
 			}
 
 			unset( $data['replicast']['meta'][ $key ] );
-			$data['replicast']['meta'][ $key ][] = $meta_value;
+
+			$data['replicast']['meta'][ $key ][]       = $meta_value;
+			$data['replicast']['meta'][ '_' . $key ][] = $field_key;
 		}
 
 		return $data;
