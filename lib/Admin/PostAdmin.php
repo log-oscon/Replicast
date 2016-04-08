@@ -642,7 +642,7 @@ class PostAdmin extends Admin {
 			// 	}
 
 			// Get replicast info
-			$replicast_info = API::get_replicast_info( $post );
+			$replicast_info = API::get_remote_info( $post );
 
 			// Verify that the current object has been "removed" (aka unchecked) from any site(s)
 			// FIXME: review this later on

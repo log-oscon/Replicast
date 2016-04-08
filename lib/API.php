@@ -787,7 +787,7 @@ class API {
 			$object = \get_post( $object );
 		}
 
-		if ( ! empty( $replicast_info = static::get_replicast_info( $object ) ) ) {
+		if ( ! empty( $replicast_info = static::get_remote_info( $object ) ) ) {
 			return $replicast_info[ $site->get_id() ]['id'];
 		}
 
@@ -801,12 +801,12 @@ class API {
 	 * @param     object|array    $object    The object.
 	 * @return    array                      The replicast info meta data.
 	 */
-	public static function get_replicast_info( $object ) {
+	public static function get_remote_info( $object ) {
 
 		$replicast_info = \get_metadata(
 			static::get_meta_type( $object ),
 			static::get_object_id( $object ),
-			Plugin::REPLICAST_REMOTE_IDS,
+			Plugin::REPLICAST_REMOTE_INFO,
 			true
 		);
 
@@ -833,10 +833,10 @@ class API {
 	 * @return    mixed                                              Returns meta ID if the meta doesn't exist, otherwise
 	 *                                                               returns true on success and false on failure.
 	 */
-	public static function update_replicast_info( $object, $site_id, $remote_data = null ) {
+	public static function update_remote_info( $object, $site_id, $remote_data = null ) {
 
 		// Get replicast object info
-		$replicast_info = static::get_replicast_info( $object );
+		$replicast_info = static::get_remote_info( $object );
 
 		// Save or delete the remote object info
 		if ( $remote_data ) {
@@ -852,7 +852,7 @@ class API {
 		return \update_metadata(
 			static::get_meta_type( $object ),
 			static::get_object_id( $object ),
-			Plugin::REPLICAST_REMOTE_IDS,
+			Plugin::REPLICAST_REMOTE_INFO,
 			$replicast_info
 		);
 	}

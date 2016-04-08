@@ -46,7 +46,7 @@ class Plugin {
 	 * @since    1.0.0
 	 * @var      string
 	 */
-	const REPLICAST_REMOTE_IDS = '_replicast_remote_ids';
+	const REPLICAST_REMOTE_INFO = '_replicast_remote_info';
 
 	/**
 	 * Identifies the meta variable that is sent to the remote site and

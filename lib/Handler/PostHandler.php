@@ -80,7 +80,7 @@ class PostHandler extends Handler {
 		if ( $data['type'] !== 'attachment' && ! empty( $data['post'] ) ) {
 
 			// Get replicast info
-			$replicast_info = API::get_replicast_info( \get_post( $data['post'] ) );
+			$replicast_info = API::get_remote_info( \get_post( $data['post'] ) );
 
 			// Update object ID
 			$data['post'] = '';
@@ -115,7 +115,7 @@ class PostHandler extends Handler {
 		foreach ( $data['replicast']['term'] as $key => $term ) {
 
 			// Get replicast info
-			$replicast_info = API::get_replicast_info( $term );
+			$replicast_info = API::get_remote_info( $term );
 
 			// Update object ID
 			$term->term_id = '';
@@ -152,7 +152,7 @@ class PostHandler extends Handler {
 		foreach ( $terms as $key => $term ) {
 
 			// Get replicast info
-			$replicast_info = API::get_replicast_info( $term );
+			$replicast_info = API::get_remote_info( $term );
 
 			// Update object ID's
 			$term->term_id = '';
@@ -187,7 +187,7 @@ class PostHandler extends Handler {
 	public function prepare_featured_media( $data, $site ) {
 
 		// Get replicast info
-		$replicast_info = API::get_replicast_info( \get_post( $data['featured_media'] ) );
+		$replicast_info = API::get_remote_info( \get_post( $data['featured_media'] ) );
 
 		// Update object ID
 		$data['featured_media'] = '';
@@ -217,7 +217,7 @@ class PostHandler extends Handler {
 		foreach( $data['replicast']['media'] as $media_id => $media ) {
 
 			// Get replicast info
-			$replicast_info = API::get_replicast_info( \get_post( $media_id ) );
+			$replicast_info = API::get_remote_info( \get_post( $media_id ) );
 
 			// Update object ID
 			$data['replicast']['media'][ $media_id ]['id'] = '';
@@ -241,7 +241,7 @@ class PostHandler extends Handler {
 	 * @param     object    $data       Object data.
 	 */
 	public function update_object( $site_id, $data = null ) {
-		API::update_replicast_info( $this->object, $site_id, $data );
+		API::update_remote_info( $this->object, $site_id, $data );
 	}
 
 	/**
@@ -271,7 +271,7 @@ class PostHandler extends Handler {
 			}
 
 			// Update replicast info
-			API::update_replicast_info( $term, $site_id, $term_data );
+			API::update_remote_info( $term, $site_id, $term_data );
 
 		}
 

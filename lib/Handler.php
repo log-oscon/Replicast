@@ -177,7 +177,7 @@ abstract class Handler {
 
 		// Get replicast info
 		// FIXME: maybe this should be part of the handler to avoid multiple calls
-		$replicast_info = API::get_replicast_info( $this->object );
+		$replicast_info = API::get_remote_info( $this->object );
 
 		if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
 			return $this->put( $site );
@@ -321,7 +321,7 @@ abstract class Handler {
 		}
 
 		// Get replicast info
-		$replicast_info = API::get_replicast_info( $this->object );
+		$replicast_info = API::get_remote_info( $this->object );
 
 		if ( empty( $replicast_info ) ) {
 			return array();

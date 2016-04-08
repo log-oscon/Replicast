@@ -193,7 +193,7 @@ class ACF {
 				foreach ( $meta_value as $related_post_id ) {
 
 					// Get replicast info
-					$replicast_info = API::get_replicast_info( \get_post( $related_post_id ) );
+					$replicast_info = API::get_remote_info( \get_post( $related_post_id ) );
 
 					// Update object ID
 					if ( ! empty( $replicast_info ) ) {
@@ -357,7 +357,7 @@ class ACF {
 			}
 
 			// Get replicast info
-			$replicast_info = API::get_replicast_info( $term );
+			$replicast_info = API::get_remote_info( $term );
 
 			// Update object ID
 			if ( ! empty( $replicast_info ) ) {
@@ -396,7 +396,7 @@ class ACF {
 		}
 
 		// Get replicast info
-		$replicast_info = API::get_replicast_info( $image );
+		$replicast_info = API::get_remote_info( $image );
 
 		// Update object ID
 		if ( ! empty( $replicast_info ) ) {
@@ -470,7 +470,7 @@ class ACF {
 			}
 
 			// Get replicast info
-			$replicast_info = API::get_replicast_info( $related_post );
+			$replicast_info = API::get_remote_info( $related_post );
 
 			// Update object ID
 			if ( ! empty( $replicast_info ) ) {
