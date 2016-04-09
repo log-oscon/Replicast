@@ -475,7 +475,7 @@ class API {
 		$prepared_ids = array();
 
 		// Update terms
-		foreach ( $terms as $term_id => $term_data ) {
+		foreach ( $terms as $o_term_id =>$term_data ) {
 
 			// Check if taxonomy exists
 			if ( ! \taxonomy_exists( $term_data['taxonomy'] ) ) {
@@ -487,7 +487,7 @@ class API {
 			}
 
 			// Update term
-			$term = static::update_term( $term_id, $term_data );
+			$term = static::update_term( $term_data );
 
 			$prepared_ids[ $term_data['taxonomy'] ][] = $term['term_id'];
 
@@ -535,10 +535,10 @@ class API {
 
 		$prepared_ids = array();
 
-		foreach ( $terms as $term_id => $term_data ) {
+		foreach ( $terms as $o_term_id => $term_data ) {
 
 			// Update term
-			$term = static::update_term( $term_id, $term_data, $parent_id );
+			$term = static::update_term( $term_data, $parent_id );
 
 			$prepared_ids[ $term_data['taxonomy'] ][] = $term['term_id'];
 
@@ -562,12 +562,11 @@ class API {
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @param     int      $term_id      The original term ID.
 	 * @param     array    $term_data    The term data.
 	 * @param     int      $parent_id    The parent term ID.
 	 * @return    array                  An array containing, at least, the term_id and term_taxonomy_id.
 	 */
-	private static function update_term( $term_id, $term_data, $parent_id = 0 ) {
+	private static function update_term( $term_data, $parent_id = 0 ) {
 
 		$term = \wp_insert_term( $term_data['name'], $term_data['taxonomy'], array(
 			'description' => $term_data['description'],
@@ -583,9 +582,6 @@ class API {
 			$term = \get_term_by( 'id', $term->get_error_data(), $term_data['taxonomy'], 'ARRAY_A' );
 		}
 
-		// Save remote ID
-		\update_term_meta( $term['term_id'], Plugin::REPLICAST_OBJECT_ID, $term_id );
-
 		return $term;
 	}
 
@@ -599,13 +595,13 @@ class API {
 	public static function update_object_media( $media, $object ) {
 
 		// Create media or update media metadata
-		foreach ( $media as $media_id => $media_data ) {
+		foreach ( $media as $o_media_id => $media_data ) {
 
-			$media[ $media_id ]['id'] = static::update_media( $media_id, $media_data );
+			$media[ $o_media_id ]['id'] = static::update_media( $media_data );
 
 			// Assign object featured media
 			if ( in_array( 'featured_media', $media_data['fields'] ) ) {
-				\set_post_thumbnail( $object->ID, $media[ $media_id ]['id'] );
+				\set_post_thumbnail( $object->ID, $media[ $o_media_id ]['id'] );
 			}
 
 		}
@@ -626,11 +622,10 @@ class API {
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @param     int      $media_id      The original media ID.
 	 * @param     array    $media_data    The values of the field.
 	 * @return    int                     The media object ID.
 	 */
-	private static function update_media( $media_id, $media_data ) {
+	private static function update_media( $media_data ) {
 
 		$attachment_id = ! empty( $media_data['id'] ) ? $media_data['id'] : '';
 
@@ -652,9 +647,6 @@ class API {
 
 			// Assign metadata to attachment
 			\wp_update_attachment_metadata( $attachment_id, $media_data['metadata'] );
-
-			// Save remote ID
-			\update_post_meta( $attachment_id, Plugin::REPLICAST_OBJECT_ID, $media_id );
 
 		}
 
