@@ -587,11 +587,11 @@ class ACF {
 
 		foreach ( $media as $media_id => $media_data ) {
 
-			if ( ! array_intersect( array( 'gallery', 'image' ), $media_data['fields'] ) ) {
+			if ( ! array_intersect( array( 'gallery', 'image' ), $media_data['_fields'] ) ) {
 				continue;
 			}
 
-			foreach ( $media_data['fields'] as $field_type => $field_key ) {
+			foreach ( $media_data['_fields'] as $field_type => $field_key ) {
 
 				$value = $media[ $media_id ]['id'];
 

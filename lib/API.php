@@ -320,10 +320,10 @@ class API {
 	 * relation between the local IDs and the IDs on the remote site.
 	 *
 	 * @since     1.0.0
-	 * @param     int      $origin_id    he reference ID.
+	 * @param     int      $origin_id    The origin object ID.
 	 * @param     int      $object_id    The object ID.
 	 * @param     array    $data         Object media.
-	 * @param     mixed    $fields
+	 * @param     mixed    $fields       Fields that are related to the current object.
 	 * @return    array                  Prepared media object.
 	 */
 	public static function get_media( $origin_id, $object_id, $data, $fields = array() ) {
@@ -368,12 +368,12 @@ class API {
 				'id'        => $object_id,
 				'mime-type' => \get_post_mime_type( $object_id ),
 				'metadata'  => $metadata,
-				'fields'    => $fields,
+				'_fields'   => $fields,
 			);
 
 		}
 
-		$data[ $origin_id ]['fields'] = array_merge( $data[ $object_id ]['fields'], $fields );
+		$data[ $origin_id ]['_fields'] = array_merge( $data[ $object_id ]['_fields'], $fields );
 
 		return $data[ $object_id ];
 	}
@@ -600,7 +600,7 @@ class API {
 			$media[ $o_media_id ]['id'] = static::update_media( $media_data );
 
 			// Assign object featured media
-			if ( in_array( 'featured_media', $media_data['fields'] ) ) {
+			if ( in_array( 'featured_media', $media_data['_fields'] ) ) {
 				\set_post_thumbnail( $object->ID, $media[ $o_media_id ]['id'] );
 			}
 
