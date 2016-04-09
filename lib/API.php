@@ -765,7 +765,7 @@ class API {
 	public static function get_origin_id( $object_id, $meta_type = 'post' ) {
 
 		// Get origin object info
-		$origin_info = $this->get_origin_info( $object_id, $meta_type );
+		$origin_info = static::get_origin_info( $object_id, $meta_type );
 
 		if ( ! empty( $origin_info ) && ! empty( $origin_info['object_id'] ) ) {
 			return $origin_info['object_id'];
