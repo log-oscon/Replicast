@@ -239,7 +239,7 @@ class API {
 			}
 
 			$term_id = $term->term_id;
-			$ref     = static::get_object_id( $term_id );
+			$ref     = static::get_origin_id( $term_id, 'term' );
 
 			$hierarchical_terms[ $ref ] = $term;
 			$hierarchical_terms[ $ref ]->children = static::get_child_terms( $term_id, $terms );
@@ -269,7 +269,7 @@ class API {
 			}
 
 			$term_id = $term->term_id;
-			$ref     = static::get_object_id( $term_id );
+			$ref     = static::get_origin_id( $term_id, 'term' );
 
 			$children[ $ref ] = $term;
 			$children[ $ref ]->children = static::get_child_terms( $term_id, $terms );
@@ -297,7 +297,7 @@ class API {
 
 		// Get object featured media
 		if ( ! empty( $object['featured_media'] )  ) {
-			$ref = static::get_object_id( $object['featured_media'] );;
+			$ref = static::get_origin_id( $object['featured_media'] );;
 			$prepared_data[ $ref ] = static::get_media( $ref, $object['featured_media'], $prepared_data, 'featured_media' );
 		}
 
@@ -659,7 +659,7 @@ class API {
 		}
 
 		// Save remote object info
-		\update_post_meta( $attachment_id, Plugin::REPLICAST_OBJECT_INFO, $media_data[ Plugin::REPLICAST_OBJECT_INFO ] );
+		\update_post_meta( $attachment_id, Plugin::REPLICAST_ORIGIN_INFO, $media_data[ Plugin::REPLICAST_ORIGIN_INFO ] );
 
 		return $attachment_id;
 	}
@@ -755,34 +755,72 @@ class API {
 	}
 
 	/**
-	 * Retrieve remote info from object.
+	 * Retrieve origin object ID.
+	 *
+	 * @since     1.0.0
+	 * @param     int       $object_id    The object ID.
+	 * @param     string    $meta_type    The object meta type.
+	 * @return    int                     The origin object ID.
+	 */
+	public static function get_origin_id( $object_id, $meta_type = 'post' ) {
+
+		// Get origin object info
+		$origin_info = $this->get_origin_info( $object_id, $meta_type );
+
+		if ( ! empty( $origin_info ) && ! empty( $origin_info['object_id'] ) ) {
+			return $origin_info['object_id'];
+		}
+
+		return $object_id;
+	}
+
+	/**
+	 * Retrieve origin object info.
+	 *
+	 * @since     1.0.0
+	 * @param     int       $object_id    The object ID.
+	 * @param     string    $meta_type    The object meta type.
+	 * @return    mixed                   Single metadata value, or array of values.
+	 *                                    If the $meta_type or $object_id parameters are invalid, false is returned.
+	 */
+	public static function get_origin_info( $object_id, $meta_type = 'post' ) {
+
+		if( empty( $metadata = \get_metadata( $meta_type, $object_id, Plugin::REPLICAST_ORIGIN_INFO, true ) ) ) {
+			return $metadata;
+		}
+
+		return \maybe_unserialize( $metadata );
+	}
+
+	/**
+	 * Retrieve remote object info.
 	 *
 	 * @since     1.0.0
 	 * @param     object|array    $object    The object.
-	 * @return    array                      The replicast info meta data.
+	 * @return    array                      The remote object info.
 	 */
 	public static function get_remote_info( $object ) {
 
-		$replicast_info = \get_metadata(
+		$remote_info = \get_metadata(
 			static::get_meta_type( $object ),
 			static::get_id( $object ),
 			Plugin::REPLICAST_REMOTE_INFO,
 			true
 		);
 
-		if ( ! $replicast_info ) {
+		if ( ! $remote_info ) {
 			return array();
 		}
 
-		if ( ! is_array( $replicast_info ) ) {
-			$replicast_info = (array) $replicast_info;
+		if ( ! is_array( $remote_info ) ) {
+			$remote_info = (array) $remote_info;
 		}
 
-		return $replicast_info;
+		return $remote_info;
 	}
 
 	/**
-	 * Update object with remote info.
+	 * Update remote object info.
 	 *
 	 * This remote info consists in a pair <site_id, remote_object_id>.
 	 *
@@ -796,39 +834,25 @@ class API {
 	public static function update_remote_info( $object, $site_id, $remote_data = null ) {
 
 		// Get replicast object info
-		$replicast_info = static::get_remote_info( $object );
+		$remote_info = static::get_remote_info( $object );
 
 		// Save or delete the remote object info
 		if ( $remote_data ) {
-			$replicast_info[ $site_id ] = array(
+			$remote_info[ $site_id ] = array(
 				'id'     => static::get_id( $remote_data ),
 				'status' => isset( $remote_data->status ) ? $remote_data->status : '',
 			);
 		}
 		else {
-			unset( $replicast_info[ $site_id ] );
+			unset( $remote_info[ $site_id ] );
 		}
 
 		return \update_metadata(
 			static::get_meta_type( $object ),
 			static::get_id( $object ),
 			Plugin::REPLICAST_REMOTE_INFO,
-			$replicast_info
+			$remote_info
 		);
-	}
-
-	/**
-	 * Retrieve the original object ID.
-	 *
-	 * @since     1.0.0
-	 * @param     int   $object_id    The object ID.
-	 * @return    int                 The central object ID.
-	 */
-	public static function get_object_id( $object_id ) {
-		if ( ! empty( $original_id = \get_post_meta( $object_id, Plugin::REPLICAST_OBJECT_ID, true ) ) ) {
-			return $original_id;
-		}
-		return $object_id;
 	}
 
 }

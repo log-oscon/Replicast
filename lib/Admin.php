@@ -171,24 +171,6 @@ class Admin {
 	}
 
 	/**
-	 * Retrieve remote info from an object.
-	 *
-	 * @since     1.0.0
-	 * @param     int       $object_id    The object ID.
-	 * @param     string    $meta_type    Type of object metadata.
-	 * @return    mixed                   Single metadata value, or array of values.
-	 *                                    If the $meta_type or $object_id parameters are invalid, false is returned.
-	 */
-	public function get_remote_info( $object_id, $meta_type = 'post' ) {
-
-		if( empty( $metadata = \get_metadata( $meta_type, $object_id, Plugin::REPLICAST_OBJECT_INFO, true ) ) ) {
-			return $metadata;
-		}
-
-		return \maybe_unserialize( $metadata );
-	}
-
-	/**
 	 * Set admin notices.
 	 *
 	 * @since     1.0.0

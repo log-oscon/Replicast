@@ -192,12 +192,9 @@ class ACF {
 			foreach ( $meta_values as $meta_key => $meta_value ) {
 				foreach ( $meta_value as $related_post_id ) {
 
-					// Get replicast info
-					$replicast_info = API::get_remote_info( \get_post( $related_post_id ) );
-
 					// Update object ID
-					if ( ! empty( $replicast_info ) ) {
-						$prepared_meta[ $meta_key ][] = $replicast_info[ $site->get_id() ]['id'];
+					if ( ! empty( $remote_info = API::get_remote_info( \get_post( $related_post_id ) ) ) ) {
+						$prepared_meta[ $meta_key ][] = $remote_info[ $site->get_id() ]['id'];
 					}
 
 				}
@@ -356,12 +353,9 @@ class ACF {
 				continue;
 			}
 
-			// Get replicast info
-			$replicast_info = API::get_remote_info( $term );
-
 			// Update object ID
-			if ( ! empty( $replicast_info ) ) {
-				$meta_value[] = $replicast_info[ $site->get_id() ]['id'];
+			if ( ! empty( $remote_info = API::get_remote_info( $term ) ) ) {
+				$meta_value[] = $remote_info[ $site->get_id() ]['id'];
 			}
 
 		}
@@ -395,12 +389,9 @@ class ACF {
 			return $meta_value;
 		}
 
-		// Get replicast info
-		$replicast_info = API::get_remote_info( $image );
-
 		// Update object ID
-		if ( ! empty( $replicast_info ) ) {
-			return $replicast_info[ $site->get_id() ]['id'];
+		if ( ! empty( $remote_info = API::get_remote_info( $image ) ) ) {
+			return $remote_info[ $site->get_id() ]['id'];
 		}
 
 		return $meta_value;
@@ -469,12 +460,9 @@ class ACF {
 				continue;
 			}
 
-			// Get replicast info
-			$replicast_info = API::get_remote_info( $related_post );
-
 			// Update object ID
-			if ( ! empty( $replicast_info ) ) {
-				$meta_value[] = $replicast_info[ $site->get_id() ]['id'];
+			if ( ! empty( $remote_info = API::get_remote_info( $related_post ) ) ) {
+				$meta_value[] = $remote_info[ $site->get_id() ]['id'];
 			}
 
 		}
@@ -570,16 +558,16 @@ class ACF {
 
 			// Image
 			if ( $field_type === 'image' ) {
-				$object_id = $field_value['ID'];
-				$ref       = API::get_object_id( $object_id );
+				$object_id    = $field_value['ID'];
+				$ref          = API::get_object_id( $object_id );
 				$data[ $ref ] = API::get_media( $ref, $object_id, $data, array( $field_type => $field_name ) );
 				continue;
 			}
 
 			// Gallery
 			foreach ( $field_value as $image ) {
-				$object_id = $image['ID'];
-				$ref       = API::get_object_id( $object_id );
+				$object_id    = $image['ID'];
+				$ref          = API::get_object_id( $object_id );
 				$data[ $ref ] = API::get_media( $ref, $object_id, $data, array( $field_type => $field_name ) );
 			}
 

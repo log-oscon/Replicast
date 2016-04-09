@@ -206,7 +206,7 @@ class PostAdmin extends Admin {
 	 */
 	private function manage_custom_column( $object_id, $meta_type ) {
 
-		$remote_info = $this->get_remote_info( $object_id, $meta_type );
+		$remote_info = API::get_origin_info( $object_id, $meta_type );
 
 		$html = sprintf(
 			'<span class="dashicons dashicons-%s"></span>',
@@ -258,7 +258,7 @@ class PostAdmin extends Admin {
 		}
 
 		// Check if the current object is an original or a duplicate
-		if ( ! $this->get_remote_info( $args[2] ) ) {
+		if ( ! API::get_origin_info( $args[2] ) ) {
 			return $allcaps;
 		}
 
@@ -283,7 +283,7 @@ class PostAdmin extends Admin {
 		$object_id = API::get_id( $object );
 		$meta_type = API::get_meta_type( $object );
 
-		if ( empty( $remote_info = $this->get_remote_info( $object_id, $meta_type ) ) ) {
+		if ( empty( $remote_info = API::get_origin_info( $object_id, $meta_type ) ) ) {
 			return $defaults;
 		}
 
@@ -336,7 +336,7 @@ class PostAdmin extends Admin {
 			return $content;
 		}
 
-		if ( empty( $remote_info = $this->get_remote_info( $object_id ) ) ) {
+		if ( empty( $remote_info = API::get_origin_info( $object_id ) ) ) {
 			return $content;
 		}
 
@@ -424,7 +424,7 @@ class PostAdmin extends Admin {
 	private function hide_attachments() {
 		return array(
 			array(
-				'key'     => Plugin::REPLICAST_OBJECT_INFO,
+				'key'     => Plugin::REPLICAST_ORIGIN_INFO,
 				'compare' => 'NOT EXISTS',
 			)
 		);
@@ -444,7 +444,7 @@ class PostAdmin extends Admin {
 	 */
 	public function get_attachment_image_src( $image, $attachment_id, $size ) {
 
-		if ( empty( $this->get_remote_info( $attachment_id ) ) ) {
+		if ( empty( API::get_origin_info( $attachment_id ) ) ) {
 			return $image;
 		}
 
@@ -480,7 +480,7 @@ class PostAdmin extends Admin {
 	 */
 	public function get_attachment_url( $url, $attachment_id ) {
 
-		if ( empty( $this->get_remote_info( $attachment_id ) ) ) {
+		if ( empty( API::get_origin_info( $attachment_id ) ) ) {
 			return $url;
 		}
 
@@ -506,7 +506,7 @@ class PostAdmin extends Admin {
 			$attachment_id = $attachment->ID;
 		}
 
-		if ( empty( $remote_info = $this->get_remote_info( $attachment_id ) ) ) {
+		if ( empty( $remote_info = API::get_origin_info( $attachment_id ) ) ) {
 			return $response;
 		}
 

@@ -55,15 +55,7 @@ class Plugin {
 	 * @since    1.0.0
 	 * @var      string
 	 */
-	const REPLICAST_OBJECT_INFO = '_replicast_object_info';
-
-	/**
-	 * Identifies the meta variable that contains the original object ID.
-	 *
-	 * @since    1.0.0
-	 * @var      string
-	 */
-	const REPLICAST_OBJECT_ID = '_replicast_object_id';
+	const REPLICAST_ORIGIN_INFO = '_replicast_origin_info';
 
 	/**
 	 * The unique identifier of this plugin.
