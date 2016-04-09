@@ -51,7 +51,7 @@ class PostAdmin extends Admin {
 			\add_action( "manage_{$post_type}_posts_custom_column", array( $this, 'manage_posts_custom_column' ), 10, 2 );
 		}
 
-		\add_filter( 'user_has_cap',                 array( $this, 'suppress_local_edit' ), 10, 4 );
+		\add_filter( 'user_has_cap',                 array( $this, 'suppress_local_edit' ), 10, 3 );
 		\add_filter( 'wp_get_attachment_image_src',  array( $this, 'get_attachment_image_src' ), 10, 3 );
 		\add_filter( 'wp_get_attachment_url',        array( $this, 'get_attachment_url' ), 10, 2 );
 		\add_filter( 'wp_prepare_attachment_for_js', array( $this, 'prepare_attachment_for_js' ), 10, 3 );
@@ -239,13 +239,14 @@ class PostAdmin extends Admin {
 	 * Suppress local editing.
 	 *
 	 * @since     1.0.0
-	 * @param     array       $allcaps    An array of all the user's capabilities.
-	 * @param     array       $caps       Actual capabilities for meta capability.
-	 * @param     array       $args       Optional parameters passed to has_cap(), typically object ID.
-	 * @param     \WP_User    $user       The user object.
+	 * @param     array       $allcaps    All the capabilities of the user.
+	 * @param     array       $cap        Required capability.
+	 * @param     array       $args       [0] Requested capability
+	 *                                    [1] User ID
+	 *                                    [2] Associated object ID
 	 * @return    array                   Possibly-modified array of all the user's capabilities.
 	 */
-	public function suppress_local_edit( $allcaps, $caps, $args, $user ) {
+	public function suppress_local_edit( $allcaps, $cap, $args ) {
 
 		// Bail out if not admin and bypass REST API requests
 		if ( ! \is_admin() ) {
