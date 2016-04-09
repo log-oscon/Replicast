@@ -475,7 +475,7 @@ class API {
 		$prepared_ids = array();
 
 		// Update terms
-		foreach ( $terms as $o_term_id =>$term_data ) {
+		foreach ( $terms as $o_term_id => $term_data ) {
 
 			// Check if taxonomy exists
 			if ( ! \taxonomy_exists( $term_data['taxonomy'] ) ) {
@@ -580,6 +580,11 @@ class API {
 			}
 
 			$term = \get_term_by( 'id', $term->get_error_data(), $term_data['taxonomy'], 'ARRAY_A' );
+		}
+
+		// Save remote object info
+		if ( ! empty( $term_data['meta'] ) ) {
+			\update_term_meta( $term['term_id'], Plugin::REPLICAST_ORIGIN_INFO, $term_data['meta'][ Plugin::REPLICAST_ORIGIN_INFO ] );
 		}
 
 		return $term;
