@@ -559,7 +559,7 @@ class ACF {
 			// Image
 			if ( $field_type === 'image' ) {
 				$object_id    = $field_value['ID'];
-				$ref          = API::get_object_id( $object_id );
+				$ref          = API::get_origin_id( $object_id );
 				$data[ $ref ] = API::get_media( $ref, $object_id, $data, array( $field_type => $field_name ) );
 				continue;
 			}
@@ -567,7 +567,7 @@ class ACF {
 			// Gallery
 			foreach ( $field_value as $image ) {
 				$object_id    = $image['ID'];
-				$ref          = API::get_object_id( $object_id );
+				$ref          = API::get_origin_id( $object_id );
 				$data[ $ref ] = API::get_media( $ref, $object_id, $data, array( $field_type => $field_name ) );
 			}
 
