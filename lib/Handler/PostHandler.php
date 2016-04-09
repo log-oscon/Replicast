@@ -234,8 +234,6 @@ class PostHandler extends Handler {
 			return $data;
 		}
 
-		// FIXME: maybe this should unset the media that is already been created on the remote site.
-
 		foreach( $data['replicast']['media'] as $media_id => $media ) {
 
 			// Update object ID
