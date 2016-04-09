@@ -206,17 +206,17 @@ class PostAdmin extends Admin {
 	 */
 	private function manage_custom_column( $object_id, $meta_type ) {
 
-		$remote_info = API::get_origin_info( $object_id, $meta_type );
+		$origin_info = API::get_origin_info( $object_id, $meta_type );
 
 		$html = sprintf(
 			'<span class="dashicons dashicons-%s"></span>',
-			$remote_info ? 'yes' : 'no'
+			$origin_info ? 'yes' : 'no'
 		);
 
-		if ( ! empty( $remote_info['edit_link'] ) ) {
+		if ( ! empty( $origin_info['edit_link'] ) ) {
 			$html = sprintf(
 				'<a href="%s" title="%s">%s</a>',
-				\esc_url( $remote_info['edit_link'] ),
+				\esc_url( $origin_info['edit_link'] ),
 				\esc_attr__( 'Edit', 'replicast' ),
 				$html
 			);
@@ -232,7 +232,7 @@ class PostAdmin extends Admin {
 		 * @param     \WP_Post    The current object ID.
 		 * @return    string      Possibly-modified column contents.
 		 */
-		return \apply_filters( 'manage_column_html', $html, $remote_info, $object_id );
+		return \apply_filters( 'manage_column_html', $html, $origin_info, $object_id );
 	}
 
 	/**
@@ -258,11 +258,11 @@ class PostAdmin extends Admin {
 		}
 
 		// Check if the current object is an original or a duplicate
-		if ( ! API::get_origin_info( $args[2] ) ) {
+		if ( ! empty( API::get_origin_info( $args[2] ) ) ) {
 			return $allcaps;
 		}
 
-		// Disable 'edit_posts', 'edit_published_posts' and 'edit_others_posts'
+		// Disable certain capabilities
 		if ( in_array( $cap, array( 'edit_posts', 'edit_published_posts', 'edit_others_posts' ) ) ) {
 			$allcaps[ $cap ] = false;
 		}
@@ -283,7 +283,7 @@ class PostAdmin extends Admin {
 		$object_id = API::get_id( $object );
 		$meta_type = API::get_meta_type( $object );
 
-		if ( empty( $remote_info = API::get_origin_info( $object_id, $meta_type ) ) ) {
+		if ( empty( $origin_info = API::get_origin_info( $object_id, $meta_type ) ) ) {
 			return $defaults;
 		}
 
@@ -312,7 +312,7 @@ class PostAdmin extends Admin {
 		// 'Edit link' points to the object original location
 		$actions['edit'] = sprintf(
 			'<a href="%s" title="%s">%s</a>',
-			\esc_url( $remote_info['edit_link'] ),
+			\esc_url( $origin_info['edit_link'] ),
 			\esc_attr__( 'Edit', 'replicast' ),
 			\__( 'Edit', 'replicast' )
 		);
@@ -336,7 +336,7 @@ class PostAdmin extends Admin {
 			return $content;
 		}
 
-		if ( empty( $remote_info = API::get_origin_info( $object_id ) ) ) {
+		if ( empty( $origin_info = API::get_origin_info( $object_id ) ) ) {
 			return $content;
 		}
 
@@ -366,7 +366,7 @@ class PostAdmin extends Admin {
 
 		return sprintf(
 			'<p class="hide-if-no-js"><a href="%s" title="%s" id="set-post-thumbnail" class="thickbox">%s</a></p>',
-			\esc_url( $remote_info['edit_link'] ),
+			\esc_url( $origin_info['edit_link'] ),
 			\esc_attr__( 'Edit', 'replicast' ),
 			$thumb_html
 		);
@@ -506,13 +506,13 @@ class PostAdmin extends Admin {
 			$attachment_id = $attachment->ID;
 		}
 
-		if ( empty( $remote_info = API::get_origin_info( $attachment_id ) ) ) {
+		if ( empty( $origin_info = API::get_origin_info( $attachment_id ) ) ) {
 			return $response;
 		}
 
 		// Update links
-		$response['link']     = $remote_info['permalink'];
-		$response['editLink'] = $remote_info['edit_link'];
+		$response['link']     = $origin_info['permalink'];
+		$response['editLink'] = $origin_info['edit_link'];
 
 		// Remove unsupported actions
 		unset( $response['nonces']['update'] );
