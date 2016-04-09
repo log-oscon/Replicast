@@ -51,7 +51,7 @@ class PostAdmin extends Admin {
 			\add_action( "manage_{$post_type}_posts_custom_column", array( $this, 'manage_posts_custom_column' ), 10, 2 );
 		}
 
-		\add_filter( 'user_has_cap',                 array( $this, 'suppress_local_edit' ), 10, 3 );
+		\add_filter( 'user_has_cap',                 array( $this, 'manage_posts_edit' ), 10, 3 );
 		\add_filter( 'wp_get_attachment_image_src',  array( $this, 'get_attachment_image_src' ), 10, 3 );
 		\add_filter( 'wp_get_attachment_url',        array( $this, 'get_attachment_url' ), 10, 2 );
 		\add_filter( 'wp_prepare_attachment_for_js', array( $this, 'prepare_attachment_for_js' ), 10, 3 );
@@ -61,7 +61,6 @@ class PostAdmin extends Admin {
 			\add_filter( "{$taxonomy}_row_actions",          array( $this, 'hide_row_actions' ), 10, 2 );
 			\add_filter( "manage_edit-{$taxonomy}_columns",  array( $this, 'manage_taxonomies_columns' ) );
 			\add_filter( "manage_{$taxonomy}_custom_column", array( $this, 'manage_taxonomies_custom_column' ), 10, 3 );
-
 		}
 
 		// Admin UI - Featured Image
@@ -236,7 +235,7 @@ class PostAdmin extends Admin {
 	}
 
 	/**
-	 * Suppress local editing.
+	 * Manage posts editing.
 	 *
 	 * @since     1.0.0
 	 * @param     array       $allcaps    All the capabilities of the user.
@@ -246,9 +245,8 @@ class PostAdmin extends Admin {
 	 *                                    [2] Associated object ID
 	 * @return    array                   Possibly-modified array of all the user's capabilities.
 	 */
-	public function suppress_local_edit( $allcaps, $caps, $args ) {
+	public function manage_posts_edit( $allcaps, $caps, $args ) {
 
-		// Bail out if not admin and bypass REST API requests
 		if ( ! \is_admin() ) {
 			return $allcaps;
 		}
