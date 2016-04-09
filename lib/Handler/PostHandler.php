@@ -102,7 +102,7 @@ class PostHandler extends Handler {
 	public function prepare_meta( $data, $site ) {
 
 		// Add remote object info
-		$data[ Plugin::REPLICAST_ORIGIN_INFO ] = array( \maybe_serialize( array(
+		$data['replicast']['meta'][ Plugin::REPLICAST_ORIGIN_INFO ] = array( \maybe_serialize( array(
 			'object_id' => $this->object->ID,
 			'edit_link' => \get_edit_post_link( $this->object->ID ),
 		) ) );
