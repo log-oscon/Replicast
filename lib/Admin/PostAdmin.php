@@ -240,13 +240,13 @@ class PostAdmin extends Admin {
 	 *
 	 * @since     1.0.0
 	 * @param     array       $allcaps    All the capabilities of the user.
-	 * @param     array       $cap        Required capability.
+	 * @param     array       $caps       Required capability.
 	 * @param     array       $args       [0] Requested capability
 	 *                                    [1] User ID
 	 *                                    [2] Associated object ID
 	 * @return    array                   Possibly-modified array of all the user's capabilities.
 	 */
-	public function suppress_local_edit( $allcaps, $cap, $args ) {
+	public function suppress_local_edit( $allcaps, $caps, $args ) {
 
 		// Bail out if not admin and bypass REST API requests
 		if ( ! \is_admin() ) {
@@ -264,7 +264,10 @@ class PostAdmin extends Admin {
 		}
 
 		// Disable certain capabilities
-		if ( in_array( $cap, array( 'edit_posts', 'edit_published_posts', 'edit_others_posts' ) ) ) {
+		foreach ( $caps as $cap ) {
+			if ( ! in_array( $cap, array( 'edit_posts', 'edit_published_posts', 'edit_others_posts' ) ) ) {
+				continue;
+			}
 			$allcaps[ $cap ] = false;
 		}
 
