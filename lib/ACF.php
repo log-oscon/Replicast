@@ -558,17 +558,17 @@ class ACF {
 
 			// Image
 			if ( $field_type === 'image' ) {
-				$object_id    = $field_value['ID'];
-				$ref          = API::get_origin_id( $object_id );
-				$data[ $ref ] = API::get_media( $ref, $object_id, $data, array( $field_type => $field_name ) );
+				$object_id          = $field_value['ID'];
+				$origin_id          = API::get_origin_id( $object_id );
+				$data[ $origin_id ] = API::get_media( $origin_id, $object_id, $data, array( $field_type => $field_name ) );
 				continue;
 			}
 
 			// Gallery
 			foreach ( $field_value as $image ) {
-				$object_id    = $image['ID'];
-				$ref          = API::get_origin_id( $object_id );
-				$data[ $ref ] = API::get_media( $ref, $object_id, $data, array( $field_type => $field_name ) );
+				$object_id          = $image['ID'];
+				$origin_id          = API::get_origin_id( $object_id );
+				$data[ $origin_id ] = API::get_media( $origin_id, $object_id, $data, array( $field_type => $field_name ) );
 			}
 
 		}
@@ -602,7 +602,7 @@ class ACF {
 				}
 
 				// Gallery
-				$previous_values = \get_field( $field_key, $object_id );
+				$previous_values = \get_field( $field_key, $object_id, false );
 
 				if ( ! is_array( $previous_values ) ) {
 					$previous_values = array( $previous_values );

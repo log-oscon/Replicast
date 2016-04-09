@@ -238,11 +238,11 @@ class API {
 				continue;
 			}
 
-			$term_id = $term->term_id;
-			$ref     = static::get_origin_id( $term_id, 'term' );
+			$term_id   = $term->term_id;
+			$origin_id = static::get_origin_id( $term_id, 'term' );
 
-			$hierarchical_terms[ $ref ] = $term;
-			$hierarchical_terms[ $ref ]->children = static::get_child_terms( $term_id, $terms );
+			$hierarchical_terms[ $origin_id ]           = $term;
+			$hierarchical_terms[ $origin_id ]->children = static::get_child_terms( $term_id, $terms );
 		}
 
 		return $hierarchical_terms;
@@ -268,11 +268,11 @@ class API {
 				continue;
 			}
 
-			$term_id = $term->term_id;
-			$ref     = static::get_origin_id( $term_id, 'term' );
+			$term_id   = $term->term_id;
+			$origin_id = static::get_origin_id( $term_id, 'term' );
 
-			$children[ $ref ] = $term;
-			$children[ $ref ]->children = static::get_child_terms( $term_id, $terms );
+			$children[ $origin_id ]           = $term;
+			$children[ $origin_id ]->children = static::get_child_terms( $term_id, $terms );
 		}
 
 		return $children;
@@ -297,8 +297,8 @@ class API {
 
 		// Get object featured media
 		if ( ! empty( $object['featured_media'] )  ) {
-			$ref = static::get_origin_id( $object['featured_media'] );;
-			$prepared_data[ $ref ] = static::get_media( $ref, $object['featured_media'], $prepared_data, 'featured_media' );
+			$origin_id                   = static::get_origin_id( $object['featured_media'] );;
+			$prepared_data[ $origin_id ] = static::get_media( $origin_id, $object['featured_media'], $prepared_data, 'featured_media' );
 		}
 
 		/**
@@ -320,13 +320,13 @@ class API {
 	 * relation between the local IDs and the IDs on the remote site.
 	 *
 	 * @since     1.0.0
-	 * @param     int      $ref          The reference ID.
+	 * @param     int      $origin_id    he reference ID.
 	 * @param     int      $object_id    The object ID.
 	 * @param     array    $data         Object media.
 	 * @param     mixed    $fields
 	 * @return    array                  Prepared media object.
 	 */
-	public static function get_media( $ref, $object_id, $data, $fields = array() ) {
+	public static function get_media( $origin_id, $object_id, $data, $fields = array() ) {
 
 		if ( ! is_array( $fields ) ) {
 			$fields = array( $fields );
@@ -373,7 +373,7 @@ class API {
 
 		}
 
-		$data[ $ref ]['fields'] = array_merge( $data[ $object_id ]['fields'], $fields );
+		$data[ $origin_id ]['fields'] = array_merge( $data[ $object_id ]['fields'], $fields );
 
 		return $data[ $object_id ];
 	}
