@@ -148,16 +148,7 @@ class API {
 		 * @param     int      Object ID.
 		 * @return    array    Possibly-modified object meta.
 		 */
-		$prepared_data = \apply_filters( 'replicast_get_object_meta', $prepared_data, $object['id'] );
-
-		// Add remote object info
-		$prepared_data[ Plugin::REPLICAST_OBJECT_INFO ] = array( \maybe_serialize( array(
-			'object_id' => $object['id'],
-			'edit_link' => \get_edit_post_link( $object['id'] ),
-			'rest_url'  => \rest_url( $request->get_route() ),
-		) ) );
-
-		return $prepared_data;
+		return \apply_filters( 'replicast_get_object_meta', $prepared_data, $object['id'] );
 	}
 
 	/**
@@ -247,19 +238,10 @@ class API {
 				continue;
 			}
 
-			$term_id   = $term->term_id;
-			$ref       = static::get_object_id( $term_id );
-			$taxonomy  = $taxonomies[ $term->taxonomy ];
-			$rest_base = ! empty( $taxonomy->rest_base ) ? $taxonomy->rest_base : $taxonomy->name;
+			$term_id = $term->term_id;
+			$ref     = static::get_object_id( $term_id );
 
 			$hierarchical_terms[ $ref ] = $term;
-			$hierarchical_terms[ $ref ]->meta = array(
-				Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
-					'object_id' => $ref,
-					'edit_link' => \get_edit_term_link( $term_id, $taxonomy->name ),
-					'rest_url'  => \rest_url( sprintf( '/wp/v2/%s/%s', $rest_base, $term_id ) ),
-				) )
-			);
 			$hierarchical_terms[ $ref ]->children = static::get_child_terms( $term_id, $terms );
 		}
 
@@ -286,19 +268,10 @@ class API {
 				continue;
 			}
 
-			$term_id   = $term->term_id;
-			$ref       = static::get_object_id( $term_id );
-			$taxonomy  = $taxonomies[ $term->taxonomy ];
-			$rest_base = ! empty( $taxonomy->rest_base ) ? $taxonomy->rest_base : $taxonomy->name;
+			$term_id = $term->term_id;
+			$ref     = static::get_object_id( $term_id );
 
 			$children[ $ref ] = $term;
-			$children[ $ref ]->meta = array(
-				Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
-					'object_id' => $ref,
-					'edit_link' => \get_edit_term_link( $term_id, $taxonomy->name ),
-					'rest_url'  => \rest_url( sprintf( '/wp/v2/%s/%s', $rest_base, $term_id ) ),
-				) )
-			);
 			$children[ $ref ]->children = static::get_child_terms( $term_id, $terms );
 		}
 
@@ -396,12 +369,6 @@ class API {
 				'mime-type' => \get_post_mime_type( $object_id ),
 				'metadata'  => $metadata,
 				'fields'    => $fields,
-				Plugin::REPLICAST_OBJECT_INFO => \maybe_serialize( array(
-					'object_id' => $ref,
-					'permalink' => \get_attachment_link( $object_id ),
-					'edit_link' => \get_edit_post_link( $object_id ),
-					'rest_url'  => \rest_url( sprintf( '/wp/v2/media/%s', $object_id ) ),
-				) ),
 			);
 
 		}
