@@ -256,24 +256,28 @@ class PostHandler extends Handler {
 	}
 
 	/**
+	 * Handle object.
+	 *
 	 * Update object with remote ID.
 	 *
 	 * @since     1.0.0
 	 * @param     int       $site_id    Site ID.
 	 * @param     object    $data       Object data.
 	 */
-	public function update_object( $site_id, $data = null ) {
+	public function handle_object( $site_id, $data = null ) {
 		API::update_remote_info( $this->object, $site_id, $data );
 	}
 
 	/**
+	 * Handle terms.
+	 *
 	 * Update terms with remote IDs.
 	 *
 	 * @since     1.0.0
 	 * @param     int       $site_id    Site ID.
 	 * @param     object    $data       Object data.
 	 */
-	public function update_terms( $site_id, $data = null ) {
+	public function handle_terms( $site_id, $data = null ) {
 
 		if ( empty( $data->replicast->term ) ) {
 			return;
@@ -294,13 +298,15 @@ class PostHandler extends Handler {
 	}
 
 	/**
+	 * Handle media.
+	 *
 	 * Update media with remote IDs.
 	 *
 	 * @since     1.0.0
 	 * @param     int       $site_id    Site ID.
 	 * @param     object    $data       Object data.
 	 */
-	public function update_media( $site_id, $data = null ) {
+	public function handle_media( $site_id, $data = null ) {
 
 		if ( empty( $data->replicast->media ) ) {
 			return;

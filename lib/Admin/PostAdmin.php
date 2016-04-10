@@ -550,12 +550,6 @@ class PostAdmin extends Admin {
 		unset( $response['nonces']['update'] );
 		unset( $response['nonces']['delete'] );
 
-		// if ( ! empty( $meta['sizes'] ) ) {
-		// 	foreach ( $response['sizes'] as $size => $value ) {
-		// 		$response['sizes'][ $size ]['url'] = $meta['sizes'][ $size ]['url'];
-		// 	}
-		// }
-
 		return $response;
 	}
 
@@ -626,14 +620,14 @@ class PostAdmin extends Admin {
 
 							$site_id = $site->get_id();
 
-							// Update object
-							$handler->update_object( $site_id, $remote_data );
+							// Handle object
+							$handler->handle_object( $site_id, $remote_data );
 
-							// Update terms
-							$handler->update_terms( $site_id, $remote_data );
+							// Handle terms
+							$handler->handle_terms( $site_id, $remote_data );
 
-							// Update media
-							$handler->update_media( $site_id, $remote_data );
+							// Handle media
+							$handler->handle_media( $site_id, $remote_data );
 
 							// TODO: build notices
 
@@ -685,8 +679,8 @@ class PostAdmin extends Admin {
 						->then(
 							function ( $response ) use ( $site_id, $handler ) {
 
-								// Update object
-								$handler->update_object( $site_id );
+								// Handle object
+								$handler->handle_object( $site_id );
 
 								// TODO: build notices
 
@@ -778,8 +772,8 @@ class PostAdmin extends Admin {
 								$remote_data = null;
 							}
 
-							// Update object
-							$handler->update_object( $site->get_id(), $remote_data );
+							// Handle object
+							$handler->handle_object( $site->get_id(), $remote_data );
 
 							// TODO: build notices
 
@@ -875,8 +869,8 @@ class PostAdmin extends Admin {
 					->then(
 						function ( $response ) use ( $site, $handler ) {
 
-							// Update object
-							$handler->update_object( $site->get_id() );
+							// Handle object
+							$handler->handle_object( $site->get_id() );
 
 							// TODO: build notices
 
