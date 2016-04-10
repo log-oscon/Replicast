@@ -251,22 +251,52 @@ class PostAdmin extends Admin {
 			return $allcaps;
 		}
 
-		// Bail out if we're not asking about a post
-		if ( $args[0] !== 'edit_post' ) {
+		$screen = \get_current_screen();
+
+		if ( empty( $screen ) ) {
+			return $allcaps;
+		}
+
+		if ( $screen->base !== 'edit' ) {
+			return $allcaps;
+		}
+
+		// @see 'manage_taxonomies_edit'
+		if ( ! empty( $screen->taxonomy ) ) {
+			return $allcaps;
+		}
+
+		if ( empty( $screen->post_type ) ) {
+			return $allcaps;
+		}
+
+		// Post ID
+		if ( empty( $args[2] ) ) {
 			return $allcaps;
 		}
 
 		// Check if the current object is an original or a duplicate
-		if ( ! empty( $args[2] ) && ! empty( API::get_origin_info( $args[2] ) ) ) {
+		if ( empty( API::get_origin_info( $args[2] ) ) ) {
+			return $allcaps;
+		}
+
+		// Builds an object with all post type capabilities out of a post type object
+		$post_type_caps = \get_post_type_capabilities( (object) array(
+			'capability_type' => $screen->post_type,
+			'capabilities'    => array(),
+			'map_meta_cap'    => true,
+		) );
+
+		if ( empty( $post_type_caps ) ) {
 			return $allcaps;
 		}
 
 		// Disable certain capabilities
-		foreach ( $caps as $cap ) {
-			if ( ! in_array( $cap, array( 'edit_posts', 'edit_published_posts', 'edit_others_posts' ) ) ) {
+		foreach ( $post_type_caps as $cap_key => $cap_value ) {
+			if ( ! in_array( $cap_key, array( 'edit_post', 'edit_posts', 'edit_published_posts', 'edit_others_posts' ) ) ) {
 				continue;
 			}
-			$allcaps[ $cap ] = false;
+			$allcaps[ $cap_value ] = false;
 		}
 
 		return $allcaps;
