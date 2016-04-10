@@ -53,7 +53,7 @@ class PostHandler extends Handler {
 	 */
 	public function prepare_page( $data, $site ) {
 
-		// Unset page template if empty
+		// Remove page template if empty
 		if ( empty( $data['template'] ) ) {
 			unset( $data['template'] );
 		}
@@ -120,9 +120,10 @@ class PostHandler extends Handler {
 	 */
 	public function prepare_terms( $data, $site ) {
 
-		// Unset default categories and tags data structures
-		unset( $data['categories'] );
-		unset( $data['tags'] );
+		// Remove default taxonomies data structures
+		foreach ( \get_post_taxonomies( $this->object->ID ) as $taxonomy ) {
+			unset( $data[ $taxonomy ] );
+		}
 
 		if ( empty( $data['replicast']['term'] ) ) {
 			return $data;
