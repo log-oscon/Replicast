@@ -43,26 +43,28 @@ class API {
 	}
 
 	/**
-	 * Registers a new field on a set of existing object types.
+	 * Register hooks.
 	 *
 	 * @since    1.0.0
 	 */
-	public function register_rest_fields() {
-
-		if ( ! function_exists( 'register_rest_field' ) ) {
-			return;
-		}
+	public function register() {
 
 		foreach ( Admin\SiteAdmin::get_post_types() as $post_type ) {
-			\register_rest_field(
-				$post_type,
-				'replicast',
-				array(
-					'get_callback'    => array( __CLASS__, 'get_rest_fields' ),
-					'update_callback' => array( __CLASS__, 'update_rest_fields' ),
-					'schema'          => null,
-				)
-			);
+
+			if ( function_exists( 'register_rest_field' ) ) {
+				\register_rest_field(
+					$post_type,
+					'replicast',
+					array(
+						'get_callback'    => array( __CLASS__, 'get_rest_fields' ),
+						'update_callback' => array( __CLASS__, 'update_rest_fields' ),
+						'schema'          => null,
+					)
+				);
+			}
+
+			\add_filter( "rest_pre_insert_{$post_type}", array( $this, 'rest_pre_insert_post' ), 10, 2 );
+
 		}
 
 	}
@@ -659,6 +661,27 @@ class API {
 		\update_post_meta( $attachment_id, Plugin::REPLICAST_ORIGIN_INFO, $media_data[ Plugin::REPLICAST_ORIGIN_INFO ] );
 
 		return $attachment_id;
+	}
+
+	/**
+	 * Filter a post before it is inserted via the REST API.
+	 *
+	 * Through this method we can show the contents of the post just like it is rendered on the origin.
+	 * Including content that is generated from shortcodes (galleries, for instance).
+	 *
+	 * @since     1.0.0
+	 * @param     stdClass            $prepared_post    An object representing a single post prepared
+	 *                                                  for inserting or updating the database.
+	 * @param     \WP_REST_Request    $request          Request object.
+	 * @return    stdClass                              Possibly-modified post object.
+	 */
+	public function rest_pre_insert_post( $prepared_post, $request ) {
+
+		if ( ! empty( $request['content']['rendered'] ) ) {
+			$prepared_post->post_content = \wp_filter_post_kses( $request['content']['rendered'] );
+		}
+
+		return $prepared_post;
 	}
 
 	/**

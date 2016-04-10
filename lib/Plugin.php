@@ -152,7 +152,7 @@ class Plugin {
 	private function define_api_hooks() {
 
 		$api = new API( $this );
-		\add_action( 'rest_api_init', array( $api, 'register_rest_fields' ), 99 );
+		\add_action( 'rest_api_init', array( $api, 'register' ), 99 );
 
 	}
 
