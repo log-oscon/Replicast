@@ -257,7 +257,7 @@ class PostAdmin extends Admin {
 		}
 
 		// Check if the current object is an original or a duplicate
-		if ( ! empty( API::get_origin_info( $args[2] ) ) ) {
+		if ( ! empty( $args[2] ) && ! empty( API::get_origin_info( $args[2] ) ) ) {
 			return $allcaps;
 		}
 
