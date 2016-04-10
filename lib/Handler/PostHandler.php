@@ -256,8 +256,6 @@ class PostHandler extends Handler {
 	}
 
 	/**
-	 * Handle object.
-	 *
 	 * Update object with remote ID.
 	 *
 	 * @since     1.0.0
@@ -269,8 +267,6 @@ class PostHandler extends Handler {
 	}
 
 	/**
-	 * Handle terms.
-	 *
 	 * Update terms with remote IDs.
 	 *
 	 * @since     1.0.0
@@ -298,8 +294,6 @@ class PostHandler extends Handler {
 	}
 
 	/**
-	 * Handle media.
-	 *
 	 * Update media with remote IDs.
 	 *
 	 * @since     1.0.0

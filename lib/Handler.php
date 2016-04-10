@@ -603,30 +603,30 @@ abstract class Handler {
 	}
 
 	/**
-	 * Update object with remote ID.
+	 * Handle object.
 	 *
 	 * @since     1.0.0
 	 * @param     int       $site_id    Site ID.
 	 * @param     object    $data       Object data.
 	 */
-	abstract protected function update_object( $site_id, $data = null );
+	abstract protected function handle_object( $site_id, $data = null );
 
 	/**
-	 * Update terms with remote IDs.
+	 * Handle terms.
 	 *
 	 * @since     1.0.0
 	 * @param     int       $site_id    Site ID.
 	 * @param     object    $data       Object data.
 	 */
-	abstract protected function update_terms( $site_id, $data = null );
+	abstract protected function handle_terms( $site_id, $data = null );
 
 	/**
-	 * Update media with remote IDs.
+	 * Handle media.
 	 *
 	 * @since     1.0.0
 	 * @param     int       $site_id    Site ID.
 	 * @param     object    $data       Object data.
 	 */
-	abstract protected function update_media( $site_id, $data = null );
+	abstract protected function handle_media( $site_id, $data = null );
 
 }
