@@ -53,6 +53,7 @@ class Admin {
 	public function register() {
 
 		\add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
+		\add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		\add_action( 'admin_notices',         array( $this, 'display_admin_notices' ) );
 
 	}
@@ -65,10 +66,25 @@ class Admin {
 	public function enqueue_styles() {
 		\wp_enqueue_style(
 			$this->plugin->get_name(),
-			\plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/replicast-admin.css',
+			\plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/replicast.css',
 			array(),
 			$this->plugin->get_version(),
 			'all'
+		);
+	}
+
+	/**
+	 * Register the scripts for the Dashboard.
+	 *
+	 * @since    1.0.0
+	 */
+	public function enqueue_scripts() {
+		\wp_enqueue_script(
+			$this->plugin->get_name(),
+			\plugin_dir_url( dirname( __FILE__ ) ) . 'assets/js/replicast.js',
+			array( 'jquery' ),
+			$this->plugin->get_version(),
+			true
 		);
 	}
 
