@@ -642,28 +642,32 @@ class ACF {
 				continue;
 			}
 
-			foreach ( $media_data['_relations']['post'] as $field_type => $field_key ) {
+			foreach ( $media_data['_relations']['post'] as $source_post_id => $relations ) {
 
-				if ( $field_type !== 'gallery' && $field_type !== 'image' ) {
-					continue;
+				foreach ( $relations as $field_type => $field_key ) {
+
+					if ( $field_type !== 'gallery' && $field_type !== 'image' ) {
+						continue;
+					}
+
+					$value = $media[ $media_id ]['id'];
+
+					// Image
+					if ( $field_type === 'image' ) {
+						\update_field( $field_key, $value, $object_id );
+						continue;
+					}
+
+					// Gallery
+					$previous_values = \get_field( $field_key, $object_id, false );
+
+					if ( ! is_array( $previous_values ) ) {
+						$previous_values = array( $previous_values );
+					}
+
+					\update_field( $field_key, array_merge( $previous_values, array( $value ) ), $object_id );
+
 				}
-
-				$value = $media[ $media_id ]['id'];
-
-				// Image
-				if ( $field_type === 'image' ) {
-					\update_field( $field_key, $value, $object_id );
-					continue;
-				}
-
-				// Gallery
-				$previous_values = \get_field( $field_key, $object_id, false );
-
-				if ( ! is_array( $previous_values ) ) {
-					$previous_values = array( $previous_values );
-				}
-
-				\update_field( $field_key, array_merge( $previous_values, array( $value ) ), $object_id );
 
 			}
 
