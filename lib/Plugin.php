@@ -113,7 +113,7 @@ class Plugin {
 	private function define_admin_hooks() {
 
 		$admin = new Admin( $this );
-		\add_action( 'init', array( $admin, 'register' ), 99 );
+		\add_action( 'init', array( $admin, 'register' ), 90 );
 
 	}
 
@@ -126,7 +126,7 @@ class Plugin {
 	private function define_admin_post_hooks() {
 
 		$post = new Admin\PostAdmin( $this );
-		\add_action( 'init', array( $post, 'register' ), 99 );
+		\add_action( 'init', array( $post, 'register' ), 90 );
 
 	}
 
@@ -139,7 +139,7 @@ class Plugin {
 	private function define_admin_site_hooks() {
 
 		$site = new Admin\SiteAdmin( $this, static::TAXONOMY_SITE );
-		\add_action( 'init', array( $site, 'register' ), 99 );
+		\add_action( 'init', array( $site, 'register' ), 90 );
 
 	}
 
@@ -152,7 +152,7 @@ class Plugin {
 	private function define_api_hooks() {
 
 		$api = new API( $this );
-		\add_action( 'rest_api_init', array( $api, 'register' ), 99 );
+		\add_action( 'rest_api_init', array( $api, 'register' ), 90 );
 
 	}
 
@@ -169,7 +169,7 @@ class Plugin {
 		}
 
 		$acf = new ACF( $this );
-		\add_action( 'init', array( $acf, 'register' ), 99 );
+		\add_action( 'init', array( $acf, 'register' ), 90 );
 
 	}
 
