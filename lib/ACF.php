@@ -71,10 +71,10 @@ class ACF {
 		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_meta' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_meta' ), 10, 2 );
 
-		\add_filter( 'replicast_get_object_term',           array( $this, 'get_object_term' ), 10, 2 );
-		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_term' ), 10, 2 );
-		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_term' ), 10, 2 );
-		\add_action( 'replicast_update_object_term',        array( $this, 'update_object_term' ), 10, 2 );
+		\add_filter( 'replicast_get_object_term',           array( $this, 'get_object_term_meta' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_term_meta' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_term_meta' ), 10, 2 );
+		\add_action( 'replicast_update_object_term',        array( $this, 'update_object_term_meta' ), 10, 2 );
 
 		\add_filter( 'replicast_get_object_media',    array( $this, 'get_object_media' ), 10, 2 );
 		\add_action( 'replicast_update_object_media', array( $this, 'update_object_media' ), 10, 2 );
@@ -488,7 +488,7 @@ class ACF {
 	 * @param     int       $object_id    The object ID.
 	 * @return    array                   Possibly-modified object terms.
 	 */
-	public function get_object_term( $terms, $object_id ) {
+	public function get_object_term_meta( $terms, $object_id ) {
 
 		// FIXME: and how about child terms?
 
@@ -508,7 +508,7 @@ class ACF {
 	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    array                         Possibly-modified data.
 	 */
-	public function prepare_object_term( $data, $site ) {
+	public function prepare_object_term_meta( $data, $site ) {
 
 		if ( empty( $data['replicast']['term'] ) ) {
 			return $data;
@@ -548,7 +548,7 @@ class ACF {
 	 * @param     int       $object_id    The object ID.
 	 * @return    array                   Possibly-modified object terms.
 	 */
-	public function update_object_term( $terms, $object_id ) {
+	public function update_object_term_meta( $terms, $object_id ) {
 
 		foreach ( $terms as $term_data ) {
 
@@ -596,16 +596,21 @@ class ACF {
 
 			// Image
 			if ( $field_type === 'image' ) {
-				$object_id          = $field_value['id'];
-				$source_id          = API::get_source_id( $object_id );
+
+				$object_id = $field_value['id'];
+				$source_id = API::get_source_id( $object_id );
+
 				$data[ $source_id ] = API::get_media( $source_id, $object_id, $data, array( $field_type => $field_name ) );
+
 				continue;
 			}
 
 			// Gallery
 			foreach ( $field_value as $image ) {
-				$object_id          = $image['id'];
-				$source_id          = API::get_source_id( $object_id );
+
+				$object_id = $image['id'];
+				$source_id = API::get_source_id( $object_id );
+
 				$data[ $source_id ] = API::get_media( $source_id, $object_id, $data, array( $field_type => $field_name ) );
 			}
 
