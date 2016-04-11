@@ -594,13 +594,20 @@ class ACF {
 				continue;
 			}
 
+			$relations = array(
+				'object_id'   => $object_id,
+				'object_type' => 'post',
+				'field_type'  => $field_type,
+				'field_name'  => $field_name,
+			);
+
 			// Image
 			if ( $field_type === 'image' ) {
 
-				$object_id = $field_value['id'];
-				$source_id = API::get_source_id( $object_id );
+				$field_id  = $field_value['id'];
+				$source_id = API::get_source_id( $field_id );
 
-				$data[ $source_id ] = API::get_media( $source_id, $object_id, $data, array( $field_type => $field_name ) );
+				$data[ $source_id ] = API::get_media( $source_id, $field_id, $relations, $data );
 
 				continue;
 			}
@@ -608,10 +615,10 @@ class ACF {
 			// Gallery
 			foreach ( $field_value as $image ) {
 
-				$object_id = $image['id'];
-				$source_id = API::get_source_id( $object_id );
+				$field_id  = $image['id'];
+				$source_id = API::get_source_id( $field_id );
 
-				$data[ $source_id ] = API::get_media( $source_id, $object_id, $data, array( $field_type => $field_name ) );
+				$data[ $source_id ] = API::get_media( $source_id, $field_id, $relations, $data );
 			}
 
 		}
@@ -630,11 +637,11 @@ class ACF {
 
 		foreach ( $media as $media_id => $media_data ) {
 
-			if ( ! array_intersect( array( 'gallery', 'image' ), $media_data['_fields'] ) ) {
+			if ( ! array_intersect( array( 'gallery', 'image' ), $media_data['_relations'] ) ) {
 				continue;
 			}
 
-			foreach ( $media_data['_fields'] as $field_type => $field_key ) {
+			foreach ( $media_data['_relations'] as $field_type => $field_key ) {
 
 				$value = $media[ $media_id ]['id'];
 

@@ -299,8 +299,17 @@ class API {
 
 		// Get object featured media
 		if ( ! empty( $object['featured_media'] )  ) {
-			$source_id                   = static::get_source_id( $object['featured_media'] );;
-			$prepared_data[ $source_id ] = static::get_media( $source_id, $object['featured_media'], $prepared_data, 'featured_media' );
+
+			$source_id = static::get_source_id( $object['featured_media'] );
+
+			$relations = array(
+				'object_id'   => $object['id'],
+				'object_type' => 'post',
+				'field_type'  => 'featured_media',
+				'field_name'  => 'featured_media',
+			);
+
+			$prepared_data[ $source_id ] = static::get_media( $source_id, $object['featured_media'], $relations, $prepared_data );
 		}
 
 		/**
@@ -324,15 +333,11 @@ class API {
 	 * @since     1.0.0
 	 * @param     int      $source_id    The source object ID.
 	 * @param     int      $object_id    The object ID.
+	 * @param     mixed    $relations    Object relations.
 	 * @param     array    $data         Object media.
-	 * @param     mixed    $fields       Fields that are related to the current object.
 	 * @return    array                  Prepared media object.
 	 */
-	public static function get_media( $source_id, $object_id, $data, $fields = array() ) {
-
-		if ( ! is_array( $fields ) ) {
-			$fields = array( $fields );
-		}
+	public static function get_media( $source_id, $object_id, $relations = array(), $data ) {
 
 		// Add media information for creation purposes
 		if ( ! array_key_exists( $object_id, $data ) ) {
@@ -367,17 +372,19 @@ class API {
 			}
 
 			return array(
-				'id'        => $object_id,
-				'mime-type' => \get_post_mime_type( $object_id ),
-				'metadata'  => $metadata,
-				'_fields'   => $fields,
+				'id'         => $object_id,
+				'mime-type'  => \get_post_mime_type( $object_id ),
+				'metadata'   => $metadata,
+				'_relations' => array(
+					$relations
+				),
 			);
 
 		}
 
-		$data[ $source_id ]['_fields'] = array_merge( $data[ $object_id ]['_fields'], $fields );
+		$data[ $source_id ]['_relations'] = array_merge( $data[ $source_id ]['_relations'], array( $relations ) );
 
-		return $data[ $object_id ];
+		return $data[ $source_id ];
 	}
 
 	/**
@@ -607,7 +614,7 @@ class API {
 			$media[ $o_media_id ]['id'] = static::update_media( $media_data );
 
 			// Assign object featured media
-			if ( in_array( 'featured_media', $media_data['_fields'] ) ) {
+			if ( in_array( 'featured_media', $media_data['_relations'] ) ) {
 				\set_post_thumbnail( $object->ID, $media[ $o_media_id ]['id'] );
 			}
 
