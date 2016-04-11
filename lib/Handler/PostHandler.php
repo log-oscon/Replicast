@@ -222,40 +222,6 @@ class PostHandler extends Handler {
 	}
 
 	/**
-	 * Prepare media.
-	 *
-	 * @since     1.0.0
-	 * @param     array                $data    Prepared post data.
-	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Possibly-modified post data.
-	 */
-	public function prepare_media( $data, $site ) {
-
-		if ( empty( $data['replicast']['media'] ) ) {
-			return $data;
-		}
-
-		foreach( $data['replicast']['media'] as $media_id => $media ) {
-
-			// Update object ID
-			$data['replicast']['media'][ $media_id ]['id'] = '';
-			if ( ! empty( $replicast_info = API::get_remote_info( \get_post( $media_id ) ) ) ) {
-				$data['replicast']['media'][ $media_id ]['id'] = $replicast_info[ $site->get_id() ]['id'];
-			}
-
-			// Add remote object info
-			$data['replicast']['media'][ $media_id ][ Plugin::REPLICAST_SOURCE_INFO ] = \maybe_serialize( array(
-				'object_id' => $media_id,
-				'permalink' => \get_attachment_link( $media_id ),
-				'edit_link' => \get_edit_post_link( $media_id ),
-			) );
-
-		}
-
-		return $data;
-	}
-
-	/**
 	 * Update object with remote ID.
 	 *
 	 * @since     1.0.0
@@ -301,6 +267,8 @@ class PostHandler extends Handler {
 	 * @param     object    $data       Object data.
 	 */
 	public function handle_media( $site_id, $data = null ) {
+
+		// FIXME: this should be an independent action
 
 		if ( empty( $data->replicast->media ) ) {
 			return;

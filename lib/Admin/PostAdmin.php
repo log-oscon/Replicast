@@ -38,6 +38,9 @@ class PostAdmin extends Admin {
 		\add_action( 'trashed_post',       array( $this, 'on_trash_post' ) );
 		\add_action( 'before_delete_post', array( $this, 'on_delete_post' ) );
 
+		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_post_media' ), 99, 2 );
+		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_post_media' ), 99, 2 );
+
 		// Admin UI - Posts
 		foreach ( SiteAdmin::get_post_types() as $post_type ) {
 
@@ -891,6 +894,40 @@ class PostAdmin extends Admin {
 			$this->set_admin_notice( $notices );
 		}
 
+	}
+
+	/**
+	 * Prepare post media.
+	 *
+	 * @since     1.0.0
+	 * @param     array                $data    Prepared post data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified post data.
+	 */
+	public function prepare_post_media( $data, $site ) {
+
+		if ( empty( $data['replicast']['media'] ) ) {
+			return $data;
+		}
+
+		foreach( $data['replicast']['media'] as $media_id => $media ) {
+
+			// Update object ID
+			$data['replicast']['media'][ $media_id ]['id'] = '';
+			if ( ! empty( $replicast_info = API::get_remote_info( \get_post( $media_id ) ) ) ) {
+				$data['replicast']['media'][ $media_id ]['id'] = $replicast_info[ $site->get_id() ]['id'];
+			}
+
+			// Add remote object info
+			$data['replicast']['media'][ $media_id ][ Plugin::REPLICAST_SOURCE_INFO ] = \maybe_serialize( array(
+				'object_id' => $media_id,
+				'permalink' => \get_attachment_link( $media_id ),
+				'edit_link' => \get_edit_post_link( $media_id ),
+			) );
+
+		}
+
+		return $data;
 	}
 
 }
