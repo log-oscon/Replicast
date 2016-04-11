@@ -557,12 +557,6 @@ class ACF {
 			}
 
 			foreach ( $term_data['acf'] as $key => $value ) {
-
-				// FIXME: this should be enabled when the media sync is implemented
-				if ( $key === 'image_thumbnail' || $key === 'image_hero' ) {
-					continue;
-				}
-
 				\update_field( $key, $value, "{$term_data['taxonomy']}_{$term_data['term_id']}" );
 			}
 
