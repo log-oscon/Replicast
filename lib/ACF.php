@@ -631,7 +631,7 @@ class ACF {
 	 * Update ACF media.
 	 *
 	 * @since     1.0.0
-	 * @param     array     $values       The values of the field.
+	 * @param     array     $media        The values of the field.
 	 * @param     object    $object_id    The object ID.
 	 */
 	public function update_object_media( $media, $object_id ) {

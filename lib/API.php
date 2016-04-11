@@ -497,6 +497,10 @@ class API {
 			// Update term
 			$term = static::update_term( $term_data );
 
+			$terms[ $o_term_id ]['term_id']          = $term['term_id'];
+			$terms[ $o_term_id ]['term_taxonomy_id'] = $term['term_taxonomy_id'];
+
+			// Save term id for post insertion
 			$prepared_ids[ $term_data['taxonomy'] ][] = $term['term_id'];
 
 			// Check if term has children
@@ -548,6 +552,10 @@ class API {
 			// Update term
 			$term = static::update_term( $term_data, $parent_id );
 
+			$terms[ $o_term_id ]['term_id']          = $term['term_id'];
+			$terms[ $o_term_id ]['term_taxonomy_id'] = $term['term_taxonomy_id'];
+
+			// Save term id for post insertion
 			$prepared_ids[ $term_data['taxonomy'] ][] = $term['term_id'];
 
 			// Check if term has children
@@ -610,6 +618,7 @@ class API {
 		// Create media or update media metadata
 		foreach ( $media as $o_media_id => $media_data ) {
 
+			// Update media
 			$media[ $o_media_id ]['id'] = static::update_media( $media_data );
 
 			if ( empty( $media_data['_relations']['post'] ) ) {
