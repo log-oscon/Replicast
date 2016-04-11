@@ -301,16 +301,16 @@ class ACF {
 
 			switch ( $field_type ) {
 				case 'taxonomy':
-					$meta_value = $this->prepare_taxonomy_meta( $field_value, $site );
+					$meta_value = $this->prepare_taxonomy( $field_value, $site );
 					break;
 				case 'image':
-					$meta_value = $this->prepare_image_meta( $field_value, $site );
+					$meta_value = $this->prepare_image( $field_value, $site );
 					break;
 				case 'gallery':
-					$meta_value = $this->prepare_gallery_meta( $field_value, $site );
+					$meta_value = $this->prepare_gallery( $field_value, $site );
 					break;
 				case 'relationship':
-					$meta_value = $this->prepare_relationship_meta( $field_value, $site );
+					$meta_value = $this->prepare_relationship( $field_value, $site );
 					break;
 			}
 
@@ -324,16 +324,16 @@ class ACF {
 	}
 
 	/**
-	 * Prepare ACF taxonomy meta.
+	 * Prepare ACF taxonomy fields.
 	 *
 	 * @since     1.0.0
-	 * @param     array                $field_value    The meta value.
+	 * @param     array                $field_value    The field value.
 	 * @param     \Replicast\Client    $site           Site object.
-	 * @return    string                               Possibly-modified serialized meta value.
+	 * @return    string                               Possibly-modified serialized field value.
 	 */
-	private function prepare_taxonomy_meta( $field_value, $site ) {
+	private function prepare_taxonomy( $field_value, $site ) {
 
-		$meta_value = '';
+		$value = '';
 
 		if ( empty( $field_value ) ) {
 			$field_value = array();
@@ -355,38 +355,38 @@ class ACF {
 
 			// Update object ID
 			if ( ! empty( $remote_info = API::get_remote_info( $term ) ) ) {
-				$meta_value[] = $remote_info[ $site->get_id() ]['id'];
+				$value[] = $remote_info[ $site->get_id() ]['id'];
 			}
 
 		}
 
-		if ( ! empty( $meta_value ) && is_array( $meta_value ) ) {
-			$meta_value = \maybe_serialize( $meta_value );
+		if ( ! empty( $value ) && is_array( $value ) ) {
+			$value = \maybe_serialize( $value );
 		}
 
-		return $meta_value;
+		return $value;
 	}
 
 	/**
-	 * Prepare ACF image meta.
+	 * Prepare ACF image fields.
 	 *
 	 * @since     1.0.0
-	 * @param     array                $field_value    The meta value.
+	 * @param     array                $field_value    The field value.
 	 * @param     \Replicast\Client    $site           Site object.
-	 * @return    string                               Possibly-modified non-serialized meta value.
+	 * @return    string                               Possibly-modified non-serialized field value.
 	 */
-	private function prepare_image_meta( $field_value, $site ) {
+	private function prepare_image( $field_value, $site ) {
 
-		$meta_value = '';
+		$value = '';
 
 		if ( empty( $field_value['ID'] ) ) {
-			return $meta_value;
+			return $value;
 		}
 
 		$image = \get_post( $field_value['ID'] );
 
 		if ( ! $image ) {
-			return $meta_value;
+			return $value;
 		}
 
 		// Update object ID
@@ -394,19 +394,20 @@ class ACF {
 			return $remote_info[ $site->get_id() ]['id'];
 		}
 
-		return $meta_value;
+		return $value;
 	}
 
 	/**
-	 * Prepare ACF gallery meta.
+	 * Prepare ACF gallery fields.
 	 *
 	 * @since     1.0.0
-	 * @param     array                $field_value    The meta value.
+	 * @param     array                $field_value    The field value.
 	 * @param     \Replicast\Client    $site           Site object.
-	 * @return    string                               Possibly-modified non-serialized meta value.
+	 * @return    string                               Possibly-modified non-serialized field value.
 	 */
-	private function prepare_gallery_meta( $field_value, $site ) {
-		$meta_value = '';
+	private function prepare_gallery( $field_value, $site ) {
+
+		$value = '';
 
 		if ( empty( $field_value ) ) {
 			$field_value = array();
@@ -417,30 +418,30 @@ class ACF {
 		}
 
 		foreach ( $field_value as $related_image ) {
-			$image_meta = $this->prepare_image_meta( $related_image, $site );
+			$image_meta = $this->prepare_image( $related_image, $site );
 			if ( ! empty( $image_meta ) ) {
-				$meta_value[] = $image_meta;
+				$value[] = $image_meta;
 			}
 		}
 
-		if ( ! empty( $meta_value ) && is_array( $meta_value ) ) {
-			$meta_value = \maybe_serialize( $meta_value );
+		if ( ! empty( $value ) && is_array( $value ) ) {
+			$value = \maybe_serialize( $value );
 		}
 
-		return $meta_value;
+		return $value;
 	}
 
 	/**
-	 * Prepare ACF relationship meta.
+	 * Prepare ACF relationship fields.
 	 *
 	 * @since     1.0.0
-	 * @param     array                $field_value    The meta value.
+	 * @param     array                $field_value    The field value.
 	 * @param     \Replicast\Client    $site           Site object.
-	 * @return    string                               Possibly-modified and serialized meta value.
+	 * @return    string                               Possibly-modified and serialized field value.
 	 */
-	private function prepare_relationship_meta( $field_value, $site ) {
+	private function prepare_relationship( $field_value, $site ) {
 
-		$meta_value = '';
+		$value = '';
 
 		if ( empty( $field_value ) ) {
 			$field_value = array();
@@ -462,16 +463,16 @@ class ACF {
 
 			// Update object ID
 			if ( ! empty( $remote_info = API::get_remote_info( $related_post ) ) ) {
-				$meta_value[] = $remote_info[ $site->get_id() ]['id'];
+				$value[] = $remote_info[ $site->get_id() ]['id'];
 			}
 
 		}
 
-		if ( ! empty( $meta_value ) && is_array( $meta_value ) ) {
-			$meta_value = \maybe_serialize( $meta_value );
+		if ( ! empty( $value ) && is_array( $value ) ) {
+			$value = \maybe_serialize( $value );
 		}
 
-		return $meta_value;
+		return $value;
 	}
 
 	/**
