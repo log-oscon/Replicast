@@ -483,7 +483,7 @@ class API {
 		$prepared_ids = array();
 
 		// Update terms
-		foreach ( $terms as $o_term_id => $term_data ) {
+		foreach ( $terms as $source_id => $term_data ) {
 
 			// Check if taxonomy exists
 			if ( ! \taxonomy_exists( $term_data['taxonomy'] ) ) {
@@ -497,8 +497,8 @@ class API {
 			// Update term
 			$term = static::update_term( $term_data );
 
-			$terms[ $o_term_id ]['term_id']          = $term['term_id'];
-			$terms[ $o_term_id ]['term_taxonomy_id'] = $term['term_taxonomy_id'];
+			$terms[ $source_id ]['term_id']          = $term['term_id'];
+			$terms[ $source_id ]['term_taxonomy_id'] = $term['term_taxonomy_id'];
 
 			// Save term id for post insertion
 			$prepared_ids[ $term_data['taxonomy'] ][] = $term['term_id'];
@@ -547,13 +547,13 @@ class API {
 
 		$prepared_ids = array();
 
-		foreach ( $terms as $o_term_id => $term_data ) {
+		foreach ( $terms as $source_id => $term_data ) {
 
 			// Update term
 			$term = static::update_term( $term_data, $parent_id );
 
-			$terms[ $o_term_id ]['term_id']          = $term['term_id'];
-			$terms[ $o_term_id ]['term_taxonomy_id'] = $term['term_taxonomy_id'];
+			$terms[ $source_id ]['term_id']          = $term['term_id'];
+			$terms[ $source_id ]['term_taxonomy_id'] = $term['term_taxonomy_id'];
 
 			// Save term id for post insertion
 			$prepared_ids[ $term_data['taxonomy'] ][] = $term['term_id'];
@@ -616,10 +616,10 @@ class API {
 	public static function update_object_media( $media, $object ) {
 
 		// Create media or update media metadata
-		foreach ( $media as $o_media_id => $media_data ) {
+		foreach ( $media as $source_id => $media_data ) {
 
 			// Update media
-			$media[ $o_media_id ]['id'] = static::update_media( $media_data );
+			$media[ $source_id ]['id'] = static::update_media( $media_data );
 
 			if ( empty( $media_data['_relations']['post'] ) ) {
 				continue;
@@ -630,7 +630,7 @@ class API {
 				if ( ! array_key_exists( 'featured_media', $relations ) ) {
 					continue;
 				}
-				\set_post_thumbnail( $object->ID, $media[ $o_media_id ]['id'] );
+				\set_post_thumbnail( $object->ID, $media[ $source_id ]['id'] );
 			}
 
 		}
