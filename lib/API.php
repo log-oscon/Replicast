@@ -324,9 +324,9 @@ class API {
 					continue;
 				}
 
-				$gallery_ids = explode( ',', $gallery['ids'] );
+				$media_ids = explode( ',', $gallery['ids'] );
 
-				foreach ( $gallery_ids as $index => $gallery_id ) {
+				foreach ( $media_ids as $index => $gallery_id ) {
 
 					$source_id = static::get_source_id( $gallery_id );
 
