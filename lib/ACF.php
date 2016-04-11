@@ -381,11 +381,11 @@ class ACF {
 
 		$value = '';
 
-		if ( empty( $field_value['ID'] ) ) {
+		if ( empty( $field_value['id'] ) ) {
 			return $value;
 		}
 
-		$image = \get_post( $field_value['ID'] );
+		$image = \get_post( $field_value['id'] );
 
 		if ( ! $image ) {
 			return $value;
@@ -526,7 +526,7 @@ class ACF {
 
 				// Image
 				if ( $field_type === 'image' ) {
-					$data['replicast']['term'][ $term_id ]->acf[ $field_key ]['ID'] = $this->prepare_image( $field_value, $site );
+					$data['replicast']['term'][ $term_id ]->acf[ $field_key ]['id'] = $this->prepare_image( $field_value, $site );
 					continue;
 				}
 
@@ -602,7 +602,7 @@ class ACF {
 
 			// Image
 			if ( $field_type === 'image' ) {
-				$object_id          = $field_value['ID'];
+				$object_id          = $field_value['id'];
 				$origin_id          = API::get_origin_id( $object_id );
 				$data[ $origin_id ] = API::get_media( $origin_id, $object_id, $data, array( $field_type => $field_name ) );
 				continue;
@@ -610,7 +610,7 @@ class ACF {
 
 			// Gallery
 			foreach ( $field_value as $image ) {
-				$object_id          = $image['ID'];
+				$object_id          = $image['id'];
 				$origin_id          = API::get_origin_id( $object_id );
 				$data[ $origin_id ] = API::get_media( $origin_id, $object_id, $data, array( $field_type => $field_name ) );
 			}
