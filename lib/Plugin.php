@@ -50,12 +50,12 @@ class Plugin {
 
 	/**
 	 * Identifies the meta variable that is sent to the remote site and
-	 * that contains information regarding the original object.
+	 * that contains information regarding the source object.
 	 *
 	 * @since    1.0.0
 	 * @var      string
 	 */
-	const REPLICAST_ORIGIN_INFO = '_replicast_origin_info';
+	const REPLICAST_SOURCE_INFO = '_replicast_source_info';
 
 	/**
 	 * The unique identifier of this plugin.

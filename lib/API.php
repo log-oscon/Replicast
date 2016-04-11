@@ -241,10 +241,10 @@ class API {
 			}
 
 			$term_id   = $term->term_id;
-			$origin_id = static::get_origin_id( $term_id, 'term' );
+			$source_id = static::get_source_id( $term_id, 'term' );
 
-			$hierarchical_terms[ $origin_id ]           = $term;
-			$hierarchical_terms[ $origin_id ]->children = static::get_child_terms( $term_id, $terms );
+			$hierarchical_terms[ $source_id ]           = $term;
+			$hierarchical_terms[ $source_id ]->children = static::get_child_terms( $term_id, $terms );
 		}
 
 		return $hierarchical_terms;
@@ -271,10 +271,10 @@ class API {
 			}
 
 			$term_id   = $term->term_id;
-			$origin_id = static::get_origin_id( $term_id, 'term' );
+			$source_id = static::get_source_id( $term_id, 'term' );
 
-			$children[ $origin_id ]           = $term;
-			$children[ $origin_id ]->children = static::get_child_terms( $term_id, $terms );
+			$children[ $source_id ]           = $term;
+			$children[ $source_id ]->children = static::get_child_terms( $term_id, $terms );
 		}
 
 		return $children;
@@ -299,8 +299,8 @@ class API {
 
 		// Get object featured media
 		if ( ! empty( $object['featured_media'] )  ) {
-			$origin_id                   = static::get_origin_id( $object['featured_media'] );;
-			$prepared_data[ $origin_id ] = static::get_media( $origin_id, $object['featured_media'], $prepared_data, 'featured_media' );
+			$source_id                   = static::get_source_id( $object['featured_media'] );;
+			$prepared_data[ $source_id ] = static::get_media( $source_id, $object['featured_media'], $prepared_data, 'featured_media' );
 		}
 
 		/**
@@ -322,13 +322,13 @@ class API {
 	 * relation between the local IDs and the IDs on the remote site.
 	 *
 	 * @since     1.0.0
-	 * @param     int      $origin_id    The origin object ID.
+	 * @param     int      $source_id    The source object ID.
 	 * @param     int      $object_id    The object ID.
 	 * @param     array    $data         Object media.
 	 * @param     mixed    $fields       Fields that are related to the current object.
 	 * @return    array                  Prepared media object.
 	 */
-	public static function get_media( $origin_id, $object_id, $data, $fields = array() ) {
+	public static function get_media( $source_id, $object_id, $data, $fields = array() ) {
 
 		if ( ! is_array( $fields ) ) {
 			$fields = array( $fields );
@@ -375,7 +375,7 @@ class API {
 
 		}
 
-		$data[ $origin_id ]['_fields'] = array_merge( $data[ $object_id ]['_fields'], $fields );
+		$data[ $source_id ]['_fields'] = array_merge( $data[ $object_id ]['_fields'], $fields );
 
 		return $data[ $object_id ];
 	}
@@ -586,7 +586,7 @@ class API {
 
 		// Save remote object info
 		if ( ! empty( $term_data['meta'] ) ) {
-			\update_term_meta( $term['term_id'], Plugin::REPLICAST_ORIGIN_INFO, $term_data['meta'][ Plugin::REPLICAST_ORIGIN_INFO ] );
+			\update_term_meta( $term['term_id'], Plugin::REPLICAST_SOURCE_INFO, $term_data['meta'][ Plugin::REPLICAST_SOURCE_INFO ] );
 		}
 
 		return $term;
@@ -658,7 +658,7 @@ class API {
 		}
 
 		// Save remote object info
-		\update_post_meta( $attachment_id, Plugin::REPLICAST_ORIGIN_INFO, $media_data[ Plugin::REPLICAST_ORIGIN_INFO ] );
+		\update_post_meta( $attachment_id, Plugin::REPLICAST_SOURCE_INFO, $media_data[ Plugin::REPLICAST_SOURCE_INFO ] );
 
 		return $attachment_id;
 	}
@@ -666,7 +666,7 @@ class API {
 	/**
 	 * Filter a post before it is inserted via the REST API.
 	 *
-	 * Through this method we can show the contents of the post just like it is rendered on the origin.
+	 * Through this method we can show the contents of the post just like it is rendered on the source.
 	 * Including content that is generated from shortcodes (galleries, for instance).
 	 *
 	 * @since     1.0.0
@@ -775,27 +775,27 @@ class API {
 	}
 
 	/**
-	 * Retrieve origin object ID.
+	 * Retrieve source object ID.
 	 *
 	 * @since     1.0.0
 	 * @param     int       $object_id    The object ID.
 	 * @param     string    $meta_type    The object meta type.
-	 * @return    int                     The origin object ID.
+	 * @return    int                     The source object ID.
 	 */
-	public static function get_origin_id( $object_id, $meta_type = 'post' ) {
+	public static function get_source_id( $object_id, $meta_type = 'post' ) {
 
-		// Get origin object info
-		$origin_info = static::get_origin_info( $object_id, $meta_type );
+		// Get source object info
+		$source_info = static::get_source_info( $object_id, $meta_type );
 
-		if ( ! empty( $origin_info ) && ! empty( $origin_info['object_id'] ) ) {
-			return $origin_info['object_id'];
+		if ( ! empty( $source_info ) && ! empty( $source_info['object_id'] ) ) {
+			return $source_info['object_id'];
 		}
 
 		return $object_id;
 	}
 
 	/**
-	 * Retrieve origin object info.
+	 * Retrieve source object info.
 	 *
 	 * @since     1.0.0
 	 * @param     int       $object_id    The object ID.
@@ -803,9 +803,9 @@ class API {
 	 * @return    mixed                   Single metadata value, or array of values.
 	 *                                    If the $meta_type or $object_id parameters are invalid, false is returned.
 	 */
-	public static function get_origin_info( $object_id, $meta_type = 'post' ) {
+	public static function get_source_info( $object_id, $meta_type = 'post' ) {
 
-		if( empty( $metadata = \get_metadata( $meta_type, $object_id, Plugin::REPLICAST_ORIGIN_INFO, true ) ) ) {
+		if( empty( $metadata = \get_metadata( $meta_type, $object_id, Plugin::REPLICAST_SOURCE_INFO, true ) ) ) {
 			return $metadata;
 		}
 

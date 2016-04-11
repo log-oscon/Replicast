@@ -603,16 +603,16 @@ class ACF {
 			// Image
 			if ( $field_type === 'image' ) {
 				$object_id          = $field_value['id'];
-				$origin_id          = API::get_origin_id( $object_id );
-				$data[ $origin_id ] = API::get_media( $origin_id, $object_id, $data, array( $field_type => $field_name ) );
+				$source_id          = API::get_source_id( $object_id );
+				$data[ $source_id ] = API::get_media( $source_id, $object_id, $data, array( $field_type => $field_name ) );
 				continue;
 			}
 
 			// Gallery
 			foreach ( $field_value as $image ) {
 				$object_id          = $image['id'];
-				$origin_id          = API::get_origin_id( $object_id );
-				$data[ $origin_id ] = API::get_media( $origin_id, $object_id, $data, array( $field_type => $field_name ) );
+				$source_id          = API::get_source_id( $object_id );
+				$data[ $source_id ] = API::get_media( $source_id, $object_id, $data, array( $field_type => $field_name ) );
 			}
 
 		}
