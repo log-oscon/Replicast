@@ -303,10 +303,11 @@ class API {
 			$source_id = static::get_source_id( $object['featured_media'] );
 
 			$relations = array(
-				'object_id'   => $object['id'],
-				'object_type' => 'post',
-				'field_type'  => 'featured_media',
-				'field_name'  => 'featured_media',
+				'post' => array(
+					$object['id'] => array(
+						'featured_media' => 'featured_media',
+					),
+				),
 			);
 
 			$prepared_data[ $source_id ] = static::get_media( $source_id, $object['featured_media'], $relations, $prepared_data );
@@ -375,14 +376,12 @@ class API {
 				'id'         => $object_id,
 				'mime-type'  => \get_post_mime_type( $object_id ),
 				'metadata'   => $metadata,
-				'_relations' => array(
-					$relations
-				),
+				'_relations' => $relations,
 			);
 
 		}
 
-		$data[ $source_id ]['_relations'] = array_merge( $data[ $source_id ]['_relations'], array( $relations ) );
+		$data[ $source_id ]['_relations'] = array_merge_recursive( $data[ $source_id ]['_relations'], $relations );
 
 		return $data[ $source_id ];
 	}
@@ -613,8 +612,15 @@ class API {
 
 			$media[ $o_media_id ]['id'] = static::update_media( $media_data );
 
+			if ( empty( $media_data['_relations']['post'] ) ) {
+				continue;
+			}
+
 			// Assign object featured media
-			if ( in_array( 'featured_media', $media_data['_relations'] ) ) {
+			foreach ( $media_data['_relations']['post'] as $relations ) {
+				if ( ! array_key_exists( 'featured_media', $relations ) ) {
+					continue;
+				}
 				\set_post_thumbnail( $object->ID, $media[ $o_media_id ]['id'] );
 			}
 

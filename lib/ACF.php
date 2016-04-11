@@ -595,10 +595,11 @@ class ACF {
 			}
 
 			$relations = array(
-				'object_id'   => $object_id,
-				'object_type' => 'post',
-				'field_type'  => $field_type,
-				'field_name'  => $field_name,
+				'post' => array(
+					$object_id => array(
+						$field_type => $field_name,
+					),
+				),
 			);
 
 			// Image
@@ -637,11 +638,15 @@ class ACF {
 
 		foreach ( $media as $media_id => $media_data ) {
 
-			if ( ! array_intersect( array( 'gallery', 'image' ), $media_data['_relations'] ) ) {
+			if ( empty( $media_data['_relations']['post'] ) ) {
 				continue;
 			}
 
-			foreach ( $media_data['_relations'] as $field_type => $field_key ) {
+			foreach ( $media_data['_relations']['post'] as $field_type => $field_key ) {
+
+				if ( $field_type !== 'gallery' && $field_type !== 'image' ) {
+					continue;
+				}
 
 				$value = $media[ $media_id ]['id'];
 
@@ -659,6 +664,7 @@ class ACF {
 				}
 
 				\update_field( $field_key, array_merge( $previous_values, array( $value ) ), $object_id );
+
 			}
 
 		}
