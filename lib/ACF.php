@@ -67,17 +67,17 @@ class ACF {
 		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_relations' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_relations' ), 10, 2 );
 
-		\add_filter( 'replicast_get_object_meta',           array( $this, 'get_meta' ), 10, 2 );
-		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_meta' ), 10, 2 );
-		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_meta' ), 10, 2 );
+		\add_filter( 'replicast_get_object_meta',           array( $this, 'get_object_meta' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_meta' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_meta' ), 10, 2 );
 
-		\add_filter( 'replicast_get_object_term',           array( $this, 'get_term' ), 10, 2 );
-		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_term' ), 10, 2 );
-		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_term' ), 10, 2 );
-		\add_action( 'replicast_update_object_term',        array( $this, 'update_term' ), 10, 2 );
+		\add_filter( 'replicast_get_object_term',           array( $this, 'get_object_term' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_term' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_term' ), 10, 2 );
+		\add_action( 'replicast_update_object_term',        array( $this, 'update_object_term' ), 10, 2 );
 
-		\add_filter( 'replicast_get_object_media',    array( $this, 'get_media' ), 10, 2 );
-		\add_action( 'replicast_update_object_media', array( $this, 'update_media' ), 10, 2 );
+		\add_filter( 'replicast_get_object_media',    array( $this, 'get_object_media' ), 10, 2 );
+		\add_action( 'replicast_update_object_media', array( $this, 'update_object_media' ), 10, 2 );
 
 	}
 
@@ -226,7 +226,7 @@ class ACF {
 	 * @param     int       $object_id    The object ID.
 	 * @return    array                   Possibly-modified object meta.
 	 */
-	public function get_meta( $values, $object_id ) {
+	public function get_object_meta( $values, $object_id ) {
 
 		$prepared_meta = array();
 
@@ -263,7 +263,7 @@ class ACF {
 	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    array                         Possibly-modified data.
 	 */
-	public function prepare_meta( $data, $site ) {
+	public function prepare_object_meta( $data, $site ) {
 
 		if ( empty( $data['replicast']['meta'] ) ) {
 			return $data;
@@ -488,7 +488,7 @@ class ACF {
 	 * @param     int       $object_id    The object ID.
 	 * @return    array                   Possibly-modified object terms.
 	 */
-	public function get_term( $terms, $object_id ) {
+	public function get_object_term( $terms, $object_id ) {
 
 		// FIXME: and how about child terms?
 
@@ -508,7 +508,7 @@ class ACF {
 	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    array                         Possibly-modified data.
 	 */
-	public function prepare_term( $data, $site ) {
+	public function prepare_object_term( $data, $site ) {
 
 		if ( empty( $data['replicast']['term'] ) ) {
 			return $data;
@@ -548,7 +548,7 @@ class ACF {
 	 * @param     int       $object_id    The object ID.
 	 * @return    array                   Possibly-modified object terms.
 	 */
-	public function update_term( $terms, $object_id ) {
+	public function update_object_term( $terms, $object_id ) {
 
 		foreach ( $terms as $term_data ) {
 
@@ -572,7 +572,7 @@ class ACF {
 	 * @param     int      $object_id    The object ID.
 	 * @return    array                  Possibly-modified object media.
 	 */
-	public function get_media( $data, $object_id ) {
+	public function get_object_media( $data, $object_id ) {
 
 		$fields = \get_field_objects( $object_id );
 
@@ -621,7 +621,7 @@ class ACF {
 	 * @param     array     $values       The values of the field.
 	 * @param     object    $object_id    The object ID.
 	 */
-	public function update_media( $media, $object_id ) {
+	public function update_object_media( $media, $object_id ) {
 
 		foreach ( $media as $media_id => $media_data ) {
 
