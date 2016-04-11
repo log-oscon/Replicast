@@ -313,6 +313,38 @@ class API {
 			$prepared_data[ $source_id ] = static::get_media( $source_id, $object['featured_media'], $relations, $prepared_data );
 		}
 
+		// Get object galleries media
+		if ( ! empty( $object['content']['raw'] )  ) {
+
+			$galleries = \get_post_galleries( $object['id'], false );
+
+			foreach ( $galleries as $gallery ) {
+
+				if ( empty( $gallery['ids'] ) ) {
+					continue;
+				}
+
+				$gallery_ids = explode( ',', $gallery['ids'] );
+
+				foreach ( $gallery_ids as $index => $gallery_id ) {
+
+					$source_id = static::get_source_id( $gallery_id );
+
+					$relations = array(
+						'post' => array(
+							$object['id'] => array(
+								'gallery_shortcode' => $index,
+							),
+						),
+					);
+
+					$prepared_data[ $source_id ] = static::get_media( $source_id, $gallery_id, $relations, $prepared_data );
+				}
+
+			}
+
+		}
+
 		/**
 		 * Extend object media.
 		 *
