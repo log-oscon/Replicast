@@ -72,6 +72,8 @@ class ACF {
 		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_meta' ), 10, 2 );
 
 		\add_filter( 'replicast_get_object_term',           array( $this, 'get_term' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_term' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_term' ), 10, 2 );
 		\add_action( 'replicast_update_object_term',        array( $this, 'update_term' ), 10, 2 );
 
 		\add_filter( 'replicast_get_object_media',    array( $this, 'get_media' ), 10, 2 );
@@ -495,6 +497,47 @@ class ACF {
 		}
 
 		return $terms;
+	}
+
+
+	/**
+	 * Prepare ACF terms "meta".
+	 *
+	 * @since     1.0.0
+	 * @param     array                $data    Prepared data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified data.
+	 */
+	public function prepare_term( $data, $site ) {
+
+		if ( empty( $data['replicast']['term'] ) ) {
+			return $data;
+		}
+
+		foreach ( $data['replicast']['term'] as $term_id => $term ) {
+
+			if ( empty( $term->acf ) ) {
+				continue;
+			}
+
+			foreach ( $term->acf as $field_key => $field_value ) {
+
+				$field_type = \acf_extract_var( $field_value, 'type' );
+
+				// Image
+				if ( $field_type === 'image' ) {
+					$data['replicast']['term'][ $term_id ]->acf[ $field_key ]['ID'] = $this->prepare_image( $field_value, $site );
+					continue;
+				}
+
+				// Gallery
+				// TODO:
+
+			}
+
+		}
+
+		return $data;
 	}
 
 	/**
