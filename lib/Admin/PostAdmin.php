@@ -33,6 +33,7 @@ class PostAdmin extends Admin {
 	 */
 	public function register() {
 
+		// Post handling
 		\add_action( 'save_post',          array( $this, 'on_save_post' ), 10, 3 );
 		\add_action( 'attachment_updated', array( $this, 'on_save_post' ), 10, 3 );
 		\add_action( 'trashed_post',       array( $this, 'on_trash_post' ) );
@@ -67,9 +68,12 @@ class PostAdmin extends Admin {
 		\add_filter( 'admin_post_thumbnail_html', array( $this, 'update_post_thumbnail' ), 10, 2 );
 
 		// Admin UI - Media Library
-		\add_filter( 'media_row_actions',           array( $this, 'hide_row_actions' ), 10, 2 );
-		\add_filter( 'ajax_query_attachments_args', array( $this, 'hide_attachments_on_grid_mode' ) );
-		\add_action( 'pre_get_posts',               array( $this, 'hide_attachments_on_list_mode' ) );
+		\add_filter( 'media_row_actions', array( $this, 'hide_row_actions' ), 10, 2 );
+
+		if ( ! \is_super_admin() ) {
+			\add_filter( 'ajax_query_attachments_args', array( $this, 'hide_attachments_on_grid_mode' ) );
+			\add_action( 'pre_get_posts',               array( $this, 'hide_attachments_on_list_mode' ) );
+		}
 
 	}
 
@@ -417,6 +421,10 @@ class PostAdmin extends Admin {
 			return $query_args;
 		}
 
+		if ( ! empty( $_GET['replicast_debug'] ) && $_GET['replicast_debug'] ) {
+			return $query_args;
+		}
+
 		if ( $query_args['post_type'] !== 'attachment' ) {
 			return $query_args;
 		}
@@ -436,6 +444,10 @@ class PostAdmin extends Admin {
 	public function hide_attachments_on_list_mode( $query ) {
 
 		if ( ! \is_admin() ) {
+			return;
+		}
+
+		if ( ! empty( $_GET['replicast_debug'] ) && $_GET['replicast_debug'] ) {
 			return;
 		}
 
