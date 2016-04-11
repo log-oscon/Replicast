@@ -300,7 +300,9 @@ abstract class Handler {
 		 * @param     \Replicast\Client    Site object.
 		 * @return    array                Possibly-modified object data.
 		 */
-		return \apply_filters( "replicast_prepare_object_for_create", $data, $site );
+		$data = \apply_filters( "replicast_prepare_object_for_create", $data, $site );
+
+		return $this->prepare_media( $data, $site );
 	}
 
 	/**
@@ -380,7 +382,9 @@ abstract class Handler {
 		 * @param     \Replicast\Client    Site object.
 		 * @return    array                Possibly-modified object data.
 		 */
-		return \apply_filters( "replicast_prepare_object_for_update", $data, $site );
+		$data = \apply_filters( "replicast_prepare_object_for_update", $data, $site );
+
+		return $this->prepare_media( $data, $site );
 	}
 
 	/**
@@ -595,32 +599,5 @@ abstract class Handler {
 		);
 
 	}
-
-	/**
-	 * Handle object.
-	 *
-	 * @since     1.0.0
-	 * @param     int       $site_id    Site ID.
-	 * @param     object    $data       Object data.
-	 */
-	abstract protected function handle_object( $site_id, $data = null );
-
-	/**
-	 * Handle terms.
-	 *
-	 * @since     1.0.0
-	 * @param     int       $site_id    Site ID.
-	 * @param     object    $data       Object data.
-	 */
-	abstract protected function handle_terms( $site_id, $data = null );
-
-	/**
-	 * Handle media.
-	 *
-	 * @since     1.0.0
-	 * @param     int       $site_id    Site ID.
-	 * @param     object    $data       Object data.
-	 */
-	abstract protected function handle_media( $site_id, $data = null );
 
 }
