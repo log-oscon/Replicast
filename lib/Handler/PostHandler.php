@@ -80,9 +80,11 @@ class PostHandler extends Handler {
 		// Update the "uploaded to" post ID with the associated remote post ID, if exists
 		if ( $data['type'] !== 'attachment' && ! empty( $data['post'] ) ) {
 
+			$replicast_info = API::get_remote_info( \get_post( $data['post'] ) );
+
 			// Update object ID
 			$data['post'] = '';
-			if ( ! empty( $replicast_info = API::get_remote_info( \get_post( $data['post'] ) ) ) ) {
+			if ( ! empty( $replicast_info ) ) {
 				$data['post'] = $replicast_info[ $site->get_id() ]['id'];
 			}
 
@@ -131,9 +133,11 @@ class PostHandler extends Handler {
 
 		foreach ( $data['replicast']['term'] as $term_id => $term ) {
 
+			$replicast_info = API::get_remote_info( $term );
+
 			// Update object ID
 			$term->term_id = '';
-			if ( ! empty( $replicast_info = API::get_remote_info( $term ) ) ) {
+			if ( ! empty( $replicast_info ) ) {
 				$term->term_id = $replicast_info[ $site->get_id() ]['id'];
 			}
 
@@ -172,11 +176,13 @@ class PostHandler extends Handler {
 
 		foreach ( $terms as $term_id => $term ) {
 
+			$replicast_info = API::get_remote_info( $term );
+
 			// Update object ID's
 			$term->term_id = '';
 			$term->parent  = '';
 
-			if ( ! empty( $replicast_info = API::get_remote_info( $term ) ) ) {
+			if ( ! empty( $replicast_info ) ) {
 				$term->term_id = $replicast_info[ $site->get_id() ]['id'];
 				$term->parent  = $parent_id;
 			}
@@ -212,9 +218,11 @@ class PostHandler extends Handler {
 	 */
 	public function prepare_featured_media( $data, $site ) {
 
+		$replicast_info = API::get_remote_info( \get_post( $data['featured_media'] ) );
+
 		// Update object ID
 		$data['featured_media'] = '';
-		if ( ! empty( $replicast_info = API::get_remote_info( \get_post( $data['featured_media'] ) ) ) ) {
+		if ( ! empty( $replicast_info ) ) {
 			$data['featured_media'] = $replicast_info[ $site->get_id() ]['id'];
 		}
 
@@ -237,9 +245,11 @@ class PostHandler extends Handler {
 
 		foreach( $data['replicast']['media'] as $media_id => $media ) {
 
+			$replicast_info = API::get_remote_info( \get_post( $media_id ) );
+
 			// Update object ID
 			$data['replicast']['media'][ $media_id ]['id'] = '';
-			if ( ! empty( $replicast_info = API::get_remote_info( \get_post( $media_id ) ) ) ) {
+			if ( ! empty( $replicast_info ) ) {
 				$data['replicast']['media'][ $media_id ]['id'] = $replicast_info[ $site->get_id() ]['id'];
 			}
 
