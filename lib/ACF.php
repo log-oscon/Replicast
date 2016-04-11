@@ -194,8 +194,10 @@ class ACF {
 			foreach ( $meta_values as $meta_key => $meta_value ) {
 				foreach ( $meta_value as $related_post_id ) {
 
+					$remote_info = API::get_remote_info( \get_post( $related_post_id ) );
+
 					// Update object ID
-					if ( ! empty( $remote_info = API::get_remote_info( \get_post( $related_post_id ) ) ) ) {
+					if ( ! empty( $remote_info ) ) {
 						$prepared_meta[ $meta_key ][] = $remote_info[ $site->get_id() ]['id'];
 					}
 
@@ -355,8 +357,10 @@ class ACF {
 				continue;
 			}
 
+			$remote_info = API::get_remote_info( $term );
+
 			// Update object ID
-			if ( ! empty( $remote_info = API::get_remote_info( $term ) ) ) {
+			if ( ! empty( $remote_info ) ) {
 				$value[] = $remote_info[ $site->get_id() ]['id'];
 			}
 
@@ -391,8 +395,10 @@ class ACF {
 			return $value;
 		}
 
+		$remote_info = API::get_remote_info( $image );
+
 		// Update object ID
-		if ( ! empty( $remote_info = API::get_remote_info( $image ) ) ) {
+		if ( ! empty( $remote_info ) ) {
 			return $remote_info[ $site->get_id() ]['id'];
 		}
 
@@ -463,8 +469,10 @@ class ACF {
 				continue;
 			}
 
+			$remote_info = API::get_remote_info( $related_post );
+
 			// Update object ID
-			if ( ! empty( $remote_info = API::get_remote_info( $related_post ) ) ) {
+			if ( ! empty( $remote_info ) ) {
 				$value[] = $remote_info[ $site->get_id() ]['id'];
 			}
 
