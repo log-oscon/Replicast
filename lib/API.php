@@ -295,7 +295,7 @@ class API {
 
 		$prepared_data = array();
 
-		// Get object featured media
+		// Get featured media
 		if ( ! empty( $object['featured_media'] )  ) {
 
 			$source_id = static::get_source_id( $object['featured_media'] );
@@ -311,7 +311,7 @@ class API {
 			$prepared_data[ $source_id ] = static::get_media( $source_id, $object['featured_media'], $relations, $prepared_data );
 		}
 
-		// Get object galleries media
+		// Get galleries media
 		if ( static::is_post( $object ) && ! empty( $object['content']['raw'] )  ) {
 
 			$galleries = \get_post_galleries( $object['id'], false );
