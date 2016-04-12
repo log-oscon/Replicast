@@ -63,8 +63,6 @@ class API {
 				);
 			}
 
-			\add_filter( "rest_pre_insert_{$post_type}", array( $this, 'rest_pre_insert_post' ), 10, 2 );
-
 		}
 
 	}
@@ -314,7 +312,7 @@ class API {
 		}
 
 		// Get object galleries media
-		if ( ! empty( $object['content']['raw'] )  ) {
+		if ( static::is_post( $object ) && ! empty( $object['content']['raw'] )  ) {
 
 			$galleries = \get_post_galleries( $object['id'], false );
 
@@ -715,27 +713,6 @@ class API {
 		\update_post_meta( $attachment_id, Plugin::REPLICAST_SOURCE_INFO, $media_data[ Plugin::REPLICAST_SOURCE_INFO ] );
 
 		return $attachment_id;
-	}
-
-	/**
-	 * Filter a post before it is inserted via the REST API.
-	 *
-	 * Through this method we can show the contents of the post just like it is rendered on the source.
-	 * Including content that is generated from shortcodes (galleries, for instance).
-	 *
-	 * @since     1.0.0
-	 * @param     stdClass            $prepared_post    An object representing a single post prepared
-	 *                                                  for inserting or updating the database.
-	 * @param     \WP_REST_Request    $request          Request object.
-	 * @return    stdClass                              Possibly-modified post object.
-	 */
-	public function rest_pre_insert_post( $prepared_post, $request ) {
-
-		if ( ! empty( $request['content']['rendered'] ) ) {
-			$prepared_post->post_content = \wp_filter_post_kses( $request['content']['rendered'] );
-		}
-
-		return $prepared_post;
 	}
 
 	/**
