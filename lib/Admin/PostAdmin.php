@@ -531,7 +531,7 @@ class PostAdmin extends Admin {
 		// Get attachment metadata
 		$metadata = \get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
 
-		return basename( $metadata['file'] );
+		return $metadata['file'];
 	}
 
 	/**
