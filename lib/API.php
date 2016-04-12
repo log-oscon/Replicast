@@ -318,7 +318,7 @@ class API {
 
 			$galleries = \get_post_galleries( $object['id'], false );
 
-			foreach ( $galleries as $gallery ) {
+			foreach ( $galleries as $index => $gallery ) {
 
 				if ( empty( $gallery['ids'] ) ) {
 					continue;
@@ -326,9 +326,9 @@ class API {
 
 				$media_ids = explode( ',', $gallery['ids'] );
 
-				foreach ( $media_ids as $index => $gallery_id ) {
+				foreach ( $media_ids as $media_id ) {
 
-					$source_id = static::get_source_id( $gallery_id );
+					$source_id = static::get_source_id( $media_id );
 
 					$relations = array(
 						'post' => array(
@@ -338,7 +338,7 @@ class API {
 						),
 					);
 
-					$prepared_data[ $source_id ] = static::get_media( $source_id, $gallery_id, $relations, $prepared_data );
+					$prepared_data[ $source_id ] = static::get_media( $source_id, $media_id, $relations, $prepared_data );
 				}
 
 			}
