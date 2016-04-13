@@ -71,13 +71,14 @@ class ACF {
 		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_meta' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_meta' ), 10, 2 );
 
+		\add_filter( 'replicast_get_object_media',    array( $this, 'get_object_media' ), 10, 2 );
+		\add_action( 'replicast_update_object_media', array( $this, 'update_object_media' ), 10, 2 );
+
 		\add_filter( 'replicast_get_object_term',           array( $this, 'get_object_term_meta' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_term_meta' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_term_meta' ), 10, 2 );
 		\add_action( 'replicast_update_object_term',        array( $this, 'update_object_term_meta' ), 10, 2 );
 
-		\add_filter( 'replicast_get_object_media',    array( $this, 'get_object_media' ), 10, 2 );
-		\add_action( 'replicast_update_object_media', array( $this, 'update_object_media' ), 10, 2 );
 
 	}
 
@@ -486,93 +487,6 @@ class ACF {
 	}
 
 	/**
-	 * Retrieve ACF terms "meta".
-	 *
-	 * The reason why we are using a separate object field to save term meta is because
-	 * ACF uses options (`wp_options` table) instead of using real term meta (`wp_termmeta` table).
-	 *
-	 * @since     1.0.0
-	 * @param     array     $terms        Object terms.
-	 * @param     int       $object_id    The object ID.
-	 * @return    array                   Possibly-modified object terms.
-	 */
-	public function get_object_term_meta( $terms, $object_id ) {
-
-		// FIXME: and how about child terms?
-
-		foreach ( $terms as $term ) {
-			$term->acf = \get_fields( "{$term->taxonomy}_{$term->term_id}" );
-		}
-
-		return $terms;
-	}
-
-
-	/**
-	 * Prepare ACF terms "meta".
-	 *
-	 * @since     1.0.0
-	 * @param     array                $data    Prepared data.
-	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Possibly-modified data.
-	 */
-	public function prepare_object_term_meta( $data, $site ) {
-
-		if ( empty( $data['replicast']['term'] ) ) {
-			return $data;
-		}
-
-		foreach ( $data['replicast']['term'] as $term_id => $term ) {
-
-			if ( empty( $term->acf ) ) {
-				continue;
-			}
-
-			foreach ( $term->acf as $field_key => $field_value ) {
-
-				$field_type = \acf_extract_var( $field_value, 'type' );
-
-				// Image
-				if ( $field_type === 'image' ) {
-					$data['replicast']['term'][ $term_id ]->acf[ $field_key ]['id'] = $this->prepare_image( $field_value, $site );
-					continue;
-				}
-
-				// Gallery
-				// TODO:
-
-			}
-
-		}
-
-		return $data;
-	}
-
-	/**
-	 * Update ACF terms "meta".
-	 *
-	 * @since     1.0.0
-	 * @param     array     $terms        Object terms.
-	 * @param     int       $object_id    The object ID.
-	 * @return    array                   Possibly-modified object terms.
-	 */
-	public function update_object_term_meta( $terms, $object_id ) {
-
-		foreach ( $terms as $term_data ) {
-
-			if ( empty( $term_data['acf'] ) ) {
-				continue;
-			}
-
-			foreach ( $term_data['acf'] as $key => $value ) {
-				\update_field( $key, $value, "{$term_data['taxonomy']}_{$term_data['term_id']}" );
-			}
-
-		}
-
-	}
-
-	/**
 	 * Retrieve ACF media.
 	 *
 	 * @since     1.0.0
@@ -677,6 +591,91 @@ class ACF {
 
 				}
 
+			}
+
+		}
+
+	}
+
+	/**
+	 * Retrieve ACF terms "meta".
+	 *
+	 * The reason why we are using a separate object field to save term meta is because
+	 * ACF uses options (`wp_options` table) instead of using real term meta (`wp_termmeta` table).
+	 *
+	 * @since     1.0.0
+	 * @param     array     $terms        Object terms.
+	 * @param     int       $object_id    The object ID.
+	 * @return    array                   Possibly-modified object terms.
+	 */
+	public function get_object_term_meta( $terms, $object_id ) {
+
+		// FIXME: and how about child terms?
+		foreach ( $terms as $term ) {
+			$term->acf = \get_fields( "{$term->taxonomy}_{$term->term_id}" );
+		}
+
+		return $terms;
+	}
+
+	/**
+	 * Prepare ACF terms "meta".
+	 *
+	 * @since     1.0.0
+	 * @param     array                $data    Prepared data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified data.
+	 */
+	public function prepare_object_term_meta( $data, $site ) {
+
+		if ( empty( $data['replicast']['term'] ) ) {
+			return $data;
+		}
+
+		foreach ( $data['replicast']['term'] as $term_id => $term ) {
+
+			if ( empty( $term->acf ) ) {
+				continue;
+			}
+
+			foreach ( $term->acf as $field_key => $field_value ) {
+
+				$field_type = \acf_extract_var( $field_value, 'type' );
+
+				// Image
+				if ( $field_type === 'image' ) {
+					$data['replicast']['term'][ $term_id ]->acf[ $field_key ]['id'] = $this->prepare_image( $field_value, $site );
+					continue;
+				}
+
+				// Gallery
+				// TODO:
+
+			}
+
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Update ACF terms "meta".
+	 *
+	 * @since     1.0.0
+	 * @param     array     $terms        Object terms.
+	 * @param     int       $object_id    The object ID.
+	 * @return    array                   Possibly-modified object terms.
+	 */
+	public function update_object_term_meta( $terms, $object_id ) {
+
+		foreach ( $terms as $term_data ) {
+
+			if ( empty( $term_data['acf'] ) ) {
+				continue;
+			}
+
+			foreach ( $term_data['acf'] as $key => $value ) {
+				\update_field( $key, $value, "{$term_data['taxonomy']}_{$term_data['term_id']}" );
 			}
 
 		}
