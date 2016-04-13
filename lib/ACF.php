@@ -79,6 +79,7 @@ class ACF {
 		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_term_meta' ), 10, 2 );
 		\add_action( 'replicast_update_object_term',        array( $this, 'update_object_term_meta' ) );
 
+		\add_filter( 'replicast_get_object_media',    array( $this, 'get_object_term_media' ), 20, 2 );
 
 	}
 
@@ -678,6 +679,56 @@ class ACF {
 
 		}
 
+	}
+
+	/**
+	 * Retrieve ACF terms media.
+	 *
+	 * @since     1.0.0
+	 * @param     array    $data      Object media.
+	 * @param     array    $object    The object.
+	 * @return    array               Possibly-modified object media.
+	 */
+	public function get_object_term_media( $data, $object ) {
+
+		// Retrieve the terms
+		$terms = API::get_object_terms( $object );
+
+		foreach ( $terms as $term ) {
+
+			$fields = \get_fields( "{$term->taxonomy}_{$term->term_id}" );
+
+			foreach ( $fields as $field_key => $field_value ) {
+
+				$field_type = \acf_extract_var( $field_value, 'type' );
+
+				$relations = array(
+					'term' => array(
+						$term->term_id => array(
+							$field_type => $field_key,
+						),
+					),
+				);
+
+				// Image
+				if ( $field_type === 'image' ) {
+
+					$field_id  = $field_value['id'];
+					$source_id = API::get_source_id( $field_id );
+
+					$data[ $source_id ] = API::get_media( $source_id, $field_id, $relations, $data );
+
+					continue;
+				}
+
+				// Gallery
+				// TODO:
+
+			}
+
+		}
+
+		return $data;
 	}
 
 }
