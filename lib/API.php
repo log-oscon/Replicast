@@ -166,8 +166,34 @@ class API {
 	 */
 	public static function get_object_term( $object, $request ) {
 
-		// Get a list of registered taxonomies
-		$taxonomies = \get_taxonomies( array(), 'objects' );
+		// Get a list of object taxonomies
+		$taxonomies = static::get_object_taxonomies( $object );
+
+		// Get a hierarchical list of object terms
+		$prepared_terms = static::get_object_terms_hierarchical( $object['id'], $taxonomies );
+
+		/**
+		 * Extend object terms.
+		 *
+		 * @since     1.0.0
+		 * @param     array    Hierarchical list of object terms.
+		 * @param     int      Object ID.
+		 * @return    array    Possibly-modified object terms.
+		 */
+		return \apply_filters( 'replicast_get_object_term', $prepared_terms, $object['id'] );
+	}
+
+	/**
+	 * Returns all the taxonomies for an object.
+	 *
+	 * @since     1.0.0
+	 * @param     array    $object    Details of current content object.
+	 * @return    array               All taxonomy names or objects for the given object.
+	 */
+	public static function get_object_taxonomies( $object ) {
+
+		// FIXME: we should soft cache this
+		$taxonomies = \get_object_taxonomies( $object['type'], 'objects' );
 
 		/**
 		 * Filter for suppressing taxonomies.
@@ -180,7 +206,7 @@ class API {
 		 */
 		$suppressed_taxonomies = \apply_filters( 'replicast_suppress_object_taxonomies', array(), $taxonomies, $object['id'] );
 
-		$prepared_data = array();
+		$prepared_taxonomies = array();
 		foreach ( $taxonomies as $taxonomy_name => $taxonomy ) {
 
 			if ( in_array( $taxonomy_name, array( Plugin::TAXONOMY_SITE ) ) ) {
@@ -191,22 +217,11 @@ class API {
 				continue;
 			}
 
-			$prepared_data[ $taxonomy_name ] = $taxonomy;
+			$prepared_taxonomies[ $taxonomy_name ] = $taxonomy;
 
 		}
 
-		// Get a hierarchical list of object terms
-		$prepared_data = static::get_object_terms_hierarchical( $object['id'], $prepared_data );
-
-		/**
-		 * Extend object terms.
-		 *
-		 * @since     1.0.0
-		 * @param     array    Hierarchical list of object terms.
-		 * @param     int      Object ID.
-		 * @return    array    Possibly-modified object terms.
-		 */
-		return \apply_filters( 'replicast_get_object_term', $prepared_data, $object['id'] );
+		return $prepared_taxonomies;
 	}
 
 	/**
