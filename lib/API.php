@@ -77,6 +77,11 @@ class API {
 	 * @return    array                              Custom fields.
 	 */
 	public static function get_rest_fields( $object, $field_name, $request ) {
+
+		if ( $field_name !== 'replicast' ) {
+			return array();
+		}
+
 		return array(
 			'meta'  => static::get_object_meta( $object, $request ),
 			'term'  => static::get_object_term( $object, $request ),
