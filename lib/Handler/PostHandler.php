@@ -104,7 +104,7 @@ class PostHandler extends Handler {
 	public function prepare_meta( $data, $site ) {
 
 		// Add remote object info
-		$data['replicast']['meta'][ Plugin::REPLICAST_SOURCE_INFO ] = array( \maybe_serialize( array(
+		$data['replicast']['meta'][ Plugin::REPLICAST_SOURCE_INFO ] = array( serialize( array(
 			'object_id' => $this->object->ID,
 			'edit_link' => \get_edit_post_link( $this->object->ID ),
 		) ) );
@@ -145,7 +145,7 @@ class PostHandler extends Handler {
 
 			// Add remote object info
 			$data['replicast']['term'][ $term_id ]->meta = array(
-				Plugin::REPLICAST_SOURCE_INFO => \maybe_serialize( array(
+				Plugin::REPLICAST_SOURCE_INFO => serialize( array(
 					'object_id' => $term_id,
 					'edit_link' => \get_edit_term_link( $term_id, $term->taxonomy ),
 				) )
@@ -191,7 +191,7 @@ class PostHandler extends Handler {
 
 			// Add remote object info
 			$terms[ $term_id ]->meta = array(
-				Plugin::REPLICAST_SOURCE_INFO => \maybe_serialize( array(
+				Plugin::REPLICAST_SOURCE_INFO => serialize( array(
 					'object_id' => $term_id,
 					'edit_link' => \get_edit_term_link( $term_id, $term->taxonomy ),
 				) )
@@ -254,7 +254,7 @@ class PostHandler extends Handler {
 			}
 
 			// Add remote object info
-			$data['replicast']['media'][ $media_id ][ Plugin::REPLICAST_SOURCE_INFO ] = \maybe_serialize( array(
+			$data['replicast']['media'][ $media_id ][ Plugin::REPLICAST_SOURCE_INFO ] = serialize( array(
 				'object_id' => $media_id,
 				'permalink' => \get_attachment_link( $media_id ),
 				'edit_link' => \get_edit_post_link( $media_id ),
@@ -292,7 +292,9 @@ class PostHandler extends Handler {
 		foreach ( $data->replicast->term as $term_id => $term_data ) {
 
 			// Get term object
-			if ( ! $term = \get_term_by( 'id', $term_id, $term_data->taxonomy ) ) {
+			$term = \get_term_by( 'id', $term_id, $term_data->taxonomy );
+
+			if ( ! $term ) {
 				return;
 			}
 
@@ -321,7 +323,9 @@ class PostHandler extends Handler {
 		foreach ( $data->replicast->media as $media_id => $media_data ) {
 
 			// Get media object
-			if ( ! $media = \get_post( $media_id ) ) {
+			$media = \get_post( $media_id );
+
+			if ( ! $media ) {
 				return;
 			}
 

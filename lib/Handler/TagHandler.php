@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Handles ´tag´ terms replication
+ * Handles ´post_tag´ terms replication
  *
  * @link       http://log.pt/
  * @since      1.0.0
@@ -15,7 +15,7 @@ namespace Replicast\Handler;
 use Replicast\Handler;
 
 /**
- * Handles ´tag´ terms replication.
+ * Handles ´post_tag´ terms replication.
  *
  * @since      1.0.0
  * @package    Replicast
