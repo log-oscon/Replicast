@@ -295,7 +295,7 @@ class API {
 
 		$prepared_data = array();
 
-		// Get featured media
+		// Retrieve featured media
 		if ( ! empty( $object['featured_media'] )  ) {
 
 			$source_id = static::get_source_id( $object['featured_media'] );
@@ -311,7 +311,7 @@ class API {
 			$prepared_data[ $source_id ] = static::get_media( $source_id, $object['featured_media'], $relations, $prepared_data );
 		}
 
-		// Get galleries media
+		// Retrieve galleries media
 		if ( static::is_post( $object ) && ! empty( $object['content']['raw'] )  ) {
 
 			// Get galleries
@@ -325,11 +325,11 @@ class API {
 					continue;
 				}
 
-				$media_ids = explode( ',', $atts['ids'] );
+				$ids = explode( ',', $atts['ids'] );
 
-				foreach ( $media_ids as $media_id ) {
+				foreach ( $ids as $id ) {
 
-					$source_id = static::get_source_id( $media_id );
+					$source_id = static::get_source_id( $id );
 
 					$relations = array(
 						'post' => array(
@@ -339,7 +339,7 @@ class API {
 						),
 					);
 
-					$prepared_data[ $source_id ] = static::get_media( $source_id, $media_id, $relations, $prepared_data );
+					$prepared_data[ $source_id ] = static::get_media( $source_id, $id, $relations, $prepared_data );
 				}
 
 			}
@@ -662,7 +662,9 @@ class API {
 	 */
 	public static function update_object_media( $media, $object ) {
 
-		// Create media or update media metadata
+		$gallery_media_ids = array();
+
+		// Create media or update media
 		foreach ( $media as $source_id => $media_data ) {
 
 			// Update media
@@ -672,13 +674,56 @@ class API {
 				continue;
 			}
 
-			// Assign object featured media
+			// Update media relations
 			foreach ( $media_data['_relations']['post'] as $relations ) {
-				if ( ! array_key_exists( 'featured_media', $relations ) ) {
-					continue;
+
+				// Update the featured media into the database
+				if ( array_key_exists( 'featured_media', $relations ) ) {
+					\set_post_thumbnail( $object->ID, $media[ $source_id ]['id'] );
 				}
-				\set_post_thumbnail( $object->ID, $media[ $source_id ]['id'] );
+
+				if ( array_key_exists( 'gallery_shortcode', $relations ) ) {
+					$gallery_media_ids[ $source_id ] = $media[ $source_id ]['id'];
+				}
+
 			}
+
+		}
+
+		// Update galleries media
+		if ( static::is_post( $object ) && ! empty( $object->post_content ) ) {
+
+			// Get galleries
+			$galleries = static::get_galleries( $object->post_content );
+
+			foreach ( $galleries as $gallery ) {
+
+				$atts         = \shortcode_parse_atts( $gallery[3] );
+				$ids          = explode( ',', $atts['ids'] );
+				$prepared_ids = array();
+
+				foreach ( $ids as $id ) {
+					if ( ! array_key_exists( $id, $gallery_media_ids ) ) {
+						continue;
+					}
+					$prepared_ids[] = $gallery_media_ids[ $id ];
+				}
+
+				$pattern     = '/(\\[gallery(?:.*)ids=)\"(' . $atts['ids'] . ')\"((?:.*)\\])/';
+				$replacement = '';
+
+				// If there's no association between any of the local and remote media,
+				// it's better remove the shortcode
+				if ( ! empty( $prepared_ids ) ) {
+					$replacement = '${1}"' . implode( ',', $prepared_ids ) . '"$3';
+				}
+
+				$object->post_content = preg_replace( $pattern, $replacement, $object->post_content );
+
+			}
+
+			// Update the post into the database
+			\wp_update_post( $object );
 
 		}
 

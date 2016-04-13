@@ -94,66 +94,6 @@ class PostHandler extends Handler {
 	}
 
 	/**
-	 * Prepare content.
-	 *
-	 * @since     1.0.0
-	 * @param     array                $data    Prepared post data.
-	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Possibly-modified post data.
-	 */
-	public function prepare_content( $data, $site ) {
-
-		if ( empty( $data['content']['raw'] ) ) {
-			return $data;
-		}
-
-		$post_content = $data['content']['raw'];
-
-		// Get galleries
-		$galleries = API::get_galleries( $post_content );
-
-		foreach ( $galleries as $gallery ) {
-
-			$atts = \shortcode_parse_atts( $gallery[3] );
-
-			if ( empty( $atts['ids'] ) ) {
-				continue;
-			}
-
-			$source_ids   = $atts['ids'];
-			$media_ids    = explode( ',', $source_ids );
-			$prepared_ids = array();
-
-			foreach ( $media_ids as $object_id ) {
-
-				$replicast_info = API::get_remote_info( \get_post( $object_id ) );
-
-				// Update object ID
-				$media_id = '';
-				if ( ! empty( $replicast_info ) ) {
-					$media_id = $replicast_info[ $site->get_id() ]['id'];
-				}
-
-				$prepared_ids[] = $media_id;
-
-			}
-
-			$pattern     = '/(\\[gallery(?:.*)ids=)\"(' . $source_ids . ')\"((?:.*)\\])/';
-			$replacement = '${1}"' . implode( ',', $prepared_ids ) . '" _replicast="$2"$3';
-			preg_match( $pattern, $post_content, $matches );
-
-			if ( ! empty( $matches[2] ) ) {
-				$post_content = preg_replace( $pattern, $replacement, $post_content );
-			}
-
-		}
-
-		$data['content']['raw'] = $post_content;
-
-		return $data;
-	}
-
-	/**
 	 * Prepare meta.
 	 *
 	 * @since     1.0.0

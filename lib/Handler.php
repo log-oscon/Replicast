@@ -266,9 +266,6 @@ abstract class Handler {
 			$data = $this->prepare_featured_media( $data, $site );
 		}
 
-		// Prepare content
-		$data = $this->prepare_content( $data, $site );
-
 		// Prepare meta
 		$data = $this->prepare_meta( $data, $site );
 
@@ -350,9 +347,6 @@ abstract class Handler {
 		if ( ! empty( $data['featured_media'] ) ) {
 			$data = $this->prepare_featured_media( $data, $site );
 		}
-
-		// Prepare content
-		$data = $this->prepare_content( $data, $site );
 
 		// Prepare meta
 		$data = $this->prepare_meta( $data, $site );
