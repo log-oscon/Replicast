@@ -332,6 +332,9 @@ class PostHandler extends Handler {
 			// Update replicast info
 			API::update_remote_info( $media, $site_id, $media_data );
 
+			// Update related site
+			\wp_set_post_terms( $media_id, $site_id, Plugin::TAXONOMY_SITE );
+
 		}
 
 	}
