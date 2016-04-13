@@ -138,22 +138,22 @@ class API {
 		 * Extend object meta by meta type.
 		 *
 		 * @since     1.0.0
-		 * @param     array     Object meta.
-		 * @param     string    The object meta type.
-		 * @param     int       Object ID.
-		 * @return    array     Possibly-modified object meta.
+		 * @param     array    Object meta.
+		 * @param     array    Details of current content object.
+		 * @return    array    Possibly-modified object meta.
 		 */
-		$prepared_data = \apply_filters( "replicast_get_{$meta_type}_meta", $prepared_data, $meta_type, $object['id'] );
+		$prepared_data = \apply_filters( "replicast_get_{$meta_type}_meta", $prepared_data, $object );
 
 		/**
 		 * Extend object meta.
 		 *
 		 * @since     1.0.0
-		 * @param     array    Object meta.
-		 * @param     int      Object ID.
-		 * @return    array    Possibly-modified object meta.
+		 * @param     array     Object meta.
+		 * @param     array     Details of current content object.
+		 * @param     string    The object meta type.
+		 * @return    array     Possibly-modified object meta.
 		 */
-		return \apply_filters( 'replicast_get_object_meta', $prepared_data, $object['id'] );
+		return \apply_filters( 'replicast_get_object_meta', $prepared_data, $object, $meta_type );
 	}
 
 	/**
@@ -166,25 +166,24 @@ class API {
 	 */
 	public static function get_object_term( $object, $request ) {
 
-		// Get a list of object taxonomies
-		$taxonomies = static::get_object_taxonomies( $object );
-
 		// Get a hierarchical list of object terms
-		$prepared_terms = static::get_object_terms_hierarchical( $object['id'], $taxonomies );
+		$prepared_terms = static::get_object_terms_hierarchical( $object );
 
 		/**
 		 * Extend object terms.
 		 *
 		 * @since     1.0.0
 		 * @param     array    Hierarchical list of object terms.
-		 * @param     int      Object ID.
+		 * @param     array    Details of current content object.
 		 * @return    array    Possibly-modified object terms.
 		 */
-		return \apply_filters( 'replicast_get_object_term', $prepared_terms, $object['id'] );
+		return \apply_filters( 'replicast_get_object_term', $prepared_terms, $object );
 	}
 
 	/**
 	 * Returns all the taxonomies for an object.
+	 *
+	 * @see \get_object_taxonomies()
 	 *
 	 * @since     1.0.0
 	 * @param     array    $object    Details of current content object.
@@ -193,6 +192,7 @@ class API {
 	public static function get_object_taxonomies( $object ) {
 
 		// FIXME: we should soft cache this
+
 		$taxonomies = \get_object_taxonomies( $object['type'], 'objects' );
 
 		/**
@@ -225,25 +225,44 @@ class API {
 	}
 
 	/**
-	 * Retrieves the terms associated with the given object in the supplied
-	 * taxonomies, hierarchically structured.
+	 * Retrieve the terms for an object.
 	 *
 	 * @see \wp_get_object_terms()
 	 *
 	 * @since     1.0.0
-	 * @access    private
-	 * @param     int      $object_id     The ID of the object to retrieve.
-	 * @param     array    $taxonomies    The taxonomies to retrieve terms from.
-	 * @return    array                   Hierarchical list of object terms
+	 * @param     array    $object    Details of current content object.
+	 * @return    array               An array of taxonomy terms, or empty array if no terms are found.
 	 */
-	private static function get_object_terms_hierarchical( $object_id, $taxonomies ) {
+	public static function get_object_terms( $object ) {
 
 		// FIXME: we should soft cache this
-		$terms = \wp_get_object_terms( $object_id, array_keys( $taxonomies ) );
+
+		// Get a list of object taxonomies
+		$taxonomies = static::get_object_taxonomies( $object );
+
+		$terms = \wp_get_object_terms( $object['id'], array_keys( $taxonomies ) );
 
 		if ( empty( $terms ) ) {
 			return array();
 		}
+
+		return $terms;
+	}
+
+	/**
+	 * Retrieves the terms associated with the given object in the supplied
+	 * taxonomies, hierarchically structured.
+	 *
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     array    $object    Details of current content object.
+	 * @return    array               Hierarchical list of object terms
+	 */
+	private static function get_object_terms_hierarchical( $object ) {
+
+		// Retrieve the terms
+		$terms = static::get_object_terms( $object );
 
 		$hierarchical_terms = array();
 		foreach ( $terms as $term ) {
@@ -369,10 +388,10 @@ class API {
 		 *
 		 * @since     1.0.0
 		 * @param     array    Object media.
-		 * @param     int      Object ID.
+		 * @param     array    Details of current content object.
 		 * @return    array    Possibly-modified object media.
 		 */
-		return \apply_filters( 'replicast_get_object_media', $prepared_data, $object['id'] );
+		return \apply_filters( 'replicast_get_object_media', $prepared_data, $object );
 	}
 
 	/**
@@ -520,19 +539,19 @@ class API {
 		 *
 		 * @since    1.0.0
 		 * @param    array     The values of the field.
-		 * @param    int       The object ID.
-		 * @param    string    The object meta type.
+		 * @param    object    The object from the response.
 		 */
-		\do_action( "replicast_update_object_{$meta_type}_meta", $meta, $object->ID, $meta_type );
+		\do_action( "replicast_update_object_{$meta_type}_meta", $meta, $object );
 
 		/**
 		 * Fires immediately after object meta is updated.
 		 *
 		 * @since    1.0.0
 		 * @param    array     The values of the field.
-		 * @param    int       The object ID.
+		 * @param    object    The object from the response.
+		 * @param    string    The object meta type.
 		 */
-		\do_action( "replicast_update_object_meta", $meta, $object->ID );
+		\do_action( "replicast_update_object_meta", $meta, $object, $meta_type );
 
 	}
 
@@ -593,9 +612,9 @@ class API {
 		 *
 		 * @since    1.0.0
 		 * @param    array     The values of the field.
-		 * @param    int       The object ID.
+		 * @param    object    The object from the response.
 		 */
-		\do_action( 'replicast_update_object_term', $terms, $object->ID );
+		\do_action( 'replicast_update_object_term', $terms, $object );
 
 	}
 
@@ -750,9 +769,9 @@ class API {
 		 *
 		 * @since    1.0.0
 		 * @param    array     The values of the field.
-		 * @param    int       The object ID.
+		 * @param    object    The object from the response.
 		 */
-		\do_action( 'replicast_update_object_media', $media, $object->ID );
+		\do_action( 'replicast_update_object_media', $media, $object );
 
 	}
 

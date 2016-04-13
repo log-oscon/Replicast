@@ -74,10 +74,10 @@ class ACF {
 		\add_filter( 'replicast_get_object_media',    array( $this, 'get_object_media' ), 10, 2 );
 		\add_action( 'replicast_update_object_media', array( $this, 'update_object_media' ), 10, 2 );
 
-		\add_filter( 'replicast_get_object_term',           array( $this, 'get_object_term_meta' ), 10, 2 );
+		\add_filter( 'replicast_get_object_term',           array( $this, 'get_object_term_meta' ) );
 		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_term_meta' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_term_meta' ), 10, 2 );
-		\add_action( 'replicast_update_object_term',        array( $this, 'update_object_term_meta' ), 10, 2 );
+		\add_action( 'replicast_update_object_term',        array( $this, 'update_object_term_meta' ) );
 
 
 	}
@@ -225,11 +225,11 @@ class ACF {
 	 * Retrieve ACF meta.
 	 *
 	 * @since     1.0.0
-	 * @param     array     $values       Object meta.
-	 * @param     int       $object_id    The object ID.
-	 * @return    array                   Possibly-modified object meta.
+	 * @param     array    $values    Object meta.
+	 * @param     array    $object    The object.
+	 * @return    array               Possibly-modified object meta.
 	 */
-	public function get_object_meta( $values, $object_id ) {
+	public function get_object_meta( $values, $object ) {
 
 		$prepared_meta = array();
 
@@ -244,7 +244,7 @@ class ACF {
 			 * FIXME: I don't know if it's a good idea use the raw/rendered keys like the core uses
 			 *        with posts and pages. Maybe we should use some key that relates to ACF?
 			 */
-			if ( $field = \get_field_object( $meta_key, $object_id ) ) {
+			if ( $field = \get_field_object( $meta_key, $object['id'] ) ) {
 				$prepared_meta[ $meta_key ] = array(
 					'raw'      => $field,
 					'rendered' => $meta_value,
@@ -490,13 +490,13 @@ class ACF {
 	 * Retrieve ACF media.
 	 *
 	 * @since     1.0.0
-	 * @param     array    $data         Object media.
-	 * @param     int      $object_id    The object ID.
-	 * @return    array                  Possibly-modified object media.
+	 * @param     array    $data      Object media.
+	 * @param     array    $object    The object.
+	 * @return    array               Possibly-modified object media.
 	 */
-	public function get_object_media( $data, $object_id ) {
+	public function get_object_media( $data, $object ) {
 
-		$fields = \get_field_objects( $object_id );
+		$fields = \get_field_objects( $object['id'] );
 
 		if ( ! $fields ) {
 			return $data;
@@ -518,7 +518,7 @@ class ACF {
 
 			$relations = array(
 				'post' => array(
-					$object_id => array(
+					$object['id'] => array(
 						$field_type => $field_name,
 					),
 				),
@@ -553,10 +553,10 @@ class ACF {
 	 * Update ACF media.
 	 *
 	 * @since     1.0.0
-	 * @param     array     $media        The values of the field.
-	 * @param     object    $object_id    The object ID.
+	 * @param     array     $media     The values of the field.
+	 * @param     object    $object    The object.
 	 */
-	public function update_object_media( $media, $object_id ) {
+	public function update_object_media( $media, $object ) {
 
 		foreach ( $media as $media_id => $media_data ) {
 
@@ -576,18 +576,18 @@ class ACF {
 
 					// Image
 					if ( $field_type === 'image' ) {
-						\update_field( $field_key, $value, $object_id );
+						\update_field( $field_key, $value, $object->ID );
 						continue;
 					}
 
 					// Gallery
-					$previous_values = \get_field( $field_key, $object_id, false );
+					$previous_values = \get_field( $field_key, $object->ID, false );
 
 					if ( ! is_array( $previous_values ) ) {
 						$previous_values = array( $previous_values );
 					}
 
-					\update_field( $field_key, array_merge( $previous_values, array( $value ) ), $object_id );
+					\update_field( $field_key, array_merge( $previous_values, array( $value ) ), $object->ID );
 
 				}
 
@@ -604,11 +604,10 @@ class ACF {
 	 * ACF uses options (`wp_options` table) instead of using real term meta (`wp_termmeta` table).
 	 *
 	 * @since     1.0.0
-	 * @param     array     $terms        Object terms.
-	 * @param     int       $object_id    The object ID.
-	 * @return    array                   Possibly-modified object terms.
+	 * @param     array    $terms     Object terms.
+	 * @return    array               Possibly-modified object terms.
 	 */
-	public function get_object_term_meta( $terms, $object_id ) {
+	public function get_object_term_meta( $terms ) {
 
 		// FIXME: and how about child terms?
 		foreach ( $terms as $term ) {
@@ -662,11 +661,10 @@ class ACF {
 	 * Update ACF terms "meta".
 	 *
 	 * @since     1.0.0
-	 * @param     array     $terms        Object terms.
-	 * @param     int       $object_id    The object ID.
-	 * @return    array                   Possibly-modified object terms.
+	 * @param     array     $terms    Object terms.
+	 * @return    array               Possibly-modified object terms.
 	 */
-	public function update_object_term_meta( $terms, $object_id ) {
+	public function update_object_term_meta( $terms ) {
 
 		foreach ( $terms as $term_data ) {
 
