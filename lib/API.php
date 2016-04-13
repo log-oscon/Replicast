@@ -224,15 +224,13 @@ class API {
 	private static function get_object_terms_hierarchical( $object_id, $taxonomies ) {
 
 		// FIXME: we should soft cache this
-
-		$hierarchical_terms = array();
-
 		$terms = \wp_get_object_terms( $object_id, array_keys( $taxonomies ) );
 
 		if ( empty( $terms ) ) {
 			return array();
 		}
 
+		$hierarchical_terms = array();
 		foreach ( $terms as $term ) {
 
 			if ( $term->parent > 0 ) {
