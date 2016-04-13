@@ -316,11 +316,7 @@ class API {
 
 			$galleries = \get_post_galleries( $object['id'], false );
 
-			foreach ( $galleries as $index => $gallery ) {
-
-				if ( empty( $gallery['ids'] ) ) {
-					continue;
-				}
+			foreach ( $galleries as $gallery ) {
 
 				$media_ids = explode( ',', $gallery['ids'] );
 
@@ -331,7 +327,7 @@ class API {
 					$relations = array(
 						'post' => array(
 							$object['id'] => array(
-								'gallery_shortcode' => $index,
+								'gallery_shortcode' => 'gallery_shortcode',
 							),
 						),
 					);
