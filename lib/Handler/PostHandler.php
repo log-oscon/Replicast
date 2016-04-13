@@ -107,16 +107,12 @@ class PostHandler extends Handler {
 			return $data;
 		}
 
-		// Prepare galleries media
 		$post_content = $data['content']['raw'];
 
-		preg_match_all( '/' . \get_shortcode_regex() . '/', $post_content, $galleries, PREG_SET_ORDER );
+		// Get galleries
+		$galleries = API::get_galleries( $post_content );
 
 		foreach ( $galleries as $gallery ) {
-
-			if ( $gallery[2] !== 'gallery' ) {
-				continue;
-			}
 
 			$atts = \shortcode_parse_atts( $gallery[3] );
 

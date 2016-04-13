@@ -314,11 +314,18 @@ class API {
 		// Get galleries media
 		if ( static::is_post( $object ) && ! empty( $object['content']['raw'] )  ) {
 
-			$galleries = \get_post_galleries( $object['id'], false );
+			// Get galleries
+			$galleries = static::get_galleries( $object['content']['raw'] );
 
 			foreach ( $galleries as $gallery ) {
 
-				$media_ids = explode( ',', $gallery['ids'] );
+				$atts = \shortcode_parse_atts( $gallery[3] );
+
+				if ( empty( $atts['ids'] ) ) {
+					continue;
+				}
+
+				$media_ids = explode( ',', $atts['ids'] );
 
 				foreach ( $media_ids as $media_id ) {
 
@@ -410,6 +417,20 @@ class API {
 		$data[ $source_id ]['_relations'] = array_merge_recursive( $data[ $source_id ]['_relations'], $relations );
 
 		return $data[ $source_id ];
+	}
+
+	/**
+	 * Retrieves galleries from an object.
+	 *
+	 * @uses  \get_shortcode_regex()
+	 *
+	 * @since     1.0.0
+	 * @param     string    $content    Object content.
+	 * @return    array                 Parsed galleries.
+	 */
+	public static function get_galleries( $content ) {
+		preg_match_all( '/' . \get_shortcode_regex( array( 'gallery' ) ) . '/', $content, $galleries, PREG_SET_ORDER );
+		return $galleries;
 	}
 
 	/**
