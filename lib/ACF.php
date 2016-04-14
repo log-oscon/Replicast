@@ -753,6 +753,50 @@ class ACF {
 	 */
 	public function update_object_term_media( $media, $object ) {
 
+		// Retrieve the terms
+		$terms = API::get_object_terms( $object->ID, $object->post_type );
+
+		$prepared_terms = array();
+		foreach ( $terms as $term ) {
+			$prepared_terms[ API::get_source_id( $term->term_id, 'term' ) ] = $term;
+		}
+
+		foreach ( $media as $media_id => $media_data ) {
+
+			if ( empty( $media_data['_relations']['term'] ) ) {
+				continue;
+			}
+
+			foreach ( $media_data['_relations']['term'] as $source_term_id => $relations ) {
+
+				if ( ! array_key_exists( $source_term_id, $prepared_terms ) ) {
+					continue;
+				}
+
+				foreach ( $relations as $field_type => $field_key ) {
+
+					if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+						continue;
+					}
+
+					$value = $media[ $media_id ]['id'];
+					$term  = $prepared_terms[ $source_term_id ];
+
+					// Image
+					if ( $field_type === 'image' ) {
+						\update_field( $field_key, $value, "{$term->taxonomy}_{$term->term_id}" );
+						continue;
+					}
+
+					// Gallery
+					// TODO:
+
+				}
+
+			}
+
+		}
+
 	}
 
 }
