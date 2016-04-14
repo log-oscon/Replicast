@@ -316,10 +316,11 @@ class PostAdmin extends Admin {
 	 */
 	public function hide_row_actions( $defaults, $object ) {
 
-		$object_id = API::get_id( $object );
-		$meta_type = API::get_meta_type( $object );
+		$object_id   = API::get_id( $object );
+		$meta_type   = API::get_meta_type( $object );
+		$source_info = API::get_source_info( $object_id, $meta_type );
 
-		if ( empty( $source_info = API::get_source_info( $object_id, $meta_type ) ) ) {
+		if ( empty( $source_info ) ) {
 			return $defaults;
 		}
 
@@ -372,7 +373,8 @@ class PostAdmin extends Admin {
 			return $content;
 		}
 
-		if ( empty( $source_info = API::get_source_info( $object_id ) ) ) {
+		$source_info = API::get_source_info( $object_id );
+		if ( empty( $source_info ) ) {
 			return $content;
 		}
 
@@ -500,7 +502,8 @@ class PostAdmin extends Admin {
 		$height          = $metadata['height'];
 		$is_intermediate = false;
 
-		if ( $intermediate = \image_get_intermediate_size( $attachment_id, $size ) ) {
+		$intermediate = \image_get_intermediate_size( $attachment_id, $size );
+		if ( $intermediate ) {
 			$url             = $intermediate['file'];
 			$width           = $intermediate['width'];
 			$height          = $intermediate['height'];
@@ -550,7 +553,8 @@ class PostAdmin extends Admin {
 			$attachment_id = $attachment->ID;
 		}
 
-		if ( empty( $source_info = API::get_source_info( $attachment_id ) ) ) {
+		$source_info = API::get_source_info( $attachment_id );
+		if ( empty( $source_info ) ) {
 			return $response;
 		}
 
