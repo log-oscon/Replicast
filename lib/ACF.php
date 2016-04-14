@@ -569,7 +569,7 @@ class ACF {
 
 				foreach ( $relations as $field_type => $field_key ) {
 
-					if ( $field_type !== 'gallery' && $field_type !== 'image' ) {
+					if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
 						continue;
 					}
 
@@ -642,6 +642,10 @@ class ACF {
 
 				$field_type = \acf_extract_var( $field_value, 'type' );
 
+				if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+					continue;
+				}
+
 				// Image
 				if ( $field_type === 'image' ) {
 					$data['replicast']['term'][ $term_id ]->acf[ $field_key ]['id'] = $this->prepare_image( $field_value, $site );
@@ -692,15 +696,23 @@ class ACF {
 	public function get_object_term_media( $data, $object ) {
 
 		// Retrieve the terms
-		$terms = API::get_object_terms( $object );
+		$terms = API::get_object_terms( $object['id'], $object['type'] );
 
 		foreach ( $terms as $term ) {
 
 			$fields = \get_fields( "{$term->taxonomy}_{$term->term_id}" );
 
+			if ( empty( $fields ) ) {
+				continue;
+			}
+
 			foreach ( $fields as $field_key => $field_value ) {
 
 				$field_type = \acf_extract_var( $field_value, 'type' );
+
+				if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+					continue;
+				}
 
 				$relations = array(
 					'term' => array(

@@ -181,19 +181,46 @@ class API {
 	}
 
 	/**
+	 * Retrieve the terms for an object.
+	 *
+	 * @see \wp_get_object_terms()
+	 *
+	 * @since     1.0.0
+	 * @param     int       $object_id      The object ID.
+	 * @param     string    $object_type    The object type.
+	 * @return    array                     An array of taxonomy terms, or empty array if no terms are found.
+	 */
+	public static function get_object_terms( $object_id, $object_type ) {
+
+		// FIXME: we should soft cache this
+
+		// Get a list of object taxonomies
+		$taxonomies = static::get_object_taxonomies( $object_id, $object_type );
+
+		$terms = \wp_get_object_terms( $object_id, array_keys( $taxonomies ) );
+
+		if ( empty( $terms ) ) {
+			return array();
+		}
+
+		return $terms;
+	}
+
+	/**
 	 * Returns all the taxonomies for an object.
 	 *
 	 * @see \get_object_taxonomies()
 	 *
 	 * @since     1.0.0
-	 * @param     array    $object    Details of current content object.
-	 * @return    array               All taxonomy names or objects for the given object.
+	 * @param     int       $object_id      The object ID.
+	 * @param     string    $object_type    The object type.
+	 * @return    array                     All taxonomy names or objects for the given object.
 	 */
-	public static function get_object_taxonomies( $object ) {
+	public static function get_object_taxonomies( $object_id, $object_type ) {
 
 		// FIXME: we should soft cache this
 
-		$taxonomies = \get_object_taxonomies( $object['type'], 'objects' );
+		$taxonomies = \get_object_taxonomies( $object_type, 'objects' );
 
 		/**
 		 * Filter for suppressing taxonomies.
@@ -204,7 +231,7 @@ class API {
 		 * @param     int      The object ID.
 		 * @return    array    Possibly-modified name(s) of the suppressed taxonomies.
 		 */
-		$suppressed_taxonomies = \apply_filters( 'replicast_suppress_object_taxonomies', array(), $taxonomies, $object['id'] );
+		$suppressed_taxonomies = \apply_filters( 'replicast_suppress_object_taxonomies', array(), $taxonomies, $object_id );
 
 		$prepared_taxonomies = array();
 		foreach ( $taxonomies as $taxonomy_name => $taxonomy ) {
@@ -225,31 +252,6 @@ class API {
 	}
 
 	/**
-	 * Retrieve the terms for an object.
-	 *
-	 * @see \wp_get_object_terms()
-	 *
-	 * @since     1.0.0
-	 * @param     array    $object    Details of current content object.
-	 * @return    array               An array of taxonomy terms, or empty array if no terms are found.
-	 */
-	public static function get_object_terms( $object ) {
-
-		// FIXME: we should soft cache this
-
-		// Get a list of object taxonomies
-		$taxonomies = static::get_object_taxonomies( $object );
-
-		$terms = \wp_get_object_terms( $object['id'], array_keys( $taxonomies ) );
-
-		if ( empty( $terms ) ) {
-			return array();
-		}
-
-		return $terms;
-	}
-
-	/**
 	 * Retrieves the terms associated with the given object in the supplied
 	 * taxonomies, hierarchically structured.
 	 *
@@ -262,7 +264,7 @@ class API {
 	private static function get_object_terms_hierarchical( $object ) {
 
 		// Retrieve the terms
-		$terms = static::get_object_terms( $object );
+		$terms = static::get_object_terms( $object['id'], $object['type'] );
 
 		$hierarchical_terms = array();
 		foreach ( $terms as $term ) {
