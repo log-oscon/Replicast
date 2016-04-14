@@ -80,6 +80,7 @@ class ACF {
 		\add_action( 'replicast_update_object_term',        array( $this, 'update_object_term_meta' ) );
 
 		\add_filter( 'replicast_get_object_media',    array( $this, 'get_object_term_media' ), 20, 2 );
+		\add_action( 'replicast_update_object_media', array( $this, 'update_object_term_media' ), 20, 2 );
 
 	}
 
@@ -741,6 +742,17 @@ class ACF {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Update ACF terms media.
+	 *
+	 * @since     1.0.0
+	 * @param     array     $media     The values of the field.
+	 * @param     object    $object    The object.
+	 */
+	public function update_object_term_media( $media, $object ) {
+
 	}
 
 }
