@@ -601,12 +601,18 @@ class API {
 
 		}
 
-		foreach ( $prepared_ids as $taxonomy => $ids ) {
-			\wp_set_object_terms(
-				$object->ID,
-				$ids,
-				$taxonomy
-			);
+		// Get a list of object taxonomies
+		$taxonomies = array_keys( static::get_object_taxonomies( $object->ID, $object->post_type ) );
+
+		// Relates an object to a term, or a set of terms, and taxonomy type
+		foreach ( $taxonomies as $taxonomy ) {
+
+			$ids = array();
+			if ( array_key_exists( $taxonomy, $prepared_ids ) ) {
+				$ids = $prepared_ids[ $taxonomy ];
+			}
+
+			\wp_set_object_terms( $object->ID, $ids, $taxonomy );
 		}
 
 		/**
