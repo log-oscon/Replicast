@@ -54,6 +54,7 @@ class PostAdmin extends Admin {
 
 		\add_filter( 'user_has_cap',                 array( $this, 'manage_posts_edit' ), 10, 3 );
 		\add_filter( 'wp_get_attachment_image_src',  array( $this, 'get_attachment_image_src' ), 10, 3 );
+		\add_filter( 'wp_calculate_image_srcset',    array( $this, 'calculate_image_srcset' ), 10, 5 );
 		\add_filter( 'wp_get_attachment_url',        array( $this, 'get_attachment_url' ), 10, 2 );
 		\add_filter( 'wp_prepare_attachment_for_js', array( $this, 'prepare_attachment_for_js' ), 10, 3 );
 
@@ -515,6 +516,53 @@ class PostAdmin extends Admin {
 		}
 
 		return array( $url, $width, $height, $is_intermediate );
+	}
+
+	/**
+	 * Filter an image's 'srcset' sources.
+	 *
+	 * @since     1.0.0
+	 * @param     array     $sources          Source data to include in the 'srcset'.
+	 * @param     array     $size_array       Array of width and height values in pixels (in that order).
+	 * @param     string    $image_src        The 'src' of the image.
+	 * @param     array     $image_meta       The image meta data as returned by 'wp_get_attachment_metadata()'.
+	 * @param     int       $attachment_id    Image attachment ID or 0.
+	 * @return                                Possibly-modified source data to include in the 'srcset'.
+	 */
+	public function calculate_image_srcset( $sources, $size_array, $image_src, $image_meta, $attachment_id ) {
+
+		if ( empty( API::get_source_info( $attachment_id ) ) ) {
+			return $sources;
+		}
+
+		/**
+		 * Remove the local baseurl that was previously added by 'wp_calculate_image_srcset()'
+		 * on all the image sources.
+		 *
+		 * @see  \wp_calculate_image_srcset()
+		 */
+
+		// Retrieve the uploads sub-directory from the full size remote image
+		$remote_dirname = \_wp_get_attachment_relative_path( $image_src );
+		if ( $remote_dirname ) {
+			$remote_dirname = trailingslashit( $remote_dirname );
+		}
+
+		$pattern = trailingslashit( \_wp_upload_dir_baseurl() ) . $remote_dirname;
+
+		foreach ( $sources as $key => $source ) {
+			$source_url = str_replace( $pattern, '', $source['url'] );
+
+			if ( strrpos( $source_url, 'http', -strlen( $source_url ) ) !== false ) {
+				$sources[ $key ]['url'] = $source_url;
+				continue;
+			}
+
+			// Full width image
+			$sources[ $key ]['url'] = $image_src;
+		}
+
+		return $sources;
 	}
 
 	/**
