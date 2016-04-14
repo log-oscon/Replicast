@@ -613,7 +613,22 @@ class ACF {
 
 		// FIXME: and how about child terms?
 		foreach ( $terms as $term ) {
-			$term->acf = \get_fields( "{$term->taxonomy}_{$term->term_id}" );
+
+			$term->acf = array();
+
+			$fields = \get_field_objects( "{$term->taxonomy}_{$term->term_id}" );
+
+			if ( ! $fields ) {
+				continue;
+			}
+
+			foreach ( $fields as $field_key => $field_value ) {
+				$term->acf[ $field_key ] = array(
+					'key'   => $field_value['key'],
+					'value' => $field_value['value'],
+				);
+			}
+
 		}
 
 		return $terms;
@@ -641,7 +656,7 @@ class ACF {
 
 			foreach ( $term->acf as $field_key => $field_value ) {
 
-				$field_type = \acf_extract_var( $field_value, 'type' );
+				$field_type = \acf_extract_var( $field_value['value'], 'type' );
 
 				if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
 					continue;
@@ -649,7 +664,8 @@ class ACF {
 
 				// Image
 				if ( $field_type === 'image' ) {
-					$data['replicast']['term'][ $term_id ]->acf[ $field_key ]['id'] = $this->prepare_image( $field_value, $site );
+					$media_id = $this->prepare_image( $field_value['value'], $site );
+					$data['replicast']['term'][ $term_id ]->acf[ $field_key ]['value']['id'] = $media_id;
 					continue;
 				}
 
@@ -678,8 +694,8 @@ class ACF {
 				continue;
 			}
 
-			foreach ( $term_data['acf'] as $key => $value ) {
-				\update_field( $key, $value, "{$term_data['taxonomy']}_{$term_data['term_id']}" );
+			foreach ( $term_data['acf'] as $field_key => $field_value ) {
+				\update_field( $field_value['key'], $field_value['value'], "{$term_data['taxonomy']}_{$term_data['term_id']}" );
 			}
 
 		}
