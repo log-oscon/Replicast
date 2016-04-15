@@ -64,6 +64,7 @@ class Admin {
 	 * @since    1.0.0
 	 */
 	public function enqueue_styles() {
+
 		\wp_enqueue_style(
 			$this->plugin->get_name(),
 			\plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/replicast.css',
@@ -71,6 +72,7 @@ class Admin {
 			$this->plugin->get_version(),
 			'all'
 		);
+
 	}
 
 	/**
@@ -79,6 +81,11 @@ class Admin {
 	 * @since    1.0.0
 	 */
 	public function enqueue_scripts() {
+
+		if ( \is_super_admin() ) {
+			return;
+		}
+
 		\wp_enqueue_script(
 			$this->plugin->get_name(),
 			\plugin_dir_url( dirname( __FILE__ ) ) . 'assets/js/replicast.js',
@@ -86,6 +93,7 @@ class Admin {
 			$this->plugin->get_version(),
 			true
 		);
+
 	}
 
 	/**
