@@ -13,8 +13,6 @@
 namespace Replicast;
 
 use Replicast\Client;
-use Replicast\Admin\Site;
-use Replicast\Handler\PostHandler;
 
 /**
  * The dashboard-specific functionality of the plugin.
@@ -48,18 +46,54 @@ class Admin {
 	}
 
 	/**
+	 * Register hooks.
+	 *
+	 * @since    1.0.0
+	 */
+	public function register() {
+
+		\add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
+		\add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		\add_action( 'admin_notices',         array( $this, 'display_admin_notices' ) );
+
+	}
+
+	/**
 	 * Register the stylesheets for the Dashboard.
 	 *
 	 * @since    1.0.0
 	 */
 	public function enqueue_styles() {
+
 		\wp_enqueue_style(
 			$this->plugin->get_name(),
-			\plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/admin.css',
+			\plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/replicast.css',
 			array(),
 			$this->plugin->get_version(),
 			'all'
 		);
+
+	}
+
+	/**
+	 * Register the scripts for the Dashboard.
+	 *
+	 * @since    1.0.0
+	 */
+	public function enqueue_scripts() {
+
+		if ( \is_super_admin() ) {
+			return;
+		}
+
+		\wp_enqueue_script(
+			$this->plugin->get_name(),
+			\plugin_dir_url( dirname( __FILE__ ) ) . 'assets/js/replicast.js',
+			array( 'jquery' ),
+			$this->plugin->get_version(),
+			true
+		);
+
 	}
 
 	/**
@@ -99,332 +133,13 @@ class Admin {
 	}
 
 	/**
-	 * Show admin column contents.
-	 *
-	 * @since    1.0.0
-	 * @param    string    $column       The name of the column to display.
-	 * @param    int       $object_id    The current object ID.
-	 */
-	function manage_custom_column( $column, $object_id ) {
-
-		if ( $column !== 'replicast' ) {
-			return;
-		}
-
-		$remote_info = static::get_remote_info( $object_id );
-
-		$html = sprintf(
-			'<span class="dashicons dashicons-%s"></span>',
-			$remote_info ? 'yes' : 'no'
-		);
-
-		if ( ! empty( $remote_info['edit_link'] ) ) {
-			$html = sprintf(
-				'<a href="%s" title="%s">%s</a>',
-				\esc_url( $remote_info['edit_link'] ),
-				\esc_attr__( 'Edit', 'replicast' ),
-				$html
-			);
-		}
-
-		/**
-		 * Filter the column contents.
-		 *
-		 * @since     1.0.0
-		 * @param     mixed       $remote_info    Single metadata value, or array of values.
-		 *                                        If the $meta_type or $object_id parameters are invalid, false is returned.
-		 * @param     \WP_Post    $object         The current object ID.
-		 * @return    string                      Possibly-modified column contents.
-		 */
-		echo \apply_filters( 'manage_custom_column_html', $html, $remote_info, $object_id );
-
-	}
-
-	/**
-	 * Show admin column.
-	 *
-	 * @since     1.0.0
-	 * @param     array     $columns      An array of column names.
-	 * @param     string    $post_type    The post type slug.
-	 * @return    array                   Possibly-modified array of column names.
-	 */
-	public function manage_columns( $columns, $post_type = 'page' ) {
-
-		if ( ! in_array( $post_type, Site::get_post_types() ) ) {
-			return $columns;
-		}
-
-		/**
-		 * Filter the column header title.
-		 *
-		 * @since     1.0.0
-		 * @param     string    Column header title.
-		 * @return    string    Possibly-modified column header title.
-		 */
-		$title = \apply_filters( 'replicast_manage_columns_title', \__( 'Replicast', 'replicast' ) );
-
-		/**
-		 * Filter the columns displayed.
-		 *
-		 * @since     1.0.0
-		 * @param     array     $columns      An array of column names.
-		 * @param     string    $post_type    The object type slug.
-		 * @return    array                   Possibly-modified array of column names.
-		 */
-		return \apply_filters(
-			'replicast_manage_columns',
-			array_merge( $columns, array( 'replicast' => $title ) ),
-			$post_type
-		);
-	}
-
-	/**
-	 * Dynamically filter a user's capabilities.
-	 *
-	 * @since      1.0.0
-	 * @param      array       $allcaps    An array of all the user's capabilities.
-	 * @param      array       $caps       Actual capabilities for meta capability.
-	 * @param      array       $args       Optional parameters passed to has_cap(), typically object ID.
-	 * @param      \WP_User    $user       The user object.
-	 * @return     array                   Possibly-modified array of all the user's capabilities.
-	 */
-	public function hide_edit_link( $allcaps, $caps, $args, $user ) {
-
-		// Bail out if not admin and bypass REST API requests
-		if ( ! \is_admin() ) {
-			return $allcaps;
-		}
-
-		// Bail out if we're not asking about a post
-		if ( $args[0] !== 'edit_post' ) {
-			return $allcaps;
-		}
-
-		// Check if the current object is an original or a duplicate
-		if ( ! static::get_remote_info( $args[2] ) ) {
-			return $allcaps;
-		}
-
-		// Disable 'edit_posts', 'edit_published_posts' and 'edit_others_posts'
-		if ( in_array( $cap, array( 'edit_posts', 'edit_published_posts', 'edit_others_posts' ) ) ) {
-			$allcaps[ $cap ] = false;
-		}
-
-		return $allcaps;
-	}
-
-	/**
-	 * Filter the list of row action links.
-	 *
-	 * @param     array       $defaults    An array of row actions.
-	 * @param     \WP_Post    $object      The current object.
-	 * @return    array                    Possibly-modified array of row actions.
-	 */
-	public function hide_row_actions( $defaults, $object ) {
-
-		// Check if the current object is an original or a duplicate
-		if ( ! $remote_info = static::get_remote_info( $object->ID ) ) {
-			return $defaults;
-		}
-
-		/**
-		 * Extend the list of unsupported row action links.
-		 *
-		 * @since     1.0.0
-		 * @param     array       $defaults    An array of row actions.
-		 * @param     \WP_Post    $object      The current object.
-		 * @return    array                    Possibly-modified array of row actions.
-		 */
-		$defaults = \apply_filters( 'replicast_hide_row_actions', $defaults, $object );
-
-		// Force the removal of unsupported default actions
-		unset( $defaults['edit'] );
-		unset( $defaults['inline hide-if-no-js'] );
-		unset( $defaults['trash'] );
-
-		// New set of actions
-		$actions = array();
-
-		// 'Edit link' points to the object original location
-		$actions['edit'] = sprintf(
-			'<a href="%s" title="%s">%s</a>',
-			\esc_url( $remote_info['edit_link'] ),
-			\esc_attr__( 'Edit', 'replicast' ),
-			\__( 'Edit', 'replicast' )
-		);
-
-		// Re-order actions
-		foreach ( $defaults as $key => $value ) {
-			$actions[ $key ] = $value;
-		}
-
-		return $actions;
-	}
-
-	/**
-	 * Triggered whenever a post is published, or if it is edited and
-	 * the status is changed to publish.
-	 *
-	 * @since    1.0.0
-	 * @param    int         $post_id                      The post ID.
-	 * @param    \WP_Post    $post                         The \WP_Post object.
-	 * @param    \WP_Post    $post_before    (optional)    The \WP_Post object before the update. Only for attachments.
-	 */
-	public function on_save_post( $post_id, \WP_Post $post, $post_before = null ) {
-
-		// Bail out if not admin and bypass REST API requests
-		if ( ! \is_admin() ) {
-			return;
-		}
-
-		// If post is an autosave, return
-		if ( \wp_is_post_autosave( $post_id ) ) {
-			return;
-		}
-
-		// If post is a revision, return
-		if ( \wp_is_post_revision( $post_id ) ) {
-			return;
-		}
-
-		// If current user can't edit posts, return
-		if ( ! \current_user_can( 'edit_post', $post_id ) ) {
-			return;
-		}
-
-		// Posts with trash status are processed in \Request\Admin on_trash_post
-		if ( $post->post_status === 'trash' ) {
-			return;
-		}
-
-		// Double check post status
-		if ( ! in_array( $post->post_status, Site::get_post_status() ) ) {
-			return;
-		}
-
-		// Admin notices
-		$notices = array();
-
-		// Get sites for replication
-		$sites = $this->get_sites( $post );
-
-		//
-		if ( \has_post_thumbnail( $post_id ) ) {
-			$featured_media_id = \get_post_thumbnail_id( $post_id );
-
-			$featured_media_handler = new PostHandler( \get_post( $featured_media_id ) );
-			$featured_media_handler->handle_save( $sites );
-		}
-
-		// Prepares post data for replication
-		$post_handler = new PostHandler( $post );
-		$notices = $post_handler->handle_save( $sites );
-
-		// Set admin notices
-		if ( ! empty( $notices ) ) {
-			$this->set_admin_notice( $notices );
-		}
-
-	}
-
-	/**
-	 * Fired when a post (or page) is about to be trashed.
-	 *
-	 * @since    1.0.0
-	 * @param    int    $post_id    The post ID.
-	 */
-	public function on_trash_post( $post_id ) {
-
-		// Bail out if not admin and bypass REST API requests
-		if ( ! \is_admin() ) {
-			return;
-		}
-
-		// If current user can't delete posts, return
-		if ( ! \current_user_can( 'delete_posts' ) ) {
-			return;
-		}
-
-		// Retrieves post data given a post ID
-		$post = \get_post( $post_id );
-
-		if ( ! $post ) {
-			return;
-		}
-
-		// Double check post status
-		if ( $post->post_status !== 'trash' ) {
-			return;
-		}
-
-		// Admin notices
-		$notices = array();
-
-		// Get sites for replication
-		$sites = $this->get_sites( $post );
-
-		// Prepares post data for replication
-		$handler = new PostHandler( $post );
-		$notices = $handler->handle_delete( $sites );
-
-		// Set admin notices
-		if ( ! empty( $notices ) ) {
-			$this->set_admin_notice( $notices );
-		}
-
-	}
-
-	/**
-	 * Fired when a post, page or attachment is permanently deleted.
-	 *
-	 * @since    1.0.0
-	 * @param    int    $post_id    The post ID.
-	 */
-	public function on_delete_post( $post_id ) {
-
-		// Bail out if not admin and bypass REST API requests
-		if ( ! \is_admin() ) {
-			return;
-		}
-
-		// If current user can't delete posts, return
-		if ( ! \current_user_can( 'delete_posts' ) ) {
-			return;
-		}
-
-		// Retrieves post data given a post ID
-		$post = \get_post( $post_id );
-
-		if ( ! $post ) {
-			return;
-		}
-
-		// Admin notices
-		$notices = array();
-
-		// Get sites for replication
-		$sites = $this->get_sites( $post );
-
-		// Prepares post data for replication
-		$handler = new PostHandler( $post );
-		$notices = $handler->handle_delete( $sites, true );
-
-		// Set admin notices
-		if ( ! empty( $notices ) ) {
-			$this->set_admin_notice( $notices );
-		}
-
-	}
-
-	/**
 	 * Returns an array of sites.
 	 *
 	 * @since     1.0.0
-	 * @access    private
 	 * @param     \WP_Post    $post    The post object.
 	 * @return    array                List of sites.
 	 */
-	private function get_sites( $post ) {
+	public function get_sites( $post ) {
 
 		$terms = \get_the_terms( $post->ID, Plugin::TAXONOMY_SITE );
 
@@ -442,7 +157,7 @@ class Admin {
 
 		$sites = array();
 		foreach ( $terms as $term ) {
-			$sites[ $term->term_id ] = static::get_site( $term );
+			$sites[ $term->term_id ] = $this->get_site( $term );
 		}
 
 		return $sites;
@@ -455,7 +170,7 @@ class Admin {
 	 * @param     int|\WP_Term    $term    The term ID or the term object.
 	 * @return    \Replicast\Client        A site object.
 	 */
-	public static function get_site( $term ) {
+	public function get_site( $term ) {
 
 		if ( is_numeric( $term ) ) {
 			$term = \get_term( $term );
@@ -465,8 +180,9 @@ class Admin {
 
 		if ( ! $site || ! $site instanceof Client ) {
 
+			$url    = \parse_url( \get_term_meta( $term->term_id, 'api_url', true ) );
 			$client = new \GuzzleHttp\Client( array(
-				'base_uri' => \untrailingslashit( \get_term_meta( $term->term_id, 'site_url', true ) ),
+				'base_uri' => sprintf( '%s://%s', $url['scheme'], $url['host'] ),
 				'debug'    => \apply_filters( 'replicast_client_debug', defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG )
 			) );
 
@@ -479,25 +195,12 @@ class Admin {
 	}
 
 	/**
-	 * Retrieve remote info from an object.
-	 *
-	 * @since     1.0.0
-	 * @param     \WP_Post    $object    The object ID.
-	 * @return    mixed                  Single metadata value, or array of values.
-	 *                                   If the $meta_type or $object_id parameters are invalid, false is returned.
-	 */
-	public static function get_remote_info( $object_id ) {
-		return \get_post_meta( $object_id, Plugin::REPLICAST_REMOTE, true );
-	}
-
-	/**
 	 * Set admin notices.
 	 *
 	 * @since     1.0.0
-	 * @access    private
 	 * @param     array    $notices    Array of notices.
 	 */
-	private function set_admin_notice( $notices ) {
+	public function set_admin_notice( $notices ) {
 
 		$current_user = \wp_get_current_user();
 		$rendered     = array();

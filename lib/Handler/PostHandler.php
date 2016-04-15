@@ -14,6 +14,7 @@ namespace Replicast\Handler;
 
 use Replicast\API;
 use Replicast\Handler;
+use Replicast\Plugin;
 
 /**
  * Handles ´post´ content type replication.
@@ -32,11 +33,14 @@ class PostHandler extends Handler {
 	 * @param    \WP_Post    $post    Post object.
 	 */
 	public function __construct( \WP_Post $post ) {
-		$post_type         = \get_post_type_object( $post->post_type );
-		$this->rest_base   = ! empty( $post_type->rest_base ) ? $post_type->rest_base : $post_type->name;
-		$this->object_type = $post_type;
+
+		$obj = \get_post_type_object( $post->post_type );
+
+		$this->rest_base   = ! empty( $obj->rest_base ) ? $obj->rest_base : $obj->name;
 		$this->object      = $post;
+		$this->object_type = $post->post_type;
 		$this->data        = $this->get_object_data();
+
 	}
 
 	/**
@@ -49,8 +53,7 @@ class PostHandler extends Handler {
 	 */
 	public function prepare_page( $data, $site ) {
 
-		// Unset page template if empty
-		// @see https://github.com/WP-API/WP-API/blob/develop/lib/endpoints/class-wp-rest-posts-controller.php#L1553
+		// Remove page template if empty
 		if ( empty( $data['template'] ) ) {
 			unset( $data['template'] );
 		}
@@ -70,66 +73,90 @@ class PostHandler extends Handler {
 
 		// Force attachment status to be 'publish'
 		// FIXME: review this later on
- 		if ( ! empty( $data['status'] ) && $data['status'] === 'inherit' ) {
+		if ( ! empty( $data['status'] ) && $data['status'] === 'inherit' ) {
 			$data['status'] = 'publish';
- 		}
+		}
 
 		// Update the "uploaded to" post ID with the associated remote post ID, if exists
 		if ( $data['type'] !== 'attachment' && ! empty( $data['post'] ) ) {
 
-			// Get replicast info
-			$replicast_info = API::get_replicast_info( \get_post( $data['post'] ) );
+			$replicast_info = API::get_remote_info( \get_post( $data['post'] ) );
 
-			$data['post'] = $replicast_info[ $site->get_id() ]['id'];
-
-		} else {
+			// Update object ID
 			$data['post'] = '';
+			if ( ! empty( $replicast_info ) ) {
+				$data['post'] = $replicast_info[ $site->get_id() ]['id'];
+			}
+
 		}
 
 		return $data;
 	}
 
 	/**
-	 * Prepare post terms.
+	 * Prepare meta.
 	 *
 	 * @since     1.0.0
-	 * @param     array                $data    Prepared page data.
+	 * @param     array                $data    Prepared post data.
 	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Possibly-modified terms.
+	 * @return    array                         Possibly-modified post data.
 	 */
-	public function prepare_post_terms( $data, $site ) {
+	public function prepare_meta( $data, $site ) {
 
-		unset( $data['categories'] );
-		unset( $data['tags'] );
+		// Add remote object info
+		$data['replicast']['meta'][ Plugin::REPLICAST_SOURCE_INFO ] = array( serialize( array(
+			'object_id' => $this->object->ID,
+			'edit_link' => \get_edit_post_link( $this->object->ID ),
+		) ) );
 
-		if ( empty( $data['replicast'] ) ) {
-			return $data;
+		return $data;
+	}
+
+	/**
+	 * Prepare terms.
+	 *
+	 * @since     1.0.0
+	 * @param     array                $data    Prepared post data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified post data.
+	 */
+	public function prepare_terms( $data, $site ) {
+
+		// Remove default taxonomies data structures
+		foreach ( \get_post_taxonomies( $this->object->ID ) as $taxonomy ) {
+			unset( $data[ $taxonomy ] );
 		}
 
 		if ( empty( $data['replicast']['term'] ) ) {
 			return $data;
 		}
 
-		foreach ( $data['replicast']['term'] as $key => $term ) {
+		foreach ( $data['replicast']['term'] as $term_id => $term ) {
 
-			// Get replicast info
-			$replicast_info = API::get_replicast_info( $term );
+			$replicast_info = API::get_remote_info( $term );
 
 			// Update object ID
 			$term->term_id = '';
-
 			if ( ! empty( $replicast_info ) ) {
 				$term->term_id = $replicast_info[ $site->get_id() ]['id'];
 			}
 
-			$data['replicast']['term'][ $key ] = $term;
+			$data['replicast']['term'][ $term_id ] = $term;
+
+			// Add remote object info
+			$data['replicast']['term'][ $term_id ]->meta = array(
+				Plugin::REPLICAST_SOURCE_INFO => serialize( array(
+					'object_id' => $term_id,
+					'edit_link' => \get_edit_term_link( $term_id, $term->taxonomy ),
+				) )
+			);
 
 			// Check if term has children
 			if ( empty( $term->children ) ) {
 				continue;
 			}
 
-			$this->prepare_post_child_terms( $term->term_id, $data['replicast']['term'][ $key ]->children, $site );
+			$this->prepare_child_terms( $term->term_id, $data['replicast']['term'][ $term_id ]->children, $site );
 
 		}
 
@@ -137,7 +164,7 @@ class PostHandler extends Handler {
 	}
 
 	/**
-	 * Prepare post child terms.
+	 * Prepare child terms.
 	 *
 	 * @since     1.0.0
 	 * @param     int                  $parent_id    The parent term ID.
@@ -145,12 +172,11 @@ class PostHandler extends Handler {
 	 * @param     \Replicast\Client    $site         Site object.
 	 * @return    array                              Possibly-modified child terms.
 	 */
-	private function prepare_post_child_terms( $parent_id, &$terms, $site ) {
+	private function prepare_child_terms( $parent_id, &$terms, $site ) {
 
-		foreach ( $terms as $key => $term ) {
+		foreach ( $terms as $term_id => $term ) {
 
-			// Get replicast info
-			$replicast_info = API::get_replicast_info( $term );
+			$replicast_info = API::get_remote_info( $term );
 
 			// Update object ID's
 			$term->term_id = '';
@@ -161,21 +187,29 @@ class PostHandler extends Handler {
 				$term->parent  = $parent_id;
 			}
 
-			$terms[ $key ] = $term;
+			$terms[ $term_id ] = $term;
+
+			// Add remote object info
+			$terms[ $term_id ]->meta = array(
+				Plugin::REPLICAST_SOURCE_INFO => serialize( array(
+					'object_id' => $term_id,
+					'edit_link' => \get_edit_term_link( $term_id, $term->taxonomy ),
+				) )
+			);
 
 			// Check if term has children
 			if ( empty( $term->children ) ) {
 				continue;
 			}
 
-			$this->prepare_post_child_terms( $term->term_id, $terms[ $key ]->children, $site );
+			$this->prepare_child_terms( $term->term_id, $terms[ $term_id ]->children, $site );
 
 		}
 
 	}
 
 	/**
-	 * Prepare post featured media.
+	 * Prepare featured media.
 	 *
 	 * @since     1.0.0
 	 * @param     array                $data    Prepared post data.
@@ -184,13 +218,47 @@ class PostHandler extends Handler {
 	 */
 	public function prepare_featured_media( $data, $site ) {
 
-		// Update the "featured image" post ID with the associated remote post ID, if exists
-		if ( ! empty( $data['featured_media'] ) ) {
+		$replicast_info = API::get_remote_info( \get_post( $data['featured_media'] ) );
 
-			// Get replicast info
-			$replicast_info = API::get_replicast_info( \get_post( $data['featured_media'] ) );
-
+		// Update object ID
+		$data['featured_media'] = '';
+		if ( ! empty( $replicast_info ) ) {
 			$data['featured_media'] = $replicast_info[ $site->get_id() ]['id'];
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Prepare media.
+	 *
+	 * @since     1.0.0
+	 * @param     array                $data    Prepared post data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified post data.
+	 */
+	public function prepare_media( $data, $site ) {
+
+		if ( empty( $data['replicast']['media'] ) ) {
+			return $data;
+		}
+
+		foreach( $data['replicast']['media'] as $media_id => $media ) {
+
+			$replicast_info = API::get_remote_info( \get_post( $media_id ) );
+
+			// Update object ID
+			$data['replicast']['media'][ $media_id ]['id'] = '';
+			if ( ! empty( $replicast_info ) ) {
+				$data['replicast']['media'][ $media_id ]['id'] = $replicast_info[ $site->get_id() ]['id'];
+			}
+
+			// Add remote object info
+			$data['replicast']['media'][ $media_id ][ Plugin::REPLICAST_SOURCE_INFO ] = serialize( array(
+				'object_id' => $media_id,
+				'permalink' => \get_attachment_link( $media_id ),
+				'edit_link' => \get_edit_post_link( $media_id ),
+			) );
 
 		}
 
@@ -198,34 +266,74 @@ class PostHandler extends Handler {
 	}
 
 	/**
-	 * Update post terms.
+	 * Update object with remote ID.
 	 *
 	 * @since     1.0.0
-	 * @access    private
-	 * @param     int            $site_id    Site ID.
-	 * @param     object|null    $data       Object data.
+	 * @param     int       $site_id    Site ID.
+	 * @param     object    $data       Object data.
 	 */
-	public function update_post_terms( $site_id, $data ) {
+	public function handle_object( $site_id, $data = null ) {
+		API::update_remote_info( $this->object, $site_id, $data );
+	}
 
-		if ( empty( $data->replicast ) ) {
-			return;
-		}
+	/**
+	 * Update terms with remote IDs.
+	 *
+	 * @since     1.0.0
+	 * @param     int       $site_id    Site ID.
+	 * @param     object    $data       Object data.
+	 */
+	public function handle_terms( $site_id, $data = null ) {
 
 		if ( empty( $data->replicast->term ) ) {
 			return;
 		}
 
-		foreach ( $data->replicast->term as $term_data ) {
+		foreach ( $data->replicast->term as $term_id => $term_data ) {
 
 			// Get term object
-			$term = \get_term_by( 'id', $term_data->term_id, $term_data->taxonomy );
+			$term = \get_term_by( 'id', $term_id, $term_data->taxonomy );
 
 			if ( ! $term ) {
 				return;
 			}
 
 			// Update replicast info
-			API::update_replicast_info( $term, $site_id, $term_data );
+			API::update_remote_info( $term, $site_id, $term_data );
+
+		}
+
+	}
+
+	/**
+	 * Update media with remote IDs.
+	 *
+	 * @since     1.0.0
+	 * @param     int       $site_id    Site ID.
+	 * @param     object    $data       Object data.
+	 */
+	public function handle_media( $site_id, $data = null ) {
+
+		// FIXME: this should be an independent action
+
+		if ( empty( $data->replicast->media ) ) {
+			return;
+		}
+
+		foreach ( $data->replicast->media as $media_id => $media_data ) {
+
+			// Get media object
+			$media = \get_post( $media_id );
+
+			if ( ! $media ) {
+				return;
+			}
+
+			// Update replicast info
+			API::update_remote_info( $media, $site_id, $media_data );
+
+			// Update related site
+			\wp_set_post_terms( $media_id, $site_id, Plugin::TAXONOMY_SITE );
 
 		}
 

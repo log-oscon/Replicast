@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Site taxonomy functionality
+ * The dashboard-specific functionality of the `remote_site` taxonomy
  *
  * @link       http://log.pt/
  * @since      1.0.0
@@ -12,22 +12,24 @@
 
 namespace Replicast\Admin;
 
+use Replicast\Plugin;
+
 /**
- * Site taxonomy functionality.
+ * The dashboard-specific functionality of the `remote_site` taxonomy.
  *
  * @since      1.0.0
  * @package    Replicast
  * @subpackage Replicast/lib/Admin
  * @author     log.OSCON, Lda. <engenharia@log.pt>
  */
-class Site {
+class SiteAdmin {
 
 	/**
 	 * Plugin instance.
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @var       \Replicast\Plugin    Plugin instance.
+	 * @var       \Replicast\Plugin
 	 */
 	private $plugin;
 
@@ -36,7 +38,7 @@ class Site {
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @var       string    Taxonomy name.
+	 * @var       string
 	 */
 	private $name;
 
@@ -45,7 +47,7 @@ class Site {
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @var       object    Taxonomy object.
+	 * @var       object
 	 */
 	private $taxonomy;
 
@@ -54,7 +56,7 @@ class Site {
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @var       array    Taxonomy meta fields.
+	 * @var       array
 	 */
 	private $fields = array();
 
@@ -71,46 +73,24 @@ class Site {
 	}
 
 	/**
-	 * Register taxonomy meta fields.
+	 * Register hooks.
 	 *
 	 * @since    1.0.0
 	 */
-	public function register_fields() {
+	public function register() {
 
-		$this->fields = array(
-			'site_url' => array(
-				'name'          => 'site_url',
-				'label'         => \__( 'Site URL', 'replicast' ),
-				'type'          => 'url',
-				'instructions'  => \__( 'The site\'s main address.', 'replicast' ),
-				'default_value' => '',
-				'placeholder'   => \__( 'http://example.com', 'replicast' )
-			),
-			'api_url' => array(
-				'name'          => 'api_url',
-				'label'         => \__( 'REST API URL', 'replicast' ),
-				'type'          => 'text',
-				'instructions'  => \__( 'The site\'s base REST API address.', 'replicast' ),
-				'default_value' => '',
-				'placeholder'   => \__( '/wp-json/', 'replicast' )
-			),
-			'api_key' => array(
-				'name'          => 'api_key',
-				'label'         => \__( 'REST API Key', 'replicast' ),
-				'type'          => 'text',
-				'instructions'  => \__( 'A REST API authentication key that allows posting privileges to the remote site.', 'replicast' ),
-				'default_value' => '',
-				'placeholder'   => ''
-			),
-			'api_secret' => array(
-				'name'          => 'api_secret',
-				'label'         => \__( 'REST API Secret', 'replicast' ),
-				'type'          => 'text',
-				'instructions'  => \__( 'A REST API authentication secret that is the counterpart to the REST API key.', 'replicast' ),
-				'default_value' => '',
-				'placeholder'   => ''
-			),
-		);
+		$this->register_taxonomy();
+		$this->register_fields();
+
+		\add_action( $this->get_name() . '_add_form_fields',  array( $this, 'add_fields' ) );
+		\add_action( $this->get_name() . '_edit_form_fields', array( $this, 'edit_fields' ) );
+
+		\add_action( 'created_' . $this->get_name(), array( $this, 'update_fields' ) );
+		\add_action( 'edited_' . $this->get_name(),  array( $this, 'update_fields' ) );
+		\add_action( 'delete_' . $this->get_name(),  array( $this, 'on_deleted_term' ) );
+
+		\add_action( 'restrict_manage_posts', array( $this, 'get_filter_dropdown' ) );
+		\add_action( 'pre_get_posts',         array( $this, 'filter_posts' ) );
 
 	}
 
@@ -125,6 +105,17 @@ class Site {
 	}
 
 	/**
+	 * Get the taxonomy filter key.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @return    string    Taxonomy filter key.
+	 */
+	public function get_filter_key() {
+		return 'replicast_' . $this->name . '_filter';
+	}
+
+	/**
 	 * Get the taxonomy object.
 	 *
 	 * @since     1.0.0
@@ -132,6 +123,18 @@ class Site {
 	 */
 	public function get_taxonomy() {
 		return $this->taxonomy;
+	}
+
+	/**
+	 * Get the nonce key for a taxonomy field.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     string    $name    Field name.
+	 * @return    string             Nonce key identifier.
+	 */
+	private function get_nonce_key( $name ) {
+		return 'replicast_site_admin_' . $name . '_nonce';
 	}
 
 	/**
@@ -181,7 +184,7 @@ class Site {
 	 *
 	 * @since    1.0.0
 	 */
-	public function register() {
+	public function register_taxonomy() {
 
 		/**
 		 * Filter for showing the taxonomy managing UI in the admin.
@@ -248,6 +251,42 @@ class Site {
 				'hierarchical'       => true,
 				'capabilities'       => $capabilities,
 			)
+		);
+
+	}
+
+	/**
+	 * Register taxonomy meta fields.
+	 *
+	 * @since    1.0.0
+	 */
+	public function register_fields() {
+
+		$this->fields = array(
+			'api_url' => array(
+				'name'          => 'api_url',
+				'label'         => \__( 'REST API URL', 'replicast' ),
+				'type'          => 'text',
+				'instructions'  => \__( 'The remote REST API address.', 'replicast' ),
+				'default_value' => '',
+				'placeholder'   => \__( 'http://example.com/wp-json/wp/v2/', 'replicast' )
+			),
+			'api_key' => array(
+				'name'          => 'api_key',
+				'label'         => \__( 'REST API Key', 'replicast' ),
+				'type'          => 'text',
+				'instructions'  => \__( 'A REST API authentication key that allows posting privileges to the remote site.', 'replicast' ),
+				'default_value' => '',
+				'placeholder'   => ''
+			),
+			'api_secret' => array(
+				'name'          => 'api_secret',
+				'label'         => \__( 'REST API Secret', 'replicast' ),
+				'type'          => 'text',
+				'instructions'  => \__( 'A REST API authentication secret that is the counterpart to the REST API key.', 'replicast' ),
+				'default_value' => '',
+				'placeholder'   => ''
+			),
 		);
 
 	}
@@ -328,7 +367,7 @@ class Site {
 			$atts['name']
 		);
 		printf(
-			'<th scope="row"><label for="tag-%s">%s *</label></th>',
+			'<th scope="row"><label for="tag-%s">%s</label></th>',
 			$atts['name'],
 			$atts['label']
 		);
@@ -409,15 +448,68 @@ class Site {
 	}
 
 	/**
-	 * Get the nonce key for a taxonomy field.
+	 * Generates a taxonomy dropdown filter for the supported post type(s).
 	 *
-	 * @since     1.0.0
-	 * @access    private
-	 * @param     string    $name    Field name.
-	 * @return    string             Nonce key identifier.
+	 * @since    1.0.0
 	 */
-	private function get_nonce_key( $name ) {
-		return 'replicast_' . $name . '_nonce';
+	public function get_filter_dropdown() {
+
+		global $post_type;
+
+		if ( ! in_array( $post_type, static::get_post_types() ) ) {
+			return;
+		}
+
+		\wp_dropdown_categories( array(
+			'show_option_all' => \__( 'Show All Sites', 'replicast' ),
+			'name'            => $this->get_filter_key(),
+			'taxonomy'        => $this->get_name(),
+			'selected'        => isset( $_GET[ $this->get_filter_key() ] ) ? \sanitize_text_field( $_GET[ $this->get_filter_key() ] ) : 0,
+			'hide_empty'      => 1,
+			'hide_if_empty'   => 1,
+		) );
+
+	}
+
+	/**
+	 * Filter the supported post type(s).
+	 *
+	 * @since    1.0.0
+	 * @param    \WP_Query    $query    \WP_Query object.
+	 */
+	public function filter_posts( $query ) {
+
+		global $post_type, $pagenow;
+
+		if ( ! \is_admin() ) {
+			return;
+		}
+
+		// If we aren't currently on the edit screen, bail
+		if ( $pagenow !== 'edit.php' ) {
+			return;
+		}
+
+		if ( ! in_array( $post_type, static::get_post_types() ) ) {
+			return;
+		}
+
+		$tax_query = array();
+
+		// Add selected filter to query
+		if ( ! empty( $_GET[ $this->get_filter_key() ] ) ) {
+			$tax_query[] = array(
+				'taxonomy' => $this->get_name(),
+				'field'    => 'term_id',
+				'terms'    => array( \sanitize_text_field( $_GET[ $this->get_filter_key() ] ) )
+			);
+		}
+
+		if ( sizeof( $tax_query ) > 0 ) {
+			$tax_query['relation'] = 'AND';
+			$query->query_vars['tax_query'] = $tax_query;
+		}
+
 	}
 
 }

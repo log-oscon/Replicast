@@ -12,10 +12,10 @@
 
 namespace Replicast;
 
+use Replicast\API;
 use Replicast\Admin;
 use Replicast\Client;
 use Replicast\Plugin;
-use Replicast\API;
 
 /**
  * Handles object replication.
@@ -69,7 +69,7 @@ abstract class Handler {
 	protected $object_type;
 
 	/**
-	 * Object.
+	 * Object data.
 	 *
 	 * @since     1.0.0
 	 * @access    protected
@@ -78,7 +78,7 @@ abstract class Handler {
 	protected $object;
 
 	/**
-	 * Object with a REST API compliant schema.
+	 * Object data in a REST API compliant schema.
 	 *
 	 * @since     1.0.0
 	 * @access    protected
@@ -125,19 +125,21 @@ abstract class Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
+	 * @param     array                $args    Query string parameters.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function get( $site ) {}
+	public function get( $site, $args = array() ) {}
 
 	/**
 	 * Create object on a site.
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
+	 * @param     array                $args    Query string parameters.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function post( $site ) {
-		return $this->do_request( Handler::CREATABLE, $site );
+	public function post( $site, $args = array() ) {
+		return $this->do_request( Handler::CREATABLE, $site, $args );
 	}
 
 	/**
@@ -145,10 +147,11 @@ abstract class Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
+	 * @param     array                $args    Query string parameters.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function put( $site ) {
-		return $this->do_request( Handler::EDITABLE, $site );
+	public function put( $site, $args = array() ) {
+		return $this->do_request( Handler::EDITABLE, $site, $args );
 	}
 
 	/**
@@ -156,176 +159,46 @@ abstract class Handler {
 	 *
 	 * @since     1.0.0
 	 * @param     \Replicast\Client    $site    Site object.
+	 * @param     array                $args    Query string parameters.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function delete( $site ) {
-		return $this->do_request( Handler::DELETABLE, $site );
+	public function delete( $site, $args = array() ) {
+		return $this->do_request( Handler::DELETABLE, $site, $args );
 	}
 
 	/**
 	 * Create/update object handler.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client|array    $sites    Site object(s).
-	 * @return    array
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    \GuzzleHttp\Promise
 	 */
-	public function handle_save( $sites ) {
-
-		// Admin notices
-		$notices = array();
-
-		// Handle single site
-		if ( ! is_array( $sites ) && $sites instanceof Client ) {
-			$sites = array( $sites->get_id() => $sites );
-		}
+	public function handle_save( $site ) {
 
 		// Get replicast info
-		$replicast_info = API::get_replicast_info( $this->object );
+		// FIXME: maybe this should be part of the handler to avoid multiple calls
+		$replicast_info = API::get_remote_info( $this->object );
 
-		// Verify that the current object has been "removed" (aka unchecked) from any site(s)
-		// FIXME: review this later on
-		foreach ( $replicast_info as $site_id => $replicast_data ) {
-			if ( ! array_key_exists( $site_id, $sites ) && $replicast_data['status'] !== 'trash' ) {
-				$notices = array_merge( $notices, $this->handle_delete( Admin::get_site( $site_id ) ) );
-			}
+		if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
+			return $this->put( $site );
 		}
 
-		foreach ( $sites as $site ) {
+		return $this->post( $site );
 
-			try {
-
-				if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
-					$response = $this->put( $site )->wait();
-				}
-				else {
-					$response = $this->post( $site )->wait();
-				}
-
-				// Get the remote object data
-				$remote_data = json_decode( $response->getBody()->getContents() );
-
-				if ( empty( $remote_data ) ) {
-					continue;
-				}
-
-				// Update replicast info
-				API::update_replicast_info( $this->object, $site->get_id(), $remote_data );
-
-				// Update post terms
-				if ( API::is_post( $this->object ) ) {
-					$this->update_post_terms( $site->get_id(), $remote_data );
-				}
-
-				$notices[] = array(
-					'status_code'   => $response->getStatusCode(),
-					'reason_phrase' => $response->getReasonPhrase(),
-					'message'       => sprintf(
-						'%s %s',
-						sprintf(
-							$response->getStatusCode() === 201 ? \__( 'Post published on %s.', 'replicast' ) : \__( 'Post updated on %s.', 'replicast' ),
-							$site->get_name()
-						),
-						sprintf(
-							'<a href="%s" title="%s" target="_blank">%s</a>',
-							\esc_url( $remote_data->link ),
-							\esc_attr( $site->get_name() ),
-							\__( 'View post', 'replicast' )
-						)
-					)
-				);
-
-			} catch ( \Exception $ex ) {
-				if ( $ex->hasResponse() ) {
-					$notices[] = array(
-						'status_code'   => $ex->getResponse()->getStatusCode(),
-						'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-						'message'       => $ex->getMessage()
-					);
-				}
-			}
-
-		}
-
-		return $notices;
 	}
 
 	/**
 	 * Delete object handler.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client|array    $sites           Site object(s).
-	 * @param     bool                       $force_delete    Whether to bypass trash and force deletion.
-	 * @return    array
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @param     bool                 $force   Flag for bypass trash or force deletion.
+	 * @return    \GuzzleHttp\Promise
 	 */
-	public function handle_delete( $sites, $force_delete = false ) {
-
-		// Admin notices
-		$notices = array();
-
-		// Handle single site
-		if ( ! is_array( $sites ) && $sites instanceof Client ) {
-			$sites = array( $sites->get_id() => $sites );
-		}
-
-		// Get replicast info
-		$replicast_info = API::get_replicast_info( $this->object );
-
-		foreach ( $sites as $site ) {
-
-			if ( ! array_key_exists( $site->get_id(), $replicast_info ) ) {
-				continue;
-			}
-
-			try {
-
-				$response = $this->delete( $site )->wait();
-
-				// Get the remote object data
-				$remote_data = json_decode( $response->getBody()->getContents() );
-
-				if ( empty( $remote_data ) ) {
-					continue;
-				}
-
-				// The API returns 'publish' but we force the status to be 'trash' for better
-				// management of the next actions over the object. Like, recovering (PUT request)
-				// or permanently delete the object from remote location.
-				$remote_data->status = 'trash';
-
-				// Update replicast info
-				API::update_replicast_info( $this->object, $site->get_id(), $remote_data );
-
-				$notices[] = array(
-					'status_code'   => $response->getStatusCode(),
-					'reason_phrase' => $response->getReasonPhrase(),
-					'message'       => sprintf(
-						'%s %s',
-						sprintf(
-							\__( 'Post trashed on %s.', 'replicast' ),
-							$site->get_name()
-						),
-						sprintf(
-							'<a href="%s" title="%s" target="_blank">%s</a>',
-							\esc_url( $remote_data->link ),
-							\esc_attr( $site->get_name() ),
-							\__( 'View post', 'replicast' )
-						)
-					)
-				);
-
-			} catch ( \Exception $ex ) {
-				if ( $ex->hasResponse() ) {
-					$notices[] = array(
-						'status_code'   => $ex->getResponse()->getStatusCode(),
-						'reason_phrase' => $ex->getResponse()->getReasonPhrase(),
-						'message'       => $ex->getMessage()
-					);
-				}
-			}
-
-		}
-
-		return $notices;
+	public function handle_delete( $site, $force = false ) {
+		return $this->delete( $site, array(
+			'force' => $force
+		) );
 	}
 
 	/**
@@ -365,8 +238,6 @@ abstract class Handler {
 	 */
 	protected function prepare_body_for_create( $site ) {
 
-		$object_type = API::get_object_type( $this->object );
-
 		// Get object data
 		$data = $this->data;
 
@@ -379,31 +250,59 @@ abstract class Handler {
 			unset( $data['id'] );
 		}
 
+		// Remove author
+		if ( ! empty( $data['author'] ) ) {
+			unset( $data['author'] );
+		}
+
+		// Check for date_gmt presence
+		// Note: date_gmt is necessary for post update and it's zeroed upon deletion
+		if ( empty( $data['date_gmt'] ) && ! empty( $data['date'] ) ) {
+			$data['date_gmt'] = \mysql_to_rfc3339( $data['date'] );
+		}
+
 		// Update featured media ID
 		if ( ! empty( $data['featured_media'] ) ) {
 			$data = $this->prepare_featured_media( $data, $site );
 		}
 
-		// Prepare post terms
-		if ( API::is_post( $this->object ) ) {
-			$data = $this->prepare_post_terms( $data, $site );
-		}
+		// Prepare meta
+		$data = $this->prepare_meta( $data, $site );
+
+		// Prepare terms
+		$data = $this->prepare_terms( $data, $site );
 
 		// Prepare data by object type
-		if ( $object_type === 'page' ) {
-			$data = $this->prepare_page( $data, $site );
-		} elseif ( $object_type === 'attachment' ) {
-			$data = $this->prepare_attachment( $data, $site );
+		switch ( $this->object_type ) {
+			case 'page':
+				$data = $this->prepare_page( $data, $site );
+				break;
+			case 'attachment':
+				$data = $this->prepare_attachment( $data, $site );
+				break;
 		}
 
 		/**
-		 * Filter the prepared object data for creation.
+		 * Extend data for creation by object type.
 		 *
 		 * @since     1.0.0
-		 * @param     array    $data    Prepared object data.
-		 * @return    array             Possibly-modified object data.
+		 * @param     array                Prepared object data.
+		 * @param     \Replicast\Client    Site object.
+		 * @return    array                Possibly-modified object data.
 		 */
-		return \apply_filters( "replicast_prepare_{$object_type}_for_create", $data );
+		$data = \apply_filters( "replicast_prepare_{$this->object_type}_for_create", $data, $site );
+
+		/**
+		 * Extend data for creation.
+		 *
+		 * @since     1.0.0
+		 * @param     array                Prepared object data.
+		 * @param     \Replicast\Client    Site object.
+		 * @return    array                Possibly-modified object data.
+		 */
+		$data = \apply_filters( "replicast_prepare_object_for_create", $data, $site );
+
+		return $this->prepare_media( $data, $site );
 	}
 
 	/**
@@ -416,8 +315,6 @@ abstract class Handler {
 	 */
 	protected function prepare_body_for_update( $site ) {
 
-		$object_type = API::get_object_type( $this->object );
-
 		// Get object data
 		$data = $this->data;
 
@@ -426,7 +323,7 @@ abstract class Handler {
 		}
 
 		// Get replicast info
-		$replicast_info = API::get_replicast_info( $this->object );
+		$replicast_info = API::get_remote_info( $this->object );
 
 		if ( empty( $replicast_info ) ) {
 			return array();
@@ -435,9 +332,9 @@ abstract class Handler {
 		// Update object ID
 		$data['id'] = $replicast_info[ $site->get_id() ]['id'];
 
-		// Update featured media ID
-		if ( ! empty( $data['featured_media'] ) ) {
-			$data = $this->prepare_featured_media( $data, $site );
+		// Remove author
+		if ( ! empty( $data['author'] ) ) {
+			unset( $data['author'] );
 		}
 
 		// Check for date_gmt presence
@@ -446,26 +343,48 @@ abstract class Handler {
 			$data['date_gmt'] = \mysql_to_rfc3339( $data['date'] );
 		}
 
-		// Prepare post terms
-		if ( API::is_post( $this->object ) ) {
-			$data = $this->prepare_post_terms( $data, $site );
+		// Update featured media ID
+		if ( ! empty( $data['featured_media'] ) ) {
+			$data = $this->prepare_featured_media( $data, $site );
 		}
 
+		// Prepare meta
+		$data = $this->prepare_meta( $data, $site );
+
+		// Prepare terms
+		$data = $this->prepare_terms( $data, $site );
+
 		// Prepare data by object type
-		if ( $object_type === 'page' ) {
-			$data = $this->prepare_page( $data, $site );
-		} elseif ( $object_type === 'attachment' ) {
-			$data = $this->prepare_attachment( $data, $site );
+		switch ( $this->object_type ) {
+			case 'page':
+				$data = $this->prepare_page( $data, $site );
+				break;
+			case 'attachment':
+				$data = $this->prepare_attachment( $data, $site );
+				break;
 		}
 
 		/**
-		 * Filter the prepared object data for update.
+		 * Extend data for update by object type.
 		 *
 		 * @since     1.0.0
-		 * @param     array    $data    Prepared object data.
-		 * @return    array             Possibly-modified object data.
+		 * @param     array                Prepared object data.
+		 * @param     \Replicast\Client    Site object.
+		 * @return    array                Possibly-modified object data.
 		 */
-		return \apply_filters( "replicast_prepare_{$object_type}_for_update", $data );
+		$data = \apply_filters( "replicast_prepare_{$this->object_type}_for_update", $data, $site );
+
+		/**
+		 * Extend data for update.
+		 *
+		 * @since     1.0.0
+		 * @param     array                Prepared object data.
+		 * @param     \Replicast\Client    Site object.
+		 * @return    array                Possibly-modified object data.
+		 */
+		$data = \apply_filters( "replicast_prepare_object_for_update", $data, $site );
+
+		return $this->prepare_media( $data, $site );
 	}
 
 	/**
@@ -476,7 +395,7 @@ abstract class Handler {
 	 * @return    array    The object data.
 	 */
 	protected function get_object_data() {
-		return $this->rest_do_request();
+		return $this->_do_request();
 	}
 
 	/**
@@ -488,7 +407,7 @@ abstract class Handler {
 	 * @access    private
 	 * @return    \WP_REST_Response    Response object.
 	 */
-	private function rest_do_request() {
+	private function _do_request() {
 
 		global $wp_rest_server;
 
@@ -498,7 +417,7 @@ abstract class Handler {
 			 * Filter the REST Server Class.
 			 *
 			 * @since    1.0.0
-			 * @param    string    $class_name    The name of the server class. Default '\WP_REST_Server'.
+			 * @param    string    The name of the server class. Default '\WP_REST_Server'.
 			 */
 			$wp_rest_server_class = \apply_filters( 'replicast_rest_server_class', '\WP_REST_Server' );
 			$wp_rest_server       = new $wp_rest_server_class;
@@ -528,7 +447,7 @@ abstract class Handler {
 			sprintf(
 				'/%s/%s',
 				$this->namespace,
-				\trailingslashit( $this->rest_base ) . API::get_object_id( $this->object )
+				\trailingslashit( $this->rest_base ) . API::get_id( $this->object )
 			)
 		);
 
@@ -555,9 +474,15 @@ abstract class Handler {
 	 * @param     string    $method       Request method.
 	 * @param     array     $config       Request config.
 	 * @param     int       $timestamp    Request timestamp.
+	 * @param     array     $args         Query string parameters.
 	 * @return    string                  Return hash of the secret.
 	 */
-	private function generate_signature( $method = 'GET', $config, $timestamp ) {
+	private function generate_signature( $method = 'GET', $config, $timestamp, $args ) {
+
+		$request_uri = $config['api_url'];
+		if ( ! empty( $args ) ) {
+			$request_uri = sprintf( '%s?%s', $request_uri, http_build_query( $args, null, '&', PHP_QUERY_RFC3986 ) );
+		}
 
 		/**
 		 * Arguments used for generating the signature.
@@ -567,17 +492,11 @@ abstract class Handler {
 		 */
 		$args = array(
 			'api_key'        => $config['apy_key'],
-			'ip'             => $_SERVER['SERVER_ADDR'],
 			'request_method' => $method,
 			'request_post'   => array(),
-			'request_uri'    => $config['api_url'],
+			'request_uri'    => $request_uri,
 			'timestamp'      => $timestamp,
 		);
-
-		// TODO: find a proper way to use IP in local development
-		if ( defined( 'WP_ENV' ) && WP_ENV === 'development' ) {
-			unset( $args['ip'] );
-		}
 
 		/**
 		 * Filter the name of the selected hashing algorithm (e.g. "md5", "sha256", "haval160,4", etc..).
@@ -595,9 +514,10 @@ abstract class Handler {
 	 * @access    protected
 	 * @param     string               $method    Request method.
 	 * @param     \Replicast\Client    $site      Site object.
+	 * @param     array                $args      Query string parameters.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	protected function do_request( $method, $site ) {
+	protected function do_request( $method, $site, $args ) {
 
 		// Bail out if the site is invalid
 		if ( ! $site->is_valid() ) {
@@ -631,21 +551,21 @@ abstract class Handler {
 		// Build endpoint for GET, PUT and DELETE
 		// FIXME: this has to be more bulletproof!
 		if ( $method !== static::CREATABLE ) {
-			$config['api_url'] = \trailingslashit( $config['api_url'] ) . $data['id'];
+			$config['api_url'] = $config['api_url'] . \trailingslashit( $data['id'] );
 		}
 
 		$headers = array();
 		$body    = array();
 
 		// Asynchronous request
-		if ( $method === static::CREATABLE && API::get_object_type( $this->object ) === 'attachment' ) {
+		if ( $method === static::CREATABLE && $this->object_type === 'attachment' ) {
 
-			$file_path = \get_attached_file( API::get_object_id( $this->object ) );
+			$file_path = \get_attached_file( API::get_id( $this->object ) );
 			$file_name = basename( $file_path );
 
-			$headers['Content-Type'       ] = $data['mime_type'];
+			$headers['Content-Type']        = $data['mime_type'];
 			$headers['Content-Disposition'] = sprintf( 'attachment; filename=%s', $file_name );
-			$headers['Content-MD5'        ] = md5_file( $file_path );
+			$headers['Content-MD5']         = md5_file( $file_path );
 
 			$body['body'] = file_get_contents( $file_path );
 
@@ -659,10 +579,10 @@ abstract class Handler {
 		}
 
 		// Generate request signature
-		$signature = $this->generate_signature( $method, $config, $timestamp );
+		$signature = $this->generate_signature( $method, $config, $timestamp, $args );
 
 		// Auth headers
-		$headers['X-API-KEY'      ] = $config['apy_key'];
+		$headers['X-API-KEY']       = $config['apy_key'];
 		$headers['X-API-TIMESTAMP'] = $timestamp;
 		$headers['X-API-SIGNATURE'] = $signature;
 
@@ -670,7 +590,10 @@ abstract class Handler {
 			$method,
 			$config['api_url'],
 			array_merge(
-				array( 'headers' => $headers ),
+				array(
+					'headers' => $headers,
+					'query'   => $args,
+				),
 				$body
 			)
 		);

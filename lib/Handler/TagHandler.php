@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Handles ´tag´ content type replication
+ * Handles ´post_tag´ terms replication
  *
  * @link       http://log.pt/
  * @since      1.0.0
@@ -15,7 +15,7 @@ namespace Replicast\Handler;
 use Replicast\Handler;
 
 /**
- * Handles ´tag´ content type replication.
+ * Handles ´post_tag´ terms replication.
  *
  * @since      1.0.0
  * @package    Replicast
@@ -31,10 +31,13 @@ class TagHandler extends Handler {
 	 * @param    \WP_Term    $term    Term object.
 	 */
 	public function __construct( \WP_Term $term ) {
-		$this->rest_base  = 'tags';
-		$this->object     = $term;
-		$this->attributes = array( 'context' => 'embed' );
-		$this->data       = $this->get_object_data();
+
+		$this->rest_base   = 'tags';
+		$this->object      = $term;
+		$this->object_type = $term->taxonomy;
+		$this->data        = $this->get_object_data();
+		$this->attributes  = array( 'context' => 'embed' );
+
 	}
 
 }

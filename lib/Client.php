@@ -89,9 +89,9 @@ class Client {
 	 * @return    array    Site url, and API url, key and secret.
 	 */
 	public function get_config() {
+		$url = \parse_url( $this->term_meta['api_url'][0] );
 		return array(
-			'site_url'   => \untrailingslashit( $this->term_meta['site_url'][0] ),
-			'api_url'    => \trailingslashit( $this->term_meta['api_url'][0] ),
+			'api_url'    => \trailingslashit( $url['path'] ),
 			'apy_key'    => $this->term_meta['api_key'][0],
 			'api_secret' => $this->term_meta['api_secret'][0],
 		);
@@ -126,10 +126,9 @@ class Client {
 	public function is_valid() {
 
 		$required_keys = array(
-			'site_url',
 			'api_url',
 			'api_key',
-			'api_secret'
+			'api_secret',
 		);
 
 		foreach( $required_keys as $key ) {

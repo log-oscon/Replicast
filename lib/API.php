@@ -13,7 +13,6 @@
 namespace Replicast;
 
 use Replicast\Admin;
-use Replicast\Admin\Site;
 
 /**
  * Extend the API functionality.
@@ -44,26 +43,26 @@ class API {
 	}
 
 	/**
-	 * Registers a new field on a set of existing object types.
+	 * Register hooks.
 	 *
 	 * @since    1.0.0
 	 */
-	public function register_rest_fields() {
+	public function register() {
 
-		if ( ! function_exists( 'register_rest_field' ) ) {
-			return;
-		}
+		foreach ( Admin\SiteAdmin::get_post_types() as $post_type ) {
 
-		foreach ( Site::get_post_types() as $post_type ) {
-			\register_rest_field(
-				$post_type,
-				'replicast',
-				array(
-					'get_callback'    => array( __CLASS__, 'get_rest_fields' ),
-					'update_callback' => array( __CLASS__, 'update_rest_fields' ),
-					'schema'          => null,
-				)
-			);
+			if ( function_exists( 'register_rest_field' ) ) {
+				\register_rest_field(
+					$post_type,
+					'replicast',
+					array(
+						'get_callback'    => array( __CLASS__, 'get_rest_fields' ),
+						'update_callback' => array( __CLASS__, 'update_rest_fields' ),
+						'schema'          => null,
+					)
+				);
+			}
+
 		}
 
 	}
@@ -78,9 +77,15 @@ class API {
 	 * @return    array                              Custom fields.
 	 */
 	public static function get_rest_fields( $object, $field_name, $request ) {
+
+		if ( $field_name !== 'replicast' ) {
+			return array();
+		}
+
 		return array(
-			'meta' => static::get_object_meta( $object, $request ),
-			'term' => static::get_object_term( $object, $request ),
+			'meta'  => static::get_object_meta( $object, $request ),
+			'term'  => static::get_object_term( $object, $request ),
+			'media' => static::get_object_media( $object, $request ),
 		);
 	}
 
@@ -90,7 +95,7 @@ class API {
 	 * @since     1.0.0
 	 * @param     array               $object     Details of current content object.
 	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
-	 * @return    array               Object meta.
+	 * @return    array                           Object meta.
 	 */
 	public static function get_object_meta( $object, $request ) {
 
@@ -101,42 +106,54 @@ class API {
 		 * Filter for exposing specific protected meta keys.
 		 *
 		 * @since     1.0.0
-		 * @param     array               Name(s) of the exposed meta keys.
-		 * @param     array    $object    Details of current content object.
-		 * @return    array               Possibly-modified name(s) of the exposed meta keys.
+		 * @param     array     Name(s) of the exposed meta keys.
+		 * @param     string    The object meta type.
+		 * @param     int       The object ID.
+		 * @return    array     Possibly-modified name(s) of the exposed meta keys.
 		 */
-		$whitelist = \apply_filters( 'replicast_expose_object_protected_meta', array(), $object );
+		$exposed_meta = \apply_filters( 'replicast_expose_object_protected_meta', array(), $meta_type, $object['id'] );
 
 		// Get object metadata
-		$metadata = \get_metadata( $meta_type, $object['id'] );
+		$meta = \get_metadata( $meta_type, $object['id'] );
 
-		if ( ! $metadata ) {
+		if ( ! $meta ) {
 			return array();
 		}
 
-		if ( ! is_array( $metadata ) ) {
-			$metadata = (array) $metadata;
+		if ( ! is_array( $meta ) ) {
+			$meta = (array) $meta;
 		}
 
-		$prepared_metadata = array();
-		foreach ( $metadata as $meta_key => $meta_value ) {
+		$prepared_data = array();
+		foreach ( $meta as $meta_key => $meta_value ) {
 
-			if ( \is_protected_meta( $meta_key ) && ! in_array( $meta_key, $whitelist ) ) {
+			if ( \is_protected_meta( $meta_key ) && ! in_array( $meta_key, $exposed_meta ) ) {
 				continue;
 			}
 
-			$prepared_metadata[ $meta_key ] = $meta_value;
-
+			$prepared_data[ $meta_key ] = $meta_value;
 		}
 
-		// Add object REST route to meta
-		$prepared_metadata[ Plugin::REPLICAST_REMOTE ] = array( \maybe_serialize( array(
-			'ID'        => $object['id'],
-			'edit_link' => \get_edit_post_link( $object['id'] ),
-			'rest_url'  => \rest_url( $request->get_route() ),
-		) ) );
+		/**
+		 * Extend object meta by meta type.
+		 *
+		 * @since     1.0.0
+		 * @param     array    Object meta.
+		 * @param     array    Details of current content object.
+		 * @return    array    Possibly-modified object meta.
+		 */
+		$prepared_data = \apply_filters( "replicast_get_{$meta_type}_meta", $prepared_data, $object );
 
-		return $prepared_metadata;
+		/**
+		 * Extend object meta.
+		 *
+		 * @since     1.0.0
+		 * @param     array     Object meta.
+		 * @param     array     Details of current content object.
+		 * @param     string    The object meta type.
+		 * @return    array     Possibly-modified object meta.
+		 */
+		return \apply_filters( 'replicast_get_object_meta', $prepared_data, $object, $meta_type );
 	}
 
 	/**
@@ -145,69 +162,111 @@ class API {
 	 * @since     1.0.0
 	 * @param     array               $object     Details of current content object.
 	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
-	 * @return    array               Object terms.
+	 * @return    array                           Object terms.
 	 */
 	public static function get_object_term( $object, $request ) {
 
-		// Get a list of registered taxonomies
-		$taxonomies = \get_taxonomies();
+		// Get a hierarchical list of object terms
+		$prepared_terms = static::get_object_terms_hierarchical( $object );
+
+		/**
+		 * Extend object terms.
+		 *
+		 * @since     1.0.0
+		 * @param     array    Hierarchical list of object terms.
+		 * @param     array    Details of current content object.
+		 * @return    array    Possibly-modified object terms.
+		 */
+		return \apply_filters( 'replicast_get_object_term', $prepared_terms, $object );
+	}
+
+	/**
+	 * Retrieve the terms for an object.
+	 *
+	 * @see \wp_get_object_terms()
+	 *
+	 * @since     1.0.0
+	 * @param     int       $object_id      The object ID.
+	 * @param     string    $object_type    The object type.
+	 * @return    array                     An array of taxonomy terms, or empty array if no terms are found.
+	 */
+	public static function get_object_terms( $object_id, $object_type ) {
+
+		// FIXME: we should soft cache this
+
+		// Get a list of object taxonomies
+		$taxonomies = static::get_object_taxonomies( $object_id, $object_type );
+
+		$terms = \wp_get_object_terms( $object_id, array_keys( $taxonomies ) );
+
+		if ( empty( $terms ) ) {
+			return array();
+		}
+
+		return $terms;
+	}
+
+	/**
+	 * Returns all the taxonomies for an object.
+	 *
+	 * @see \get_object_taxonomies()
+	 *
+	 * @since     1.0.0
+	 * @param     int       $object_id      The object ID.
+	 * @param     string    $object_type    The object type.
+	 * @return    array                     All taxonomy names or objects for the given object.
+	 */
+	public static function get_object_taxonomies( $object_id, $object_type ) {
+
+		// FIXME: we should soft cache this
+
+		$taxonomies = \get_object_taxonomies( $object_type, 'objects' );
 
 		/**
 		 * Filter for suppressing taxonomies.
 		 *
 		 * @since     1.0.0
-		 * @param     array                    Name(s) of the suppressed taxonomies.
-		 * @param     array    $taxonomies     List of registered taxonomies.
-		 * @param     array    $object         The object from the response.
-		 * @return    array                    Possibly-modified name(s) of the suppressed taxonomies.
+		 * @param     array    Name(s) of the suppressed taxonomies.
+		 * @param     array    List of registered taxonomies.
+		 * @param     int      The object ID.
+		 * @return    array    Possibly-modified name(s) of the suppressed taxonomies.
 		 */
-		$blacklist = \apply_filters( 'replicast_suppress_object_taxonomies', array(), $taxonomies, $object );
+		$suppressed_taxonomies = \apply_filters( 'replicast_suppress_object_taxonomies', array(), $taxonomies, $object_id );
 
 		$prepared_taxonomies = array();
-		foreach ( $taxonomies as $taxonomy_key => $taxonomy_key ) {
+		foreach ( $taxonomies as $taxonomy_name => $taxonomy ) {
 
-			if ( in_array( $taxonomy_key, array( Plugin::TAXONOMY_SITE ) ) ) {
+			if ( in_array( $taxonomy_name, array( Plugin::TAXONOMY_SITE ) ) ) {
 				continue;
 			}
 
-			if ( in_array( $taxonomy_key, $blacklist ) ) {
+			if ( in_array( $taxonomy_name, $suppressed_taxonomies ) ) {
 				continue;
 			}
 
-			$prepared_taxonomies[ $taxonomy_key ] = $taxonomy_key;
+			$prepared_taxonomies[ $taxonomy_name ] = $taxonomy;
 
 		}
 
-		// Get a hierarchical list of object terms
-		// FIXME: we should soft cache this
-		$terms = static::get_object_terms_hierarchical( $object['id'], $prepared_taxonomies );
-
-		return $terms;
+		return $prepared_taxonomies;
 	}
 
 	/**
 	 * Retrieves the terms associated with the given object in the supplied
 	 * taxonomies, hierarchically structured.
 	 *
-	 * @see \wp_get_object_terms()
 	 *
 	 * @since     1.0.0
 	 * @access    private
-	 * @param     int      $object_id     The ID of the object to retrieve.
-	 * @param     array    $taxonomies    The taxonomies to retrieve terms from.
-	 * @return    array                   Hierarchical list of object terms
+	 * @param     array    $object    Details of current content object.
+	 * @return    array               Hierarchical list of object terms
 	 */
-	private static function get_object_terms_hierarchical( $object_id, $taxonomies ) {
+	private static function get_object_terms_hierarchical( $object ) {
+
+		// Retrieve the terms
+		$terms = static::get_object_terms( $object['id'], $object['type'] );
 
 		$hierarchical_terms = array();
-
-		// FIXME: we should soft cache this
-		$terms = \wp_get_object_terms( $object_id, $taxonomies );
-
-		if ( empty( $terms ) ) {
-			return array();
-		}
-
 		foreach ( $terms as $term ) {
 
 			if ( $term->parent > 0 ) {
@@ -218,8 +277,11 @@ class API {
 				continue;
 			}
 
-			$hierarchical_terms[ $term->term_id ] = $term;
-			$hierarchical_terms[ $term->term_id ]->children = static::get_child_terms( $term->term_id, $terms );
+			$term_id   = $term->term_id;
+			$source_id = static::get_source_id( $term_id, 'term' );
+
+			$hierarchical_terms[ $source_id ]           = $term;
+			$hierarchical_terms[ $source_id ]->children = static::get_child_terms( $term_id, $terms );
 		}
 
 		return $hierarchical_terms;
@@ -227,6 +289,8 @@ class API {
 
 	/**
 	 * Retrieves a list of child terms.
+	 *
+	 * Recursive function.
 	 *
 	 * @since     1.0.0
 	 * @access    private
@@ -243,11 +307,169 @@ class API {
 				continue;
 			}
 
-			$children[ $term->term_id ] = $term;
-			$children[ $term->term_id ]->children = static::get_child_terms( $term->term_id, $terms );
+			$term_id   = $term->term_id;
+			$source_id = static::get_source_id( $term_id, 'term' );
+
+			$children[ $source_id ]           = $term;
+			$children[ $source_id ]->children = static::get_child_terms( $term_id, $terms );
 		}
 
 		return $children;
+	}
+
+	/**
+	 * Retrieves object media.
+	 *
+	 * This method is used to build a data structure that contains all the information needed
+	 * to create a virtual media object on the remote site.
+	 *
+	 * Its basic use is to prepare the featured media object that is attached to an object, like a post.
+	 *
+	 * @since     1.0.0
+	 * @param     array               $object     Details of current content object.
+	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
+	 * @return    array                           Object media.
+	 */
+	public static function get_object_media( $object, $request ) {
+
+		$prepared_data = array();
+
+		// Retrieve featured media
+		if ( ! empty( $object['featured_media'] )  ) {
+
+			$source_id = static::get_source_id( $object['featured_media'] );
+
+			$relations = array(
+				'post' => array(
+					$object['id'] => array(
+						'featured_media' => 'featured_media',
+					),
+				),
+			);
+
+			$prepared_data[ $source_id ] = static::get_media( $source_id, $object['featured_media'], $relations, $prepared_data );
+		}
+
+		// Retrieve galleries media
+		if ( static::is_post( $object ) && ! empty( $object['content']['raw'] )  ) {
+
+			// Get galleries
+			$galleries = static::get_galleries( $object['content']['raw'] );
+
+			foreach ( $galleries as $gallery ) {
+
+				$atts = \shortcode_parse_atts( $gallery[3] );
+
+				if ( empty( $atts['ids'] ) ) {
+					continue;
+				}
+
+				$ids = explode( ',', $atts['ids'] );
+
+				foreach ( $ids as $id ) {
+
+					$source_id = static::get_source_id( $id );
+
+					$relations = array(
+						'post' => array(
+							$object['id'] => array(
+								'gallery_shortcode' => 'gallery_shortcode',
+							),
+						),
+					);
+
+					$prepared_data[ $source_id ] = static::get_media( $source_id, $id, $relations, $prepared_data );
+				}
+
+			}
+
+		}
+
+		/**
+		 * Extend object media.
+		 *
+		 * @since     1.0.0
+		 * @param     array    Object media.
+		 * @param     array    Details of current content object.
+		 * @return    array    Possibly-modified object media.
+		 */
+		return \apply_filters( 'replicast_get_object_media', $prepared_data, $object );
+	}
+
+	/**
+	 * Retrieves a media object.
+	 *
+	 * If the object ID does not exists it adds media information for creation purposes.
+	 * Otherwise, adds the ID and the field type in the structure that "saves" the
+	 * relation between the local IDs and the IDs on the remote site.
+	 *
+	 * @since     1.0.0
+	 * @param     int      $source_id    The source object ID.
+	 * @param     int      $object_id    The object ID.
+	 * @param     mixed    $relations    Object relations.
+	 * @param     array    $data         Object media.
+	 * @return    array                  Prepared media object.
+	 */
+	public static function get_media( $source_id, $object_id, $relations = array(), $data ) {
+
+		// Add media information for creation purposes
+		if ( ! array_key_exists( $object_id, $data ) ) {
+
+			/**
+			 * Filter for suppressing image sizes.
+			 *
+			 * @since     1.0.0
+			 * @param     array    Name(s) of the suppressed image sizes.
+			 * @return    array    Possibly-modified name(s) of the suppressed image sizes.
+			 */
+			$suppressed_image_sizes = \apply_filters( 'replicast_suppress_image_sizes', array() );
+
+			// Get metadata
+			$metadata = \get_post_meta( $object_id, '_wp_attachment_metadata', true );
+
+			// Replace relative url with absolute url
+			$metadata['file'] = \wp_get_attachment_url( $object_id );
+
+			if ( ! empty( $metadata['sizes'] ) ) {
+				foreach ( $metadata['sizes'] as $size => $value ) {
+
+					if ( in_array( $size, $suppressed_image_sizes ) ) {
+						unset( $metadata['sizes'][ $size ] );
+						continue;
+					}
+
+					// Replace relative url with absolute url
+					$metadata['sizes'][ $size ]['file'] = \wp_get_attachment_image_src( $object_id, $size )[0];
+
+				}
+			}
+
+			return array(
+				'id'         => $object_id,
+				'mime-type'  => \get_post_mime_type( $object_id ),
+				'metadata'   => $metadata,
+				'_relations' => $relations,
+			);
+
+		}
+
+		$data[ $source_id ]['_relations'] = array_merge_recursive( $data[ $source_id ]['_relations'], $relations );
+
+		return $data[ $source_id ];
+	}
+
+	/**
+	 * Retrieves galleries from an object.
+	 *
+	 * @uses  \get_shortcode_regex()
+	 *
+	 * @since     1.0.0
+	 * @param     string    $content    Object content.
+	 * @return    array                 Parsed galleries.
+	 */
+	public static function get_galleries( $content ) {
+		preg_match_all( '/' . \get_shortcode_regex( array( 'gallery' ) ) . '/', $content, $galleries, PREG_SET_ORDER );
+		return $galleries;
 	}
 
 	/**
@@ -269,35 +491,41 @@ class API {
 			static::update_object_term( $values['term'], $object );
 		}
 
+		// Update object media
+		if ( ! empty( $values['media'] ) ) {
+			static::update_object_media( $values['media'], $object );
+		}
+
 	}
 
 	/**
 	 * Update object meta.
 	 *
 	 * @since     1.0.0
-	 * @param     array     $values    The values of the field.
+	 * @param     array     $meta      The values of the field.
 	 * @param     object    $object    The object from the response.
 	 */
-	public static function update_object_meta( $values, $object ) {
+	public static function update_object_meta( $meta, $object ) {
 
 		// Get object meta type
 		$meta_type = static::get_meta_type( $object );
 
 		/**
-		 * Filter for suppressing specific meta keys from update.
+		 * Filter for suppressing specific meta keys.
 		 *
 		 * @since     1.0.0
-		 * @param     array                Name(s) of the suppressed meta keys.
-		 * @param     array     $values    The values of the field.
-		 * @param     object    $object    The object from the response.
-		 * @return    array                Possibly-modified name(s) of the suppressed meta keys.
+		 * @param     array     Name(s) of the suppressed meta keys.
+		 * @param     array     The values of the field.
+		 * @param     string    The object meta type.
+		 * @param     int       The object ID.
+		 * @return    array     Possibly-modified name(s) of the suppressed meta keys.
 		 */
-		$blacklist = \apply_filters( 'replicast_suppress_object_meta_from_update', array(), $values, $object );
+		$suppressed_meta = \apply_filters( 'replicast_suppress_object_meta', array(), $meta, $meta_type, $object->ID );
 
 		// Update metadata
-		foreach ( $values as $meta_key => $meta_values ) {
+		foreach ( $meta as $meta_key => $meta_values ) {
 
-			if ( in_array( $meta_key, $blacklist ) ) {
+			if ( in_array( $meta_key, $suppressed_meta ) ) {
 				continue;
 			}
 
@@ -307,6 +535,25 @@ class API {
 			}
 
 		}
+
+		/**
+		 * Fires immediately after object meta of a specific type is updated.
+		 *
+		 * @since    1.0.0
+		 * @param    array     The values of the field.
+		 * @param    object    The object from the response.
+		 */
+		\do_action( "replicast_update_object_{$meta_type}_meta", $meta, $object );
+
+		/**
+		 * Fires immediately after object meta is updated.
+		 *
+		 * @since    1.0.0
+		 * @param    array     The values of the field.
+		 * @param    object    The object from the response.
+		 * @param    string    The object meta type.
+		 */
+		\do_action( "replicast_update_object_meta", $meta, $object, $meta_type );
 
 	}
 
@@ -322,7 +569,7 @@ class API {
 		$prepared_ids = array();
 
 		// Update terms
-		foreach ( $terms as $term_data ) {
+		foreach ( $terms as $source_id => $term_data ) {
 
 			// Check if taxonomy exists
 			if ( ! \taxonomy_exists( $term_data['taxonomy'] ) ) {
@@ -333,20 +580,13 @@ class API {
 				continue;
 			}
 
-			// Check if term exists. Create it if not exists.
-			$term = \get_term_by( 'id', $term_data['term_id'], $term_data['taxonomy'], 'ARRAY_A' );
+			// Update term
+			$term = static::update_term( $term_data );
 
-			if ( ! $term ) {
-				$term = \wp_insert_term( $term_data['name'], $term_data['taxonomy'], array(
-					'description' => $term_data['description'],
-					'parent'      => 0,
-				) );
-			}
+			$terms[ $source_id ]['term_id']          = $term['term_id'];
+			$terms[ $source_id ]['term_taxonomy_id'] = $term['term_taxonomy_id'];
 
-			if ( \is_wp_error( $term ) ) {
-				continue;
-			}
-
+			// Save term id for post insertion
 			$prepared_ids[ $term_data['taxonomy'] ][] = $term['term_id'];
 
 			// Check if term has children
@@ -361,15 +601,28 @@ class API {
 
 		}
 
-		if ( ! empty( $prepared_ids ) ) {
-			foreach ( $prepared_ids as $taxonomy => $ids ) {
-				\wp_set_object_terms(
-					$object->ID,
-					$ids,
-					$taxonomy
-				);
+		// Get a list of object taxonomies
+		$taxonomies = array_keys( static::get_object_taxonomies( $object->ID, $object->post_type ) );
+
+		// Relates an object to a term, or a set of terms, and taxonomy type
+		foreach ( $taxonomies as $taxonomy ) {
+
+			$ids = array();
+			if ( array_key_exists( $taxonomy, $prepared_ids ) ) {
+				$ids = $prepared_ids[ $taxonomy ];
 			}
+
+			\wp_set_object_terms( $object->ID, $ids, $taxonomy );
 		}
+
+		/**
+		 * Fires immediately after object terms are updated.
+		 *
+		 * @since    1.0.0
+		 * @param    array     The values of the field.
+		 * @param    object    The object from the response.
+		 */
+		\do_action( 'replicast_update_object_term', $terms, $object );
 
 	}
 
@@ -386,22 +639,15 @@ class API {
 
 		$prepared_ids = array();
 
-		foreach ( $terms as $term_data ) {
+		foreach ( $terms as $source_id => $term_data ) {
 
-			// Check if term exists
-			$term = \get_term_by( 'id', $term_data['term_id'], $term_data['taxonomy'], 'ARRAY_A' );
+			// Update term
+			$term = static::update_term( $term_data, $parent_id );
 
-			if ( ! $term ) {
-				$term = \wp_insert_term( $term_data['name'], $term_data['taxonomy'], array(
-					'description' => $term_data['description'],
-					'parent'      => $parent_id,
-				) );
-			}
+			$terms[ $source_id ]['term_id']          = $term['term_id'];
+			$terms[ $source_id ]['term_taxonomy_id'] = $term['term_taxonomy_id'];
 
-			if ( \is_wp_error( $term ) ) {
-				continue;
-			}
-
+			// Save term id for post insertion
 			$prepared_ids[ $term_data['taxonomy'] ][] = $term['term_id'];
 
 			// Check if term has children
@@ -420,39 +666,180 @@ class API {
 	}
 
 	/**
-	 * Get object ID.
+	 * Update term object.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     array    $term_data    The term data.
+	 * @param     int      $parent_id    The parent term ID.
+	 * @return    array                  An array containing, at least, the term_id and term_taxonomy_id.
+	 */
+	private static function update_term( $term_data, $parent_id = 0 ) {
+
+		$term = \wp_insert_term( $term_data['name'], $term_data['taxonomy'], array(
+			'description' => $term_data['description'],
+			'parent'      => $parent_id,
+		) );
+
+		if ( \is_wp_error( $term ) ) {
+
+			if ( ! \is_numeric( $term->get_error_data() ) ) {
+				return array();
+			}
+
+			$term = \get_term_by( 'id', $term->get_error_data(), $term_data['taxonomy'], 'ARRAY_A' );
+		}
+
+		// Save remote object info
+		if ( ! empty( $term_data['meta'] ) ) {
+			\update_term_meta( $term['term_id'], Plugin::REPLICAST_SOURCE_INFO, $term_data['meta'][ Plugin::REPLICAST_SOURCE_INFO ] );
+		}
+
+		return $term;
+	}
+
+	/**
+	 * Update object media.
+	 *
+	 * @since     1.0.0
+	 * @param     array     $media     The values of the field.
+	 * @param     object    $object    The object from the response.
+	 */
+	public static function update_object_media( $media, $object ) {
+
+		$gallery_media_ids = array();
+
+		// Create media or update media
+		foreach ( $media as $source_id => $media_data ) {
+
+			// Update media
+			$media[ $source_id ]['id'] = static::update_media( $media_data );
+
+			if ( empty( $media_data['_relations']['post'] ) ) {
+				continue;
+			}
+
+			// Update media relations
+			foreach ( $media_data['_relations']['post'] as $relations ) {
+
+				// Update the featured media into the database
+				if ( array_key_exists( 'featured_media', $relations ) ) {
+					\set_post_thumbnail( $object->ID, $media[ $source_id ]['id'] );
+				}
+
+				if ( array_key_exists( 'gallery_shortcode', $relations ) ) {
+					$gallery_media_ids[ $source_id ] = $media[ $source_id ]['id'];
+				}
+
+			}
+
+		}
+
+		// Update galleries media
+		if ( static::is_post( $object ) && ! empty( $object->post_content ) ) {
+
+			// Get galleries
+			$galleries = static::get_galleries( $object->post_content );
+
+			foreach ( $galleries as $gallery ) {
+
+				$atts         = \shortcode_parse_atts( $gallery[3] );
+				$ids          = explode( ',', $atts['ids'] );
+				$prepared_ids = array();
+
+				foreach ( $ids as $id ) {
+					if ( ! array_key_exists( $id, $gallery_media_ids ) ) {
+						continue;
+					}
+					$prepared_ids[] = $gallery_media_ids[ $id ];
+				}
+
+				$pattern     = '/(\\[gallery(?:.*)ids=)\"(' . $atts['ids'] . ')\"((?:.*)\\])/';
+				$replacement = '';
+
+				// If there's no association between any of the local and remote media,
+				// it's better remove the shortcode
+				if ( ! empty( $prepared_ids ) ) {
+					$replacement = '${1}"' . implode( ',', $prepared_ids ) . '"$3';
+				}
+
+				$object->post_content = preg_replace( $pattern, $replacement, $object->post_content );
+
+			}
+
+			// Update the post into the database
+			\wp_update_post( $object );
+
+		}
+
+		/**
+		 * Fires immediately after object media is updated.
+		 *
+		 * @since    1.0.0
+		 * @param    array     The values of the field.
+		 * @param    object    The object from the response.
+		 */
+		\do_action( 'replicast_update_object_media', $media, $object );
+
+	}
+
+	/**
+	 * Updates a media object.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     array    $media_data    The values of the field.
+	 * @return    int                     The media object ID.
+	 */
+	private static function update_media( $media_data ) {
+
+		$attachment_id = ! empty( $media_data['id'] ) ? $media_data['id'] : '';
+
+		// Create an attachment if no ID was given
+		if ( empty( $attachment_id ) ) {
+
+			$file = \esc_url( $media_data['metadata']['file'] );
+
+			// Set attachment data
+			$attachment = array(
+				'post_mime_type' => $media_data['mime-type'],
+				'post_title'     => \sanitize_file_name( basename( $file ) ),
+				'post_content'   => '',
+				'post_status'    => 'inherit'
+			);
+
+			// Create the attachment
+			$attachment_id = \wp_insert_attachment( $attachment, $file );
+
+			// Assign metadata to attachment
+			\wp_update_attachment_metadata( $attachment_id, $media_data['metadata'] );
+
+		}
+
+		// Save remote object info
+		\update_post_meta( $attachment_id, Plugin::REPLICAST_SOURCE_INFO, $media_data[ Plugin::REPLICAST_SOURCE_INFO ] );
+
+		return $attachment_id;
+	}
+
+	/**
+	 * Get the object ID.
 	 *
 	 * @since     1.0.0
 	 * @param     object|array    $object    The object.
 	 * @return    string                     The object ID.
 	 */
-	public static function get_object_id( $object ) {
+	public static function get_id( $object ) {
 
 		if ( isset( $object->term_id ) ) {
 			return $object->term_id;
-		} elseif ( isset( $object->ID ) ) {
+		}
+
+		if ( isset( $object->ID ) ) {
 			return $object->ID;
 		}
 
 		return $object->id;
-	}
-
-	/**
-	 * Get object type.
-	 *
-	 * @since     1.0.0
-	 * @param     object|array    $object    The object.
-	 * @return    string                     The object type.
-	 */
-	public static function get_object_type( $object ) {
-
-		// FIXME: revisit later
-
-		if ( static::is_term( $object ) ) {
-			return $object->taxonomy;
-		}
-
-		return $object->post_type;
 	}
 
 	/**
@@ -526,31 +913,74 @@ class API {
 	}
 
 	/**
-	 * Retrieve replicast info from object.
+	 * Retrieve source object ID.
 	 *
 	 * @since     1.0.0
-	 * @param     object|array    $object    The object.
-	 * @return    array                      The replicast info meta data.
+	 * @param     int       $object_id    The object ID.
+	 * @param     string    $meta_type    The object meta type.
+	 * @return    int                     The source object ID.
 	 */
-	public static function get_replicast_info( $object ) {
+	public static function get_source_id( $object_id, $meta_type = 'post' ) {
 
-		$replicast_info = \get_metadata( static::get_meta_type( $object ), static::get_object_id( $object ), Plugin::REPLICAST_IDS, true );
+		// Get source object info
+		$source_info = static::get_source_info( $object_id, $meta_type );
 
-		if ( ! $replicast_info ) {
-			return array();
+		if ( ! empty( $source_info ) && ! empty( $source_info['object_id'] ) ) {
+			return $source_info['object_id'];
 		}
 
-		if ( ! is_array( $replicast_info ) ) {
-			$replicast_info = (array) $replicast_info;
-		}
-
-		return $replicast_info;
+		return $object_id;
 	}
 
 	/**
-	 * Update object with replication info.
+	 * Retrieve source object info.
 	 *
-	 * This replication info consists in a pair <site_id, remote_object_id>.
+	 * @since     1.0.0
+	 * @param     int       $object_id    The object ID.
+	 * @param     string    $meta_type    The object meta type.
+	 * @return    mixed                   Single metadata value, or array of values.
+	 *                                    If the $meta_type or $object_id parameters are invalid, false is returned.
+	 */
+	public static function get_source_info( $object_id, $meta_type = 'post' ) {
+
+		if( empty( $metadata = \get_metadata( $meta_type, $object_id, Plugin::REPLICAST_SOURCE_INFO, true ) ) ) {
+			return $metadata;
+		}
+
+		return \maybe_unserialize( $metadata );
+	}
+
+	/**
+	 * Retrieve remote object info.
+	 *
+	 * @since     1.0.0
+	 * @param     object|array    $object    The object.
+	 * @return    array                      The remote object info.
+	 */
+	public static function get_remote_info( $object ) {
+
+		$remote_info = \get_metadata(
+			static::get_meta_type( $object ),
+			static::get_id( $object ),
+			Plugin::REPLICAST_REMOTE_INFO,
+			true
+		);
+
+		if ( ! $remote_info ) {
+			return array();
+		}
+
+		if ( ! is_array( $remote_info ) ) {
+			$remote_info = (array) $remote_info;
+		}
+
+		return $remote_info;
+	}
+
+	/**
+	 * Update remote object info.
+	 *
+	 * This remote info consists in a pair <site_id, remote_object_id>.
 	 *
 	 * @since     1.0.0
 	 * @param     object|array         $object                       The object.
@@ -559,23 +989,28 @@ class API {
 	 * @return    mixed                                              Returns meta ID if the meta doesn't exist, otherwise
 	 *                                                               returns true on success and false on failure.
 	 */
-	public static function update_replicast_info( $object, $site_id, $remote_data = null ) {
+	public static function update_remote_info( $object, $site_id, $remote_data = null ) {
 
 		// Get replicast object info
-		$replicast_info = static::get_replicast_info( $object );
+		$remote_info = static::get_remote_info( $object );
 
 		// Save or delete the remote object info
 		if ( $remote_data ) {
-			$replicast_info[ $site_id ] = array(
-				'id'     => static::get_object_id( $remote_data ),
+			$remote_info[ $site_id ] = array(
+				'id'     => static::get_id( $remote_data ),
 				'status' => isset( $remote_data->status ) ? $remote_data->status : '',
 			);
 		}
 		else {
-			unset( $replicast_info[ $site_id ] );
+			unset( $remote_info[ $site_id ] );
 		}
 
-		return \update_metadata( static::get_meta_type( $object ), static::get_object_id( $object ), Plugin::REPLICAST_IDS, $replicast_info );
+		return \update_metadata(
+			static::get_meta_type( $object ),
+			static::get_id( $object ),
+			Plugin::REPLICAST_REMOTE_INFO,
+			$remote_info
+		);
 	}
 
 }

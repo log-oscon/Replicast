@@ -1,0 +1,18 @@
+.widefat .column-replicast {
+  width: 1em;
+}
+
+#remote_site-tabs,
+#remote_site-adder {
+  display: none;
+}
+
+#remote_site-all {
+  background-color: transparent;
+  border: 0;
+  padding: 0;
+}
+
+#remote_site-all > ul {
+  margin: 0;
+}

@@ -42,12 +42,13 @@
     }
   },
   "require": {
-    "guzzlehttp/guzzle": "^6.0"
+    "guzzlehttp/guzzle": "6.1.1"
   },
   "require-dev": {
     "phpunit/phpunit": "*@stable",
-    "apigen/apigen": "@stable",
-    "10up/wp_mock": "dev-master"
+    "apigen/apigen": "dev-master",
+    "10up/wp_mock": "dev-master",
+    "wp-coding-standards/wpcs": "dev-master"
   },
   "suggest": {}
 }
