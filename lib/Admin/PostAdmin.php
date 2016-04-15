@@ -53,6 +53,7 @@ class PostAdmin extends Admin {
 		}
 
 		\add_filter( 'user_has_cap',                 array( $this, 'manage_posts_edit' ), 10, 3 );
+		\add_filter( 'get_edit_post_link',           array( $this, 'get_edit_post_link' ), 10, 3 );
 		\add_filter( 'wp_get_attachment_image_src',  array( $this, 'get_attachment_image_src' ), 10, 3 );
 		\add_filter( 'wp_calculate_image_srcset',    array( $this, 'calculate_image_srcset' ), 10, 5 );
 		\add_filter( 'wp_get_attachment_url',        array( $this, 'get_attachment_url' ), 10, 2 );
@@ -310,6 +311,26 @@ class PostAdmin extends Admin {
 		}
 
 		return $allcaps;
+	}
+
+	/**
+	 * Filter the post edit link.
+	 *
+	 * @since     1.0.0
+	 * @param     string    $link       The edit link.
+	 * @param     int       $post_id    Post ID.
+	 * @param     string    $context    The link context.
+	 * @return                          Possibly-modified post edit link.
+	 */
+	public function get_edit_post_link( $link, $post_id, $context ) {
+
+		$source_info = API::get_source_info( $post_id );
+
+		if ( empty( $source_info ) ) {
+			return $link;
+		}
+
+		return \esc_url( $source_info['edit_link'] );
 	}
 
 	/**
