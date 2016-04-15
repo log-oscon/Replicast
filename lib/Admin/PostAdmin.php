@@ -285,11 +285,14 @@ class PostAdmin extends Admin {
 			return $allcaps;
 		}
 
+		// Retrieves an object which describes any registered post type
+		$obj = \get_post_type_object( $screen->post_type );
+
 		// Builds an object with all post type capabilities out of a post type object
 		$post_type_caps = \get_post_type_capabilities( (object) array(
-			'capability_type' => $screen->post_type,
+			'capability_type' => $obj->capability_type,
 			'capabilities'    => array(),
-			'map_meta_cap'    => true,
+			'map_meta_cap'    => false,
 		) );
 
 		if ( empty( $post_type_caps ) ) {
@@ -298,10 +301,12 @@ class PostAdmin extends Admin {
 
 		// Disable certain capabilities
 		foreach ( $post_type_caps as $cap_key => $cap_value ) {
+
 			if ( ! in_array( $cap_key, array( 'edit_post', 'edit_posts', 'edit_published_posts', 'edit_others_posts' ) ) ) {
 				continue;
 			}
-			$allcaps[ $cap_value ] = false;
+
+			unset( $allcaps[ $cap_value ] );
 		}
 
 		return $allcaps;
