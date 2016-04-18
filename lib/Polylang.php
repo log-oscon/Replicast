@@ -50,21 +50,21 @@ class Polylang {
 	 */
 	public function register() {
 
-		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_term' ), 10, 2 );
-		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_term' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_translations' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_translations' ), 10, 2 );
 
 	}
 
 
 	/**
-	 * Prepare Polylang terms.
+	 * Prepare Polylang translations.
 	 *
 	 * @since     1.0.0
 	 * @param     array                $data    Prepared data.
 	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    array                         Possibly-modified data.
 	 */
-	public function prepare_object_term( $data, $site ) {
+	public function prepare_object_translations( $data, $site ) {
 
 		if ( empty( $data['replicast']['term'] ) ) {
 			return $data;
