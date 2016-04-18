@@ -213,19 +213,21 @@ class PostAdmin extends Admin {
 
 		$source_info = API::get_source_info( $object_id, $meta_type );
 
-		$html = sprintf(
-			'<span class="dashicons dashicons-%s"></span>',
-			$source_info ? 'yes' : 'no'
+		if ( empty( $source_info ) ) {
+			return '';
+		}
+
+		$icon = sprintf(
+			'<span class="dashicons dashicons-image-rotate" aria-label="%s"></span>',
+			\esc_attr__( 'Replicast', 'replicast' )
 		);
 
-		if ( ! empty( $source_info['edit_link'] ) ) {
-			$html = sprintf(
-				'<a href="%s" title="%s">%s</a>',
-				\esc_url( $source_info['edit_link'] ),
-				\esc_attr__( 'Edit', 'replicast' ),
-				$html
-			);
-		}
+		$html = sprintf(
+			'<a href="%s" title="%s">%s</a>',
+			\esc_url( $source_info['edit_link'] ),
+			\esc_attr__( 'Edit', 'replicast' ),
+			$icon
+		);
 
 		/**
 		 * Filter the custom column contents.
