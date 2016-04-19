@@ -166,8 +166,21 @@ class API {
 	 */
 	public static function get_object_term( $object, $request ) {
 
+		// Get object meta type
+		$meta_type = static::get_meta_type( $object );
+
 		// Get a hierarchical list of object terms
-		$prepared_terms = static::get_object_terms_hierarchical( $object );
+		$prepared_data = static::get_object_terms_hierarchical( $object );
+
+		/**
+		 * Extend object terms by meta type.
+		 *
+		 * @since     1.0.1
+		 * @param     array    Hierarchical list of object terms.
+		 * @param     array    Details of current content object.
+		 * @return    array    Possibly-modified object terms.
+		 */
+		$prepared_data = \apply_filters( "replicast_get_object_{$meta_type}_term", $prepared_data, $object );
 
 		/**
 		 * Extend object terms.
@@ -177,7 +190,7 @@ class API {
 		 * @param     array    Details of current content object.
 		 * @return    array    Possibly-modified object terms.
 		 */
-		return \apply_filters( 'replicast_get_object_term', $prepared_terms, $object );
+		return \apply_filters( 'replicast_get_object_term', $prepared_data, $object );
 	}
 
 	/**
@@ -566,6 +579,9 @@ class API {
 	 */
 	public static function update_object_term( $terms, $object ) {
 
+		// Get object meta type
+		$meta_type = static::get_meta_type( $object );
+
 		$prepared_ids = array();
 
 		// Update terms
@@ -614,6 +630,15 @@ class API {
 
 			\wp_set_object_terms( $object->ID, $ids, $taxonomy );
 		}
+
+		/**
+		 * Fires immediately after object terms of a specific type are updated.
+		 *
+		 * @since    1.0.1
+		 * @param    array     The values of the field.
+		 * @param    object    The object from the response.
+		 */
+		\do_action( "replicast_update_object_{$meta_type}_term", $terms, $object );
 
 		/**
 		 * Fires immediately after object terms are updated.
