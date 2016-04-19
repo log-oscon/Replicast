@@ -84,7 +84,7 @@ class API {
 
 		return array(
 			'meta'  => static::get_object_meta( $object, $request ),
-			'term'  => static::get_object_term( $object, $request ),
+			'terms' => static::get_object_terms( $object, $request ),
 			'media' => static::get_object_media( $object, $request ),
 		);
 	}
@@ -164,7 +164,7 @@ class API {
 	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
 	 * @return    array                           Object terms.
 	 */
-	public static function get_object_term( $object, $request ) {
+	public static function get_object_terms( $object, $request ) {
 
 		// Get object meta type
 		$meta_type = static::get_meta_type( $object );
@@ -180,7 +180,7 @@ class API {
 		 * @param     array    Details of current content object.
 		 * @return    array    Possibly-modified object terms.
 		 */
-		$prepared_data = \apply_filters( "replicast_get_object_{$meta_type}_term", $prepared_data, $object );
+		$prepared_data = \apply_filters( "replicast_get_object_{$meta_type}_terms", $prepared_data, $object );
 
 		/**
 		 * Extend object terms.
@@ -190,7 +190,7 @@ class API {
 		 * @param     array    Details of current content object.
 		 * @return    array    Possibly-modified object terms.
 		 */
-		return \apply_filters( 'replicast_get_object_term', $prepared_data, $object );
+		return \apply_filters( 'replicast_get_object_terms', $prepared_data, $object );
 	}
 
 	/**
@@ -500,8 +500,8 @@ class API {
 		}
 
 		// Update object terms
-		if ( ! empty( $values['term'] ) ) {
-			static::update_object_term( $values['term'], $object );
+		if ( ! empty( $values['terms'] ) ) {
+			static::update_object_terms( $values['terms'], $object );
 		}
 
 		// Update object media
@@ -577,7 +577,7 @@ class API {
 	 * @param     array     $terms     The values of the field.
 	 * @param     object    $object    The object from the response.
 	 */
-	public static function update_object_term( $terms, $object ) {
+	public static function update_object_terms( $terms, $object ) {
 
 		// Get object meta type
 		$meta_type = static::get_meta_type( $object );
@@ -638,7 +638,7 @@ class API {
 		 * @param    array     The values of the field.
 		 * @param    object    The object from the response.
 		 */
-		\do_action( "replicast_update_object_{$meta_type}_term", $terms, $object );
+		\do_action( "replicast_update_object_{$meta_type}_terms", $terms, $object );
 
 		/**
 		 * Fires immediately after object terms are updated.
@@ -647,7 +647,7 @@ class API {
 		 * @param    array     The values of the field.
 		 * @param    object    The object from the response.
 		 */
-		\do_action( 'replicast_update_object_term', $terms, $object );
+		\do_action( 'replicast_update_object_terms', $terms, $object );
 
 	}
 
