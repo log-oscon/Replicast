@@ -713,7 +713,7 @@ class ACF {
 	public function get_object_term_media( $data, $object ) {
 
 		// Retrieve the terms
-		$terms = API::get_object_terms( $object['id'], $object['type'] );
+		$terms = API::get_terms( $object['id'], $object['type'] );
 
 		foreach ( $terms as $term ) {
 
@@ -770,7 +770,7 @@ class ACF {
 	public function update_object_term_media( $media, $object ) {
 
 		// Retrieve the terms
-		$terms = API::get_object_terms( $object->ID, $object->post_type );
+		$terms = API::get_terms( $object->ID, $object->post_type );
 
 		$prepared_terms = array();
 		foreach ( $terms as $term ) {

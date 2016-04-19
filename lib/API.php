@@ -170,7 +170,7 @@ class API {
 		$meta_type = static::get_meta_type( $object );
 
 		// Get a hierarchical list of object terms
-		$prepared_data = static::get_object_terms_hierarchical( $object );
+		$prepared_data = static::get_terms_hierarchical( $object );
 
 		/**
 		 * Extend object terms by meta type.
@@ -203,12 +203,12 @@ class API {
 	 * @param     string    $object_type    The object type.
 	 * @return    array                     An array of taxonomy terms, or empty array if no terms are found.
 	 */
-	public static function get_object_terms( $object_id, $object_type ) {
+	public static function get_terms( $object_id, $object_type ) {
 
 		// FIXME: we should soft cache this
 
 		// Get a list of object taxonomies
-		$taxonomies = static::get_object_taxonomies( $object_id, $object_type );
+		$taxonomies = static::get_taxonomies( $object_id, $object_type );
 
 		$terms = \wp_get_object_terms( $object_id, array_keys( $taxonomies ) );
 
@@ -229,7 +229,7 @@ class API {
 	 * @param     string    $object_type    The object type.
 	 * @return    array                     All taxonomy names or objects for the given object.
 	 */
-	public static function get_object_taxonomies( $object_id, $object_type ) {
+	public static function get_taxonomies( $object_id, $object_type ) {
 
 		// FIXME: we should soft cache this
 
@@ -274,10 +274,10 @@ class API {
 	 * @param     array    $object    Details of current content object.
 	 * @return    array               Hierarchical list of object terms
 	 */
-	private static function get_object_terms_hierarchical( $object ) {
+	private static function get_terms_hierarchical( $object ) {
 
 		// Retrieve the terms
-		$terms = static::get_object_terms( $object['id'], $object['type'] );
+		$terms = static::get_terms( $object['id'], $object['type'] );
 
 		$hierarchical_terms = array();
 		foreach ( $terms as $term ) {
@@ -618,7 +618,7 @@ class API {
 		}
 
 		// Get a list of object taxonomies
-		$taxonomies = array_keys( static::get_object_taxonomies( $object->ID, $object->post_type ) );
+		$taxonomies = array_keys( static::get_taxonomies( $object->ID, $object->post_type ) );
 
 		// Relates an object to a term, or a set of terms, and taxonomy type
 		foreach ( $taxonomies as $taxonomy ) {
