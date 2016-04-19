@@ -285,11 +285,11 @@ class PostHandler extends Handler {
 	 */
 	public function handle_terms( $site_id, $data = null ) {
 
-		if ( empty( $data->replicast->term ) ) {
+		if ( empty( $data->replicast->terms ) ) {
 			return;
 		}
 
-		foreach ( $data->replicast->term as $term_id => $term_data ) {
+		foreach ( $data->replicast->terms as $term_id => $term_data ) {
 
 			// Get term object
 			$term = \get_term_by( 'id', $term_id, $term_data->taxonomy );
