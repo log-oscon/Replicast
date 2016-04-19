@@ -142,7 +142,7 @@ class API {
 		 * @param     array    Details of current content object.
 		 * @return    array    Possibly-modified object meta.
 		 */
-		$prepared_data = \apply_filters( "replicast_get_{$meta_type}_meta", $prepared_data, $object );
+		$prepared_data = \apply_filters( "replicast_get_object_{$meta_type}_meta", $prepared_data, $object );
 
 		/**
 		 * Extend object meta.
