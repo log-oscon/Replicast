@@ -75,12 +75,12 @@ class Polylang {
 				continue;
 			}
 
-			$translations = unserialize( $term->description );
+			$translations = $this->get_translations( $term->description );
 
-			foreach ( $translations as $lang => $object_id ) {
+			foreach ( $translations as $lang => $translated_object_id ) {
 
 				if ( $term->taxonomy === 'post_translations' ) {
-					$remote_info = API::get_remote_info( \get_post( $object_id ) );
+					$remote_info = API::get_remote_info( \get_post( $translated_object_id ) );
 				} elseif ( $term->taxonomy === 'term_translations' ) {
 					// TODO: ...
 					continue;
@@ -94,11 +94,35 @@ class Polylang {
 
 			}
 
-			$term->description = serialize( $translations );
+			$term->description = $this->set_translations( $translations );
 
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Get object translations.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     string    $description    Object translations serialized.
+	 * @return    array                     Object translations unserialized.
+	 */
+	private function get_translations( $description ) {
+		return unserialize( $description );
+	}
+
+	/**
+	 * Set object translations.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     array    $translations    Object translations unserialized.
+	 * @return    string                    Object translations serialized.
+	 */
+	private function set_translations( $translations ) {
+		return serialize( $translations );
 	}
 
 }

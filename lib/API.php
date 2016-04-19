@@ -701,18 +701,29 @@ class API {
 	 */
 	private static function update_term( $term_data, $parent_id = 0 ) {
 
-		$term = \wp_insert_term( $term_data['name'], $term_data['taxonomy'], array(
+		$taxonomy = $term_data['taxonomy'];
+		$args     = array(
 			'description' => $term_data['description'],
 			'parent'      => $parent_id,
-		) );
+		);
 
+		// Insert term
+		$term = \wp_insert_term( $term_data['name'], $taxonomy, $args );
+
+		// Term already exists? update it, then
 		if ( \is_wp_error( $term ) ) {
 
 			if ( ! \is_numeric( $term->get_error_data() ) ) {
 				return array();
 			}
 
-			$term = \get_term_by( 'id', $term->get_error_data(), $term_data['taxonomy'], 'ARRAY_A' );
+			$term_id = $term->get_error_data();
+
+			// Update term
+			\wp_update_term( $term_id, $taxonomy, $args );
+
+			// Get term
+			$term = \get_term_by( 'id', $term_id, $taxonomy, 'ARRAY_A' );
 		}
 
 		// Save remote object info
