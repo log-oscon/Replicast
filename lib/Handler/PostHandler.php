@@ -135,10 +135,14 @@ class PostHandler extends Handler {
 
 			$replicast_info = API::get_remote_info( $term );
 
-			// Update object ID
-			$term->term_id = '';
+			// Update object ID's
+			$term->term_id          = '';
+			$term->term_taxonomy_id = '';
+
 			if ( ! empty( $replicast_info ) ) {
-				$term->term_id = $replicast_info[ $site->get_id() ]['id'];
+				$replicast_info         = $replicast_info[ $site->get_id() ];
+				$term->term_id          = $replicast_info['id'];
+				$term->term_taxonomy_id = $replicast_info['term_taxonomy_id'];
 			}
 
 			$data['replicast']['terms'][ $term_id ] = $term;
@@ -179,12 +183,15 @@ class PostHandler extends Handler {
 			$replicast_info = API::get_remote_info( $term );
 
 			// Update object ID's
-			$term->term_id = '';
-			$term->parent  = '';
+			$term->term_id          = '';
+			$term->term_taxonomy_id = '';
+			$term->parent           = '';
 
 			if ( ! empty( $replicast_info ) ) {
-				$term->term_id = $replicast_info[ $site->get_id() ]['id'];
-				$term->parent  = $parent_id;
+				$replicast_info         = $replicast_info[ $site->get_id() ];
+				$term->term_id          = $replicast_info['id'];
+				$term->term_taxonomy_id = $replicast_info['term_taxonomy_id'];
+				$term->parent           = $parent_id;
 			}
 
 			$terms[ $term_id ] = $term;

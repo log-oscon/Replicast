@@ -286,10 +286,6 @@ class API {
 				continue;
 			}
 
-			if ( in_array( $term->slug, array( 'uncategorized', 'untagged' ) ) ) {
-				continue;
-			}
-
 			$term_id   = $term->term_id;
 			$source_id = static::get_source_id( $term_id, 'term' );
 
@@ -1032,10 +1028,19 @@ class API {
 
 		// Save or delete the remote object info
 		if ( $remote_data ) {
+
 			$remote_info[ $site_id ] = array(
-				'id'     => static::get_id( $remote_data ),
-				'status' => isset( $remote_data->status ) ? $remote_data->status : '',
+				'id' => static::get_id( $remote_data ),
 			);
+
+			if ( static::is_post( $object ) ) {
+				$remote_info[ $site_id ]['status'] = $remote_data->status;
+			}
+
+			if ( static::is_term( $object ) ) {
+				$remote_info[ $site_id ]['term_taxonomy_id'] = $remote_data->term_taxonomy_id;
+			}
+
 		}
 		else {
 			unset( $remote_info[ $site_id ] );
