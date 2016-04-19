@@ -65,11 +65,11 @@ class Polylang {
 	 */
 	public function prepare_object_translations( $data, $site ) {
 
-		if ( empty( $data['replicast']['term'] ) ) {
+		if ( empty( $data['replicast']['terms'] ) ) {
 			return $data;
 		}
 
-		foreach ( $data['replicast']['term'] as $term ) {
+		foreach ( $data['replicast']['terms'] as $term ) {
 
 			if ( ! in_array( $term->taxonomy, array( 'post_translations', 'term_translations' ) ) ) {
 				continue;
