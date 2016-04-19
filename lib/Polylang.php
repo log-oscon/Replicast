@@ -55,9 +55,8 @@ class Polylang {
 
 	}
 
-
 	/**
-	 * Prepare Polylang translations.
+	 * Prepare object translations.
 	 *
 	 * @since     1.0.0
 	 * @param     array                $data    Prepared data.
@@ -83,7 +82,7 @@ class Polylang {
 				if ( $term->taxonomy === 'post_translations' ) {
 					$remote_info = API::get_remote_info( \get_post( $object_id ) );
 				} elseif ( $term->taxonomy === 'term_translations' ) {
-					// TODO
+					// TODO: ...
 					continue;
 				}
 

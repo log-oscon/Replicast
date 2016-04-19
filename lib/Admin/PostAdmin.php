@@ -29,13 +29,14 @@ class PostAdmin extends Admin {
 	/**
 	 * Register hooks.
 	 *
+	 * @since    1.0.1    Changed priority to 30 to come after Polylang
 	 * @since    1.0.0
 	 */
 	public function register() {
 
 		// Post handling
-		\add_action( 'save_post',          array( $this, 'on_save_post' ), 10, 3 );
-		\add_action( 'attachment_updated', array( $this, 'on_save_post' ), 10, 3 );
+		\add_action( 'save_post',          array( $this, 'on_save_post' ), 30, 3 );
+		\add_action( 'attachment_updated', array( $this, 'on_save_post' ), 30, 3 );
 		\add_action( 'trashed_post',       array( $this, 'on_trash_post' ) );
 		\add_action( 'before_delete_post', array( $this, 'on_delete_post' ) );
 
