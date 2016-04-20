@@ -622,4 +622,76 @@ abstract class Handler {
 
 	}
 
+	/**
+	 * Update object with remote ID.
+	 *
+	 * @since     1.0.0
+	 * @param     int       $site_id    Site ID.
+	 * @param     object    $data       Object data.
+	 */
+	public function update_object( $site_id, $data = null ) {
+		API::update_remote_info( $this->object, $site_id, $data );
+	}
+
+	/**
+	 * Update terms with remote IDs.
+	 *
+	 * @since     1.0.0
+	 * @param     int       $site_id    Site ID.
+	 * @param     object    $data       Object data.
+	 */
+	public function update_terms( $site_id, $data = null ) {
+
+		if ( empty( $data->replicast->terms ) ) {
+			return;
+		}
+
+		foreach ( $data->replicast->terms as $term_id => $term_data ) {
+
+			// Get term object
+			$term = \get_term_by( 'id', $term_id, $term_data->taxonomy );
+
+			if ( ! $term ) {
+				return;
+			}
+
+			// Update replicast info
+			API::update_remote_info( $term, $site_id, $term_data );
+
+		}
+
+	}
+
+	/**
+	 * Update media with remote IDs.
+	 *
+	 * @since     1.0.0
+	 * @param     int       $site_id    Site ID.
+	 * @param     object    $data       Object data.
+	 */
+	public function update_media( $site_id, $data = null ) {
+
+		if ( empty( $data->replicast->media ) ) {
+			return;
+		}
+
+		foreach ( $data->replicast->media as $media_id => $media_data ) {
+
+			// Get media object
+			$media = \get_post( $media_id );
+
+			if ( ! $media ) {
+				return;
+			}
+
+			// Update replicast info
+			API::update_remote_info( $media, $site_id, $media_data );
+
+			// Update related site
+			\wp_set_post_terms( $media_id, $site_id, Plugin::TAXONOMY_SITE );
+
+		}
+
+	}
+
 }

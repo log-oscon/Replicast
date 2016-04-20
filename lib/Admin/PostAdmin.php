@@ -717,14 +717,14 @@ class PostAdmin extends Admin {
 
 							$site_id = $site->get_id();
 
-							// Handle object
-							$handler->handle_object( $site_id, $remote_data );
+							// Update object
+							$handler->update_object( $site_id, $remote_data );
 
-							// Handle terms
-							$handler->handle_terms( $site_id, $remote_data );
+							// Update terms
+							$handler->update_terms( $site_id, $remote_data );
 
-							// Handle media
-							$handler->handle_media( $site_id, $remote_data );
+							// Update media
+							$handler->update_media( $site_id, $remote_data );
 
 							// TODO: build notices
 
@@ -776,8 +776,8 @@ class PostAdmin extends Admin {
 						->then(
 							function ( $response ) use ( $site_id, $handler ) {
 
-								// Handle object
-								$handler->handle_object( $site_id );
+								// Update object
+								$handler->update_object( $site_id );
 
 								// TODO: build notices
 
@@ -869,8 +869,8 @@ class PostAdmin extends Admin {
 								$remote_data = null;
 							}
 
-							// Handle object
-							$handler->handle_object( $site->get_id(), $remote_data );
+							// Update object
+							$handler->update_object( $site->get_id(), $remote_data );
 
 							// TODO: build notices
 
@@ -966,8 +966,8 @@ class PostAdmin extends Admin {
 					->then(
 						function ( $response ) use ( $site, $handler ) {
 
-							// Handle object
-							$handler->handle_object( $site->get_id() );
+							// Update object
+							$handler->update_object( $site->get_id() );
 
 							// TODO: build notices
 
