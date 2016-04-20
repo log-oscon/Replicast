@@ -682,9 +682,8 @@ class ACF {
 	/**
 	 * Update ACF terms "meta".
 	 *
-	 * @since     1.0.0
-	 * @param     array     $terms    Object terms.
-	 * @return    array               Possibly-modified object terms.
+	 * @since    1.0.0
+	 * @param    array    $terms    Object terms.
 	 */
 	public function update_object_terms_meta( $terms ) {
 
@@ -763,9 +762,9 @@ class ACF {
 	/**
 	 * Update ACF terms media.
 	 *
-	 * @since     1.0.0
-	 * @param     array     $media     The values of the field.
-	 * @param     object    $object    The object.
+	 * @since    1.0.0
+	 * @param    array     $media     The values of the field.
+	 * @param    object    $object    The object.
 	 */
 	public function update_object_term_media( $media, $object ) {
 
