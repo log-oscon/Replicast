@@ -50,9 +50,11 @@ class Polylang {
 	 */
 	public function register() {
 
-		\add_filter( 'replicast_get_object_terms',          array( $this, 'get_object_terms_translations' ), 10, 2 );
-		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_translations' ), 10, 2 );
-		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_translations' ), 10, 2 );
+		\add_filter( 'replicast_get_object_terms',          array( $this, 'get_object_terms_translations' ), 10 );
+		\add_filter( 'replicast_get_object_terms',          array( $this, 'get_object_terms_language' ), 20 );
+		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_terms_translations' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_terms_translations' ), 10, 2 );
+		\add_action( 'replicast_update_object_terms',       array( $this, 'update_object_terms_language' ) );
 
 	}
 
@@ -60,15 +62,10 @@ class Polylang {
 	 * Retrieve Polylang terms translations.
 	 *
 	 * @since     1.0.0
-	 * @param     array    $terms     Object terms.
-	 * @param     array    $object    Details of current content object.
-	 * @return    array               Possibly-modified object terms.
+	 * @param     array    $terms    Object terms.
+	 * @return    array              Possibly-modified object terms.
 	 */
-	public function get_object_terms_translations( $terms, $object ) {
-
-		if ( ! function_exists( 'pll_get_term_translations' ) ) {
-			return $terms;
-		}
+	public function get_object_terms_translations( $terms ) {
 
 		foreach ( $terms as $term ) {
 
@@ -89,6 +86,26 @@ class Polylang {
 	}
 
 	/**
+	 * Retrieve Polylang terms language.
+	 *
+	 * @since     1.0.0
+	 * @param     array    $terms    Object terms.
+	 * @return    array              Possibly-modified object terms.
+	 */
+	public function get_object_terms_language( $terms ) {
+
+		if ( ! function_exists( 'pll_get_term_language' ) ) {
+			return $terms;
+		}
+
+		foreach ( $terms as $term ) {
+			$term->polylang = \pll_get_term_language( $term->term_id );
+		}
+
+		return $terms;
+	}
+
+	/**
 	 * Prepare object translations.
 	 *
 	 * @since     1.0.0
@@ -96,7 +113,7 @@ class Polylang {
 	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    array                         Possibly-modified data.
 	 */
-	public function prepare_object_translations( $data, $site ) {
+	public function prepare_object_terms_translations( $data, $site ) {
 
 		if ( empty( $data['replicast']['terms'] ) ) {
 			return $data;
@@ -132,6 +149,30 @@ class Polylang {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Update Polylang terms language.
+	 *
+	 * @since    1.0.0
+	 * @param    array    $terms    Object terms.
+	 */
+	public function update_object_terms_language( $terms ) {
+
+		if ( ! function_exists( 'pll_set_term_language' ) ) {
+			return $terms;
+		}
+
+		foreach ( $terms as $term_data ) {
+
+			if ( empty( $term_data['polylang'] ) ) {
+				continue;
+			}
+
+			\pll_set_term_language( $term_data['term_id'], $term_data['polylang'] );
+
+		}
+
 	}
 
 	/**
