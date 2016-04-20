@@ -29,13 +29,14 @@ class PostAdmin extends Admin {
 	/**
 	 * Register hooks.
 	 *
+	 * @since    1.0.1    Changed priority to 30 to come after Polylang
 	 * @since    1.0.0
 	 */
 	public function register() {
 
 		// Post handling
-		\add_action( 'save_post',          array( $this, 'on_save_post' ), 10, 3 );
-		\add_action( 'attachment_updated', array( $this, 'on_save_post' ), 10, 3 );
+		\add_action( 'save_post',          array( $this, 'on_save_post' ), 30, 3 );
+		\add_action( 'attachment_updated', array( $this, 'on_save_post' ), 30, 3 );
 		\add_action( 'trashed_post',       array( $this, 'on_trash_post' ) );
 		\add_action( 'before_delete_post', array( $this, 'on_delete_post' ) );
 
@@ -213,19 +214,21 @@ class PostAdmin extends Admin {
 
 		$source_info = API::get_source_info( $object_id, $meta_type );
 
-		$html = sprintf(
-			'<span class="dashicons dashicons-%s"></span>',
-			$source_info ? 'yes' : 'no'
+		if ( empty( $source_info ) ) {
+			return '';
+		}
+
+		$icon = sprintf(
+			'<span class="dashicons dashicons-image-rotate" aria-label="%s"></span>',
+			\esc_attr__( 'Replicast', 'replicast' )
 		);
 
-		if ( ! empty( $source_info['edit_link'] ) ) {
-			$html = sprintf(
-				'<a href="%s" title="%s">%s</a>',
-				\esc_url( $source_info['edit_link'] ),
-				\esc_attr__( 'Edit', 'replicast' ),
-				$html
-			);
-		}
+		$html = sprintf(
+			'<a href="%s" title="%s">%s</a>',
+			\esc_url( $source_info['edit_link'] ),
+			\esc_attr__( 'Edit', 'replicast' ),
+			$icon
+		);
 
 		/**
 		 * Filter the custom column contents.
@@ -254,6 +257,10 @@ class PostAdmin extends Admin {
 	public function manage_posts_edit( $allcaps, $caps, $args ) {
 
 		if ( ! \is_admin() ) {
+			return $allcaps;
+		}
+
+		if ( ! function_exists( 'get_current_screen' ) ) {
 			return $allcaps;
 		}
 

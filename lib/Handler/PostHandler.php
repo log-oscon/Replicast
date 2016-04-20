@@ -127,24 +127,28 @@ class PostHandler extends Handler {
 			unset( $data[ $taxonomy ] );
 		}
 
-		if ( empty( $data['replicast']['term'] ) ) {
+		if ( empty( $data['replicast']['terms'] ) ) {
 			return $data;
 		}
 
-		foreach ( $data['replicast']['term'] as $term_id => $term ) {
+		foreach ( $data['replicast']['terms'] as $term_id => $term ) {
 
 			$replicast_info = API::get_remote_info( $term );
 
-			// Update object ID
-			$term->term_id = '';
+			// Update object ID's
+			$term->term_id          = '';
+			$term->term_taxonomy_id = '';
+
 			if ( ! empty( $replicast_info ) ) {
-				$term->term_id = $replicast_info[ $site->get_id() ]['id'];
+				$replicast_info         = $replicast_info[ $site->get_id() ];
+				$term->term_id          = $replicast_info['id'];
+				$term->term_taxonomy_id = $replicast_info['term_taxonomy_id'];
 			}
 
-			$data['replicast']['term'][ $term_id ] = $term;
+			$data['replicast']['terms'][ $term_id ] = $term;
 
 			// Add remote object info
-			$data['replicast']['term'][ $term_id ]->meta = array(
+			$data['replicast']['terms'][ $term_id ]->meta = array(
 				Plugin::REPLICAST_SOURCE_INFO => serialize( array(
 					'object_id' => $term_id,
 					'edit_link' => \get_edit_term_link( $term_id, $term->taxonomy ),
@@ -156,7 +160,7 @@ class PostHandler extends Handler {
 				continue;
 			}
 
-			$this->prepare_child_terms( $term->term_id, $data['replicast']['term'][ $term_id ]->children, $site );
+			$this->prepare_child_terms( $term->term_id, $data['replicast']['terms'][ $term_id ]->children, $site );
 
 		}
 
@@ -179,12 +183,15 @@ class PostHandler extends Handler {
 			$replicast_info = API::get_remote_info( $term );
 
 			// Update object ID's
-			$term->term_id = '';
-			$term->parent  = '';
+			$term->term_id          = '';
+			$term->term_taxonomy_id = '';
+			$term->parent           = '';
 
 			if ( ! empty( $replicast_info ) ) {
-				$term->term_id = $replicast_info[ $site->get_id() ]['id'];
-				$term->parent  = $parent_id;
+				$replicast_info         = $replicast_info[ $site->get_id() ];
+				$term->term_id          = $replicast_info['id'];
+				$term->term_taxonomy_id = $replicast_info['term_taxonomy_id'];
+				$term->parent           = $parent_id;
 			}
 
 			$terms[ $term_id ] = $term;
@@ -285,11 +292,11 @@ class PostHandler extends Handler {
 	 */
 	public function handle_terms( $site_id, $data = null ) {
 
-		if ( empty( $data->replicast->term ) ) {
+		if ( empty( $data->replicast->terms ) ) {
 			return;
 		}
 
-		foreach ( $data->replicast->term as $term_id => $term_data ) {
+		foreach ( $data->replicast->terms as $term_id => $term_data ) {
 
 			// Get term object
 			$term = \get_term_by( 'id', $term_id, $term_data->taxonomy );

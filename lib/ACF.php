@@ -74,10 +74,10 @@ class ACF {
 		\add_filter( 'replicast_get_object_media',    array( $this, 'get_object_media' ), 10, 2 );
 		\add_action( 'replicast_update_object_media', array( $this, 'update_object_media' ), 10, 2 );
 
-		\add_filter( 'replicast_get_object_term',           array( $this, 'get_object_term_meta' ) );
+		\add_filter( 'replicast_get_object_terms',          array( $this, 'get_object_terms_meta' ) );
 		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_term_meta' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_term_meta' ), 10, 2 );
-		\add_action( 'replicast_update_object_term',        array( $this, 'update_object_term_meta' ) );
+		\add_action( 'replicast_update_object_terms',       array( $this, 'update_object_terms_meta' ) );
 
 		\add_filter( 'replicast_get_object_media',    array( $this, 'get_object_term_media' ), 20, 2 );
 		\add_action( 'replicast_update_object_media', array( $this, 'update_object_term_media' ), 20, 2 );
@@ -609,7 +609,7 @@ class ACF {
 	 * @param     array    $terms     Object terms.
 	 * @return    array               Possibly-modified object terms.
 	 */
-	public function get_object_term_meta( $terms ) {
+	public function get_object_terms_meta( $terms ) {
 
 		// FIXME: and how about child terms?
 		foreach ( $terms as $term ) {
@@ -644,11 +644,11 @@ class ACF {
 	 */
 	public function prepare_object_term_meta( $data, $site ) {
 
-		if ( empty( $data['replicast']['term'] ) ) {
+		if ( empty( $data['replicast']['terms'] ) ) {
 			return $data;
 		}
 
-		foreach ( $data['replicast']['term'] as $term_id => $term ) {
+		foreach ( $data['replicast']['terms'] as $term_id => $term ) {
 
 			if ( empty( $term->acf ) ) {
 				continue;
@@ -665,7 +665,7 @@ class ACF {
 				// Image
 				if ( $field_type === 'image' ) {
 					$media_id = $this->prepare_image( $field_value['value'], $site );
-					$data['replicast']['term'][ $term_id ]->acf[ $field_key ]['value']['id'] = $media_id;
+					$data['replicast']['terms'][ $term_id ]->acf[ $field_key ]['value']['id'] = $media_id;
 					continue;
 				}
 
@@ -686,7 +686,7 @@ class ACF {
 	 * @param     array     $terms    Object terms.
 	 * @return    array               Possibly-modified object terms.
 	 */
-	public function update_object_term_meta( $terms ) {
+	public function update_object_terms_meta( $terms ) {
 
 		foreach ( $terms as $term_data ) {
 
@@ -713,7 +713,7 @@ class ACF {
 	public function get_object_term_media( $data, $object ) {
 
 		// Retrieve the terms
-		$terms = API::get_object_terms( $object['id'], $object['type'] );
+		$terms = API::get_terms( $object['id'], $object['type'] );
 
 		foreach ( $terms as $term ) {
 
@@ -770,7 +770,7 @@ class ACF {
 	public function update_object_term_media( $media, $object ) {
 
 		// Retrieve the terms
-		$terms = API::get_object_terms( $object->ID, $object->post_type );
+		$terms = API::get_terms( $object->ID, $object->post_type );
 
 		$prepared_terms = array();
 		foreach ( $terms as $term ) {

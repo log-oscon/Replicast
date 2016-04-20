@@ -208,24 +208,46 @@ abstract class Handler {
 	 * @access    protected
 	 * @param     string               $method    Request method.
 	 * @param     \Replicast\Client    $site      Site object.
-	 * @return    array|null                      Prepared object data.
+	 * @return    array                           Prepared object data.
 	 */
 	protected function prepare_body( $method, $site ) {
 
+		$data = array();
+
 		switch ( $method ) {
 			case static::READABLE:
-				return;
+				// TODO: ...
+				break;
 
 			case static::CREATABLE:
-				return $this->prepare_body_for_create( $site );
+				$data = $this->prepare_body_for_create( $site );
+				break;
 
 			case static::EDITABLE:
 			case static::DELETABLE:
-				return $this->prepare_body_for_update( $site );
-
+				$data = $this->prepare_body_for_update( $site );
+				break;
 		}
 
-		return;
+		/**
+		 * Filter for suppressing REST API default data structures.
+		 *
+		 * @since     1.0.0
+		 * @param     array    Name(s) of the suppressed data structures.
+		 * @return    array    Possibly-modified name(s) of the suppressed data structures.
+		 */
+		$structures = \apply_filters( "replicast_suppress_rest_api_structures", array(
+			'categories',
+			'tags',
+			'_links',
+			'_embedded'
+		) );
+
+		foreach ( $structures as $structure ) {
+			unset( $data[ $structure ] );
+		}
+
+		return $data;
 	}
 
 	/**

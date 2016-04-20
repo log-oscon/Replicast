@@ -84,7 +84,7 @@ class API {
 
 		return array(
 			'meta'  => static::get_object_meta( $object, $request ),
-			'term'  => static::get_object_term( $object, $request ),
+			'terms' => static::get_object_terms( $object, $request ),
 			'media' => static::get_object_media( $object, $request ),
 		);
 	}
@@ -142,7 +142,7 @@ class API {
 		 * @param     array    Details of current content object.
 		 * @return    array    Possibly-modified object meta.
 		 */
-		$prepared_data = \apply_filters( "replicast_get_{$meta_type}_meta", $prepared_data, $object );
+		$prepared_data = \apply_filters( "replicast_get_object_{$meta_type}_meta", $prepared_data, $object );
 
 		/**
 		 * Extend object meta.
@@ -164,10 +164,23 @@ class API {
 	 * @param     \WP_REST_Request    $request    Current \WP_REST_Request request.
 	 * @return    array                           Object terms.
 	 */
-	public static function get_object_term( $object, $request ) {
+	public static function get_object_terms( $object, $request ) {
+
+		// Get object meta type
+		$meta_type = static::get_meta_type( $object );
 
 		// Get a hierarchical list of object terms
-		$prepared_terms = static::get_object_terms_hierarchical( $object );
+		$prepared_data = static::get_terms_hierarchical( $object );
+
+		/**
+		 * Extend object terms by meta type.
+		 *
+		 * @since     1.0.1
+		 * @param     array    Hierarchical list of object terms.
+		 * @param     array    Details of current content object.
+		 * @return    array    Possibly-modified object terms.
+		 */
+		$prepared_data = \apply_filters( "replicast_get_object_{$meta_type}_terms", $prepared_data, $object );
 
 		/**
 		 * Extend object terms.
@@ -177,7 +190,7 @@ class API {
 		 * @param     array    Details of current content object.
 		 * @return    array    Possibly-modified object terms.
 		 */
-		return \apply_filters( 'replicast_get_object_term', $prepared_terms, $object );
+		return \apply_filters( 'replicast_get_object_terms', $prepared_data, $object );
 	}
 
 	/**
@@ -190,12 +203,12 @@ class API {
 	 * @param     string    $object_type    The object type.
 	 * @return    array                     An array of taxonomy terms, or empty array if no terms are found.
 	 */
-	public static function get_object_terms( $object_id, $object_type ) {
+	public static function get_terms( $object_id, $object_type ) {
 
 		// FIXME: we should soft cache this
 
 		// Get a list of object taxonomies
-		$taxonomies = static::get_object_taxonomies( $object_id, $object_type );
+		$taxonomies = static::get_taxonomies( $object_id, $object_type );
 
 		$terms = \wp_get_object_terms( $object_id, array_keys( $taxonomies ) );
 
@@ -216,7 +229,7 @@ class API {
 	 * @param     string    $object_type    The object type.
 	 * @return    array                     All taxonomy names or objects for the given object.
 	 */
-	public static function get_object_taxonomies( $object_id, $object_type ) {
+	public static function get_taxonomies( $object_id, $object_type ) {
 
 		// FIXME: we should soft cache this
 
@@ -261,19 +274,15 @@ class API {
 	 * @param     array    $object    Details of current content object.
 	 * @return    array               Hierarchical list of object terms
 	 */
-	private static function get_object_terms_hierarchical( $object ) {
+	private static function get_terms_hierarchical( $object ) {
 
 		// Retrieve the terms
-		$terms = static::get_object_terms( $object['id'], $object['type'] );
+		$terms = static::get_terms( $object['id'], $object['type'] );
 
 		$hierarchical_terms = array();
 		foreach ( $terms as $term ) {
 
 			if ( $term->parent > 0 ) {
-				continue;
-			}
-
-			if ( in_array( $term->slug, array( 'uncategorized', 'untagged' ) ) ) {
 				continue;
 			}
 
@@ -487,8 +496,8 @@ class API {
 		}
 
 		// Update object terms
-		if ( ! empty( $values['term'] ) ) {
-			static::update_object_term( $values['term'], $object );
+		if ( ! empty( $values['terms'] ) ) {
+			static::update_object_terms( $values['terms'], $object );
 		}
 
 		// Update object media
@@ -564,7 +573,10 @@ class API {
 	 * @param     array     $terms     The values of the field.
 	 * @param     object    $object    The object from the response.
 	 */
-	public static function update_object_term( $terms, $object ) {
+	public static function update_object_terms( $terms, $object ) {
+
+		// Get object meta type
+		$meta_type = static::get_meta_type( $object );
 
 		$prepared_ids = array();
 
@@ -602,7 +614,7 @@ class API {
 		}
 
 		// Get a list of object taxonomies
-		$taxonomies = array_keys( static::get_object_taxonomies( $object->ID, $object->post_type ) );
+		$taxonomies = array_keys( static::get_taxonomies( $object->ID, $object->post_type ) );
 
 		// Relates an object to a term, or a set of terms, and taxonomy type
 		foreach ( $taxonomies as $taxonomy ) {
@@ -616,13 +628,22 @@ class API {
 		}
 
 		/**
+		 * Fires immediately after object terms of a specific type are updated.
+		 *
+		 * @since    1.0.1
+		 * @param    array     The values of the field.
+		 * @param    object    The object from the response.
+		 */
+		\do_action( "replicast_update_object_{$meta_type}_terms", $terms, $object );
+
+		/**
 		 * Fires immediately after object terms are updated.
 		 *
 		 * @since    1.0.0
 		 * @param    array     The values of the field.
 		 * @param    object    The object from the response.
 		 */
-		\do_action( 'replicast_update_object_term', $terms, $object );
+		\do_action( 'replicast_update_object_terms', $terms, $object );
 
 	}
 
@@ -676,18 +697,29 @@ class API {
 	 */
 	private static function update_term( $term_data, $parent_id = 0 ) {
 
-		$term = \wp_insert_term( $term_data['name'], $term_data['taxonomy'], array(
+		$taxonomy = $term_data['taxonomy'];
+		$args     = array(
 			'description' => $term_data['description'],
 			'parent'      => $parent_id,
-		) );
+		);
 
+		// Insert term
+		$term = \wp_insert_term( $term_data['name'], $taxonomy, $args );
+
+		// Term already exists? update it, then
 		if ( \is_wp_error( $term ) ) {
 
 			if ( ! \is_numeric( $term->get_error_data() ) ) {
 				return array();
 			}
 
-			$term = \get_term_by( 'id', $term->get_error_data(), $term_data['taxonomy'], 'ARRAY_A' );
+			$term_id = $term->get_error_data();
+
+			// Update term
+			\wp_update_term( $term_id, $taxonomy, $args );
+
+			// Get term
+			$term = \get_term_by( 'id', $term_id, $taxonomy, 'ARRAY_A' );
 		}
 
 		// Save remote object info
@@ -996,10 +1028,19 @@ class API {
 
 		// Save or delete the remote object info
 		if ( $remote_data ) {
+
 			$remote_info[ $site_id ] = array(
-				'id'     => static::get_id( $remote_data ),
-				'status' => isset( $remote_data->status ) ? $remote_data->status : '',
+				'id' => static::get_id( $remote_data ),
 			);
+
+			if ( static::is_post( $object ) ) {
+				$remote_info[ $site_id ]['status'] = $remote_data->status;
+			}
+
+			if ( static::is_term( $object ) ) {
+				$remote_info[ $site_id ]['term_taxonomy_id'] = $remote_data->term_taxonomy_id;
+			}
+
 		}
 		else {
 			unset( $remote_info[ $site_id ] );

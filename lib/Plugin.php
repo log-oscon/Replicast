@@ -174,6 +174,23 @@ class Plugin {
 	}
 
 	/**
+	 * Register all of the hooks related to the Polylang functionality.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 */
+	private function define_polylang_hooks() {
+
+		if ( ! class_exists( 'Polylang' ) ) {
+			return;
+		}
+
+		$polylang = new Polylang( $this );
+		\add_action( 'init', array( $polylang, 'register' ), 90 );
+
+	}
+
+	/**
 	 * Load the dependencies, define the locale, and set the hooks for the Dashboard and
 	 * the public-facing side of the site.
 	 *
@@ -187,7 +204,9 @@ class Plugin {
 		$this->define_admin_hooks();
 		$this->define_admin_post_hooks();
 		$this->define_admin_site_hooks();
+
 		$this->define_acf_hooks();
+		$this->define_polylang_hooks();
 
 	}
 
