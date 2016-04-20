@@ -142,7 +142,7 @@ class PostHandler extends Handler {
 			if ( ! empty( $replicast_info ) ) {
 				$replicast_info         = $replicast_info[ $site->get_id() ];
 				$term->term_id          = $replicast_info['id'];
-				$term->term_taxonomy_id = $replicast_info['term_taxonomy_id'];
+				$term->term_taxonomy_id = isset( $replicast_info['term_taxonomy_id'] ) ? $replicast_info['term_taxonomy_id'] : '';
 			}
 
 			$data['replicast']['terms'][ $term_id ] = $term;
@@ -190,7 +190,7 @@ class PostHandler extends Handler {
 			if ( ! empty( $replicast_info ) ) {
 				$replicast_info         = $replicast_info[ $site->get_id() ];
 				$term->term_id          = $replicast_info['id'];
-				$term->term_taxonomy_id = $replicast_info['term_taxonomy_id'];
+				$term->term_taxonomy_id = isset( $replicast_info['term_taxonomy_id'] ) ? $replicast_info['term_taxonomy_id'] : '';
 				$term->parent           = $parent_id;
 			}
 
