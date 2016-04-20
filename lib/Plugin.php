@@ -206,7 +206,7 @@ class Plugin {
 		$this->define_admin_site_hooks();
 
 		$this->define_acf_hooks();
-		$this->define_polylang_hooks();
+		// $this->define_polylang_hooks();
 
 	}
 
