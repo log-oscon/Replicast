@@ -260,6 +260,10 @@ class PostAdmin extends Admin {
 			return $allcaps;
 		}
 
+		if ( ! function_exists( 'get_current_screen' ) ) {
+			return $allcaps;
+		}
+
 		$screen = \get_current_screen();
 
 		if ( empty( $screen ) ) {
