@@ -50,9 +50,42 @@ class Polylang {
 	 */
 	public function register() {
 
+		\add_filter( 'replicast_get_object_terms',          array( $this, 'get_object_terms_translations' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_translations' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_translations' ), 10, 2 );
 
+	}
+
+	/**
+	 * Retrieve Polylang terms translations.
+	 *
+	 * @since     1.0.0
+	 * @param     array    $terms     Object terms.
+	 * @param     array    $object    Details of current content object.
+	 * @return    array               Possibly-modified object terms.
+	 */
+	public function get_object_terms_translations( $terms, $object ) {
+
+		if ( ! function_exists( 'pll_get_term_translations' ) ) {
+			return $terms;
+		}
+
+		foreach ( $terms as $term ) {
+
+			$term_translations = \wp_get_object_terms( $term->term_id, 'term_translations' );
+
+			foreach ( $term_translations as $term_translation ) {
+
+				if ( array_key_exists( $term_translation->term_id, $terms ) ) {
+					continue;
+				}
+
+				$terms[ $term_translation->term_id ] = $term_translation;
+			}
+
+		}
+
+		return $terms;
 	}
 
 	/**
