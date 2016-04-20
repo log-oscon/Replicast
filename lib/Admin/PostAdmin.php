@@ -847,16 +847,16 @@ class PostAdmin extends Admin {
 		 * @param     bool    Flag for bypass trash or force deletion.
 		 * @return    bool    Possibly-modified flag for bypass trash or force deletion.
 		 */
-		$force = \apply_filters( "replicast_force_{$post->post_type}_delete", false );
+		$force_delete = \apply_filters( "replicast_force_{$post->post_type}_delete", false );
 
 		try {
 
 			foreach ( $sites as $site ) {
 
 				$handler
-					->handle_delete( $site, $force )
+					->handle_delete( $site, $force_delete )
 					->then(
-						function ( $response ) use ( $site, $handler, $force ) {
+						function ( $response ) use ( $site, $handler, $force_delete ) {
 
 							// Get the remote object data
 							$remote_data = json_decode( $response->getBody()->getContents() );
@@ -865,7 +865,7 @@ class PostAdmin extends Admin {
 								continue;
 							}
 
-							if ( $force ) {
+							if ( $force_delete ) {
 								$remote_data = null;
 							}
 
@@ -948,6 +948,11 @@ class PostAdmin extends Admin {
 			return;
 		}
 
+		// Double check post type
+		if ( $post->post_type !== 'revision' ) {
+			return;
+		}
+
 		// Admin notices
 		$notices = array();
 
@@ -956,6 +961,19 @@ class PostAdmin extends Admin {
 
 		// Wrap the post
 		$handler = new PostHandler( $post );
+
+		/**
+		 * Filter for whether to bypass trash or force deletion.
+		 *
+		 * @since     1.0.0
+		 * @param     bool    Flag for bypass trash or force deletion.
+		 * @return    bool    Possibly-modified flag for bypass trash or force deletion.
+		 */
+		$force_delete = \apply_filters( "replicast_force_{$post->post_type}_delete", false );
+
+		if ( $force_delete ) {
+			return;
+		}
 
 		try {
 
