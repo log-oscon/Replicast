@@ -112,11 +112,11 @@ class Polylang {
 
 			foreach ( $translations as $lang => $translated_object_id ) {
 
+				$remote_info = array();
 				if ( $term->taxonomy === 'post_translations' ) {
 					$remote_info = API::get_remote_info( \get_post( $translated_object_id ) );
 				} elseif ( $term->taxonomy === 'term_translations' ) {
-					// TODO: ...
-					continue;
+					$remote_info = API::get_remote_info( \get_term( $translated_object_id ) );
 				}
 
 				// Update object ID
