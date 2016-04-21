@@ -70,7 +70,7 @@ class Polylang {
 
 		foreach ( $terms as $term ) {
 
-			if ( array_key_exists( $term->taxonomy, array( 'post_translations', 'language' ) ) ) {
+			if ( in_array( $term->taxonomy, array( 'post_translations', 'language' ) ) ) {
 				continue;
 			}
 
