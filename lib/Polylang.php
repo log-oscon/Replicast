@@ -50,7 +50,7 @@ class Polylang {
 	 */
 	public function register() {
 
-		\add_filter( 'replicast_get_object_terms',          array( $this, 'get_object_terms_translations' ), 20 );
+		\add_filter( 'replicast_get_object_terms',          array( $this, 'get_object_terms_translations' ) );
 		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_translations' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_translations' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_terms_translations' ), 20, 2 );
@@ -181,12 +181,23 @@ class Polylang {
 				continue;
 			}
 
+			$term_id       = $term_data['term_id'];
+			$term_language = '';
+
+			if ( function_exists( 'pll_current_language' ) ) {
+				$term_language = \pll_current_language();
+			}
+
 			if ( ! empty( $term_data['polylang']['language'] ) ) {
-				\pll_set_term_language( $term_data['term_id'], $term_data['polylang']['language'] );
+				$term_language = $term_data['polylang']['language'];
+				\pll_set_term_language( $term_id, $term_language );
 			}
 
 			if ( ! empty( $term_data['polylang']['translations'] ) ) {
-				\pll_save_term_translations( $term_data['polylang']['translations'] );
+				$translations = $term_data['polylang']['translations'];
+				$translations[ $term_language ] = $term_id;
+				uksort( $translations, array( $this, 'sort_by_language' ) );
+				\pll_save_term_translations( $translations );
 			}
 
 		}
@@ -215,6 +226,26 @@ class Polylang {
 	 */
 	private function set_translations( $translations ) {
 		return serialize( $translations );
+	}
+
+	/**
+	 * Comparison function for array sorting by language.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     string    $lang            Language slug.
+	 * @param     string    $current_lang    Current language slug.
+	 * @return    int                        Integer less than, equal to, or greater than zero
+	 *                                       if the first argument is considered to be respectively
+	 *                                       less than, equal to, or greater than the second.
+	 */
+	private function sort_by_language( $lang, $current_lang ) {
+
+		if ( empty( $current_lang ) && function_exists( 'pll_current_language' ) ) {
+			$current_lang = \pll_current_language();
+		}
+
+		return strcasecmp( $lang, $current_lang );
 	}
 
 }
