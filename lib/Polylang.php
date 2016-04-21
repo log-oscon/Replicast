@@ -74,10 +74,13 @@ class Polylang {
 				continue;
 			}
 
-			$term->polylang = array(
-				'language'     => \pll_get_term_language( $term->term_id ),
-				'translations' => \pll_get_term_translations( $term->term_id ),
-			);
+			if ( function_exists( 'pll_get_term_language' ) ) {
+				$term->polylang['language'] = \pll_get_term_language( $term->term_id );
+			}
+
+			if ( function_exists( 'pll_get_term_translations' ) ) {
+				$term->polylang['translations'] = \pll_get_term_translations( $term->term_id );
+			}
 
 		}
 
@@ -171,6 +174,10 @@ class Polylang {
 	public function update_object_terms_translations( $terms ) {
 
 		foreach ( $terms as $term_data ) {
+
+			if ( empty( $term_data['polylang'] ) ) {
+				continue;
+			}
 
 			if ( ! empty( $term_data['polylang']['language'] ) ) {
 				\pll_set_term_language( $term_data['term_id'], $term_data['polylang']['language'] );
