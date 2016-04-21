@@ -50,11 +50,12 @@ class Polylang {
 	 */
 	public function register() {
 
-		\add_filter( 'replicast_get_object_terms',          array( $this, 'get_object_terms_translations' ), 10 );
-		\add_filter( 'replicast_get_object_terms',          array( $this, 'get_object_terms_language' ), 20 );
-		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_terms_translations' ), 10, 2 );
-		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_terms_translations' ), 10, 2 );
-		\add_action( 'replicast_update_object_terms',       array( $this, 'update_object_terms_language' ) );
+		\add_filter( 'replicast_get_object_terms',          array( $this, 'get_object_terms_translations' ), 20 );
+		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_translations' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_translations' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_terms_translations' ), 20, 2 );
+		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_terms_translations' ), 20, 2 );
+		\add_action( 'replicast_update_object_terms',       array( $this, 'update_object_terms_translations' ) );
 
 	}
 
@@ -69,37 +70,15 @@ class Polylang {
 
 		foreach ( $terms as $term ) {
 
-			$term_translations = \wp_get_object_terms( $term->term_id, 'term_translations' );
-
-			foreach ( $term_translations as $term_translation ) {
-
-				if ( array_key_exists( $term_translation->term_id, $terms ) ) {
-					continue;
-				}
-
-				$terms[ $term_translation->term_id ] = $term_translation;
+			if ( array_key_exists( $term->taxonomy, array( 'post_translations', 'language' ) ) ) {
+				continue;
 			}
 
-		}
+			$term->polylang = array(
+				'language'     => \pll_get_term_language( $term->term_id ),
+				'translations' => \pll_get_term_translations( $term->term_id ),
+			);
 
-		return $terms;
-	}
-
-	/**
-	 * Retrieve Polylang terms language.
-	 *
-	 * @since     1.0.0
-	 * @param     array    $terms    Object terms.
-	 * @return    array              Possibly-modified object terms.
-	 */
-	public function get_object_terms_language( $terms ) {
-
-		if ( ! function_exists( 'pll_get_term_language' ) ) {
-			return $terms;
-		}
-
-		foreach ( $terms as $term ) {
-			$term->polylang = \pll_get_term_language( $term->term_id );
 		}
 
 		return $terms;
@@ -113,7 +92,7 @@ class Polylang {
 	 * @param     \Replicast\Client    $site    Site object.
 	 * @return    array                         Possibly-modified data.
 	 */
-	public function prepare_object_terms_translations( $data, $site ) {
+	public function prepare_object_translations( $data, $site ) {
 
 		if ( empty( $data['replicast']['terms'] ) ) {
 			return $data;
@@ -121,7 +100,7 @@ class Polylang {
 
 		foreach ( $data['replicast']['terms'] as $term ) {
 
-			if ( ! in_array( $term->taxonomy, array( 'post_translations', 'term_translations' ) ) ) {
+			if ( $term->taxonomy !== 'post_translations' ) {
 				continue;
 			}
 
@@ -129,12 +108,7 @@ class Polylang {
 
 			foreach ( $translations as $lang => $translated_object_id ) {
 
-				$remote_info = array();
-				if ( $term->taxonomy === 'post_translations' ) {
-					$remote_info = API::get_remote_info( \get_post( $translated_object_id ) );
-				} elseif ( $term->taxonomy === 'term_translations' ) {
-					$remote_info = API::get_remote_info( \get_term( $translated_object_id ) );
-				}
+				$remote_info = API::get_remote_info( \get_post( $translated_object_id ) );
 
 				// Update object ID
 				unset( $translations[ $lang ] );
@@ -152,24 +126,59 @@ class Polylang {
 	}
 
 	/**
-	 * Update Polylang terms language.
+	 * Prepare object terms translations.
+	 *
+	 * @since     1.0.0
+	 * @param     array                $data    Prepared data.
+	 * @param     \Replicast\Client    $site    Site object.
+	 * @return    array                         Possibly-modified data.
+	 */
+	public function prepare_object_terms_translations( $data, $site ) {
+
+		if ( empty( $data['replicast']['terms'] ) ) {
+			return $data;
+		}
+
+		foreach ( $data['replicast']['terms'] as $term_id => $term ) {
+
+			if ( empty( $term->polylang['translations'] ) ) {
+				continue;
+			}
+
+			foreach ( $term->polylang['translations'] as $lang => $translated_object_id ) {
+
+				$remote_info = API::get_remote_info( \get_term( $translated_object_id ) );
+
+				// Update object ID's
+				unset( $data['replicast']['terms'][ $term_id ]->polylang['translations'][ $lang ] );
+				if ( ! empty( $remote_info ) ) {
+					$data['replicast']['terms'][ $term_id ]->polylang['translations'][ $lang ] = $remote_info[ $site->get_id() ]['id'];
+				}
+
+			}
+
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Update Polylang terms translations.
 	 *
 	 * @since    1.0.0
 	 * @param    array    $terms    Object terms.
 	 */
-	public function update_object_terms_language( $terms ) {
-
-		if ( ! function_exists( 'pll_set_term_language' ) ) {
-			return $terms;
-		}
+	public function update_object_terms_translations( $terms ) {
 
 		foreach ( $terms as $term_data ) {
 
-			if ( empty( $term_data['polylang'] ) ) {
-				continue;
+			if ( ! empty( $term_data['polylang']['language'] ) ) {
+				\pll_set_term_language( $term_data['term_id'], $term_data['polylang']['language'] );
 			}
 
-			\pll_set_term_language( $term_data['term_id'], $term_data['polylang'] );
+			if ( ! empty( $term_data['polylang']['translations'] ) ) {
+				\pll_save_term_translations( $term_data['polylang']['translations'] );
+			}
 
 		}
 
