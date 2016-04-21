@@ -289,8 +289,13 @@ class API {
 			$term_id   = $term->term_id;
 			$source_id = static::get_source_id( $term_id, 'term' );
 
-			$hierarchical_terms[ $source_id ]           = $term;
-			$hierarchical_terms[ $source_id ]->children = static::get_child_terms( $term_id, $terms );
+			$hierarchical_terms[ $source_id ] = $term;
+
+			$child_terms = static::get_child_terms( $term_id, $terms );
+			if ( ! empty( $child_terms ) ) {
+				$hierarchical_terms[ $source_id ]->children = $child_terms;
+			}
+
 		}
 
 		return $hierarchical_terms;
@@ -319,8 +324,13 @@ class API {
 			$term_id   = $term->term_id;
 			$source_id = static::get_source_id( $term_id, 'term' );
 
-			$children[ $source_id ]           = $term;
-			$children[ $source_id ]->children = static::get_child_terms( $term_id, $terms );
+			$children[ $source_id ] = $term;
+
+			$child_terms = static::get_child_terms( $term_id, $terms );
+			if ( ! empty( $child_terms ) ) {
+				$children[ $source_id ]->children = $child_terms;
+			}
+
 		}
 
 		return $children;
