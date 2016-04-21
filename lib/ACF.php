@@ -614,14 +614,13 @@ class ACF {
 		// FIXME: and how about child terms?
 		foreach ( $terms as $term ) {
 
-			$term->acf = array();
-
 			$fields = \get_field_objects( "{$term->taxonomy}_{$term->term_id}" );
 
 			if ( ! $fields ) {
 				continue;
 			}
 
+			$term->acf = array();
 			foreach ( $fields as $field_key => $field_value ) {
 				$term->acf[ $field_key ] = array(
 					'key'   => $field_value['key'],
