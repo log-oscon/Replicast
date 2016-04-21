@@ -50,13 +50,29 @@ class Polylang {
 	 */
 	public function register() {
 
-		\add_filter( 'replicast_get_object_terms',          array( $this, 'get_object_terms_translations' ) );
-		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_translations' ), 10, 2 );
-		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_translations' ), 10, 2 );
-		\add_filter( 'replicast_prepare_object_for_create', array( $this, 'prepare_object_terms_translations' ), 20, 2 );
-		\add_filter( 'replicast_prepare_object_for_update', array( $this, 'prepare_object_terms_translations' ), 20, 2 );
-		\add_action( 'replicast_update_object_terms',       array( $this, 'update_object_terms_translations' ) );
+		\add_filter( 'replicast_suppress_object_taxonomies', array( $this, 'suppress_taxonomies' ), 10, 3 );
+		\add_filter( 'replicast_get_object_terms',           array( $this, 'get_object_terms_translations' ) );
+		\add_filter( 'replicast_prepare_object_for_create',  array( $this, 'prepare_object_translations' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_update',  array( $this, 'prepare_object_translations' ), 10, 2 );
+		\add_filter( 'replicast_prepare_object_for_create',  array( $this, 'prepare_object_terms_translations' ), 20, 2 );
+		\add_filter( 'replicast_prepare_object_for_update',  array( $this, 'prepare_object_terms_translations' ), 20, 2 );
+		\add_action( 'replicast_update_object_terms',        array( $this, 'update_object_terms_translations' ) );
 
+	}
+
+	/**
+	 * Suppress taxonomies.
+	 *
+	 * @since     1.0.0
+	 * @param     array    $suppressed    Name(s) of the suppressed taxonomies.
+	 * @param     array    $taxonomies    List of registered taxonomies.
+	 * @param     int      $object_id     The object ID.
+	 * @return    array                   Possibly-modified name(s) of the suppressed taxonomies.
+	 */
+	public function suppress_taxonomies( $suppressed = array(), $taxonomies, $object_id ) {
+		return array_merge( array(
+			'term_translations',
+		), $suppressed );
 	}
 
 	/**
