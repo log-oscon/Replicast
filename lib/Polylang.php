@@ -74,6 +74,8 @@ class Polylang {
 				continue;
 			}
 
+			$term->polylang = array();
+
 			if ( function_exists( 'pll_get_term_language' ) ) {
 				$term->polylang['language'] = \pll_get_term_language( $term->term_id );
 			}
