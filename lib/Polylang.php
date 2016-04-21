@@ -50,13 +50,14 @@ class Polylang {
 	 */
 	public function register() {
 
-		\add_filter( 'replicast_suppress_object_taxonomies', array( $this, 'suppress_taxonomies' ), 10, 3 );
+		\add_filter( 'replicast_suppress_object_taxonomies', array( $this, 'suppress_taxonomies' ) );
 		\add_filter( 'replicast_get_object_terms',           array( $this, 'get_object_terms_translations' ) );
 		\add_filter( 'replicast_prepare_object_for_create',  array( $this, 'prepare_object_translations' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_update',  array( $this, 'prepare_object_translations' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_create',  array( $this, 'prepare_object_terms_translations' ), 20, 2 );
 		\add_filter( 'replicast_prepare_object_for_update',  array( $this, 'prepare_object_terms_translations' ), 20, 2 );
-		\add_action( 'replicast_update_object_terms',        array( $this, 'update_object_terms_translations' ) );
+		\add_action( 'replicast_update_object_terms',        array( $this, 'update_object_translations' ), 10 );
+		\add_action( 'replicast_update_object_terms',        array( $this, 'update_object_terms_translations' ), 20 );
 
 	}
 
@@ -65,18 +66,16 @@ class Polylang {
 	 *
 	 * @since     1.0.0
 	 * @param     array    $suppressed    Name(s) of the suppressed taxonomies.
-	 * @param     array    $taxonomies    List of registered taxonomies.
-	 * @param     int      $object_id     The object ID.
 	 * @return    array                   Possibly-modified name(s) of the suppressed taxonomies.
 	 */
-	public function suppress_taxonomies( $suppressed = array(), $taxonomies, $object_id ) {
+	public function suppress_taxonomies( $suppressed = array() ) {
 		return array_merge( array(
 			'term_translations',
 		), $suppressed );
 	}
 
 	/**
-	 * Retrieve Polylang terms translations.
+	 * Retrieve object terms translations.
 	 *
 	 * @since     1.0.0
 	 * @param     array    $terms    Object terms.
@@ -184,7 +183,35 @@ class Polylang {
 	}
 
 	/**
-	 * Update Polylang terms translations.
+	 * Update object translations.
+	 *
+	 * @since    1.0.0
+	 * @param    array    $terms    Object terms.
+	 */
+	public function update_object_translations( $terms ) {
+
+		if ( ! function_exists( 'pll_save_post_translations' ) ) {
+			return;
+		}
+
+		foreach ( $terms as $term_data ) {
+
+			if ( $term_data['taxonomy'] !== 'post_translations' ) {
+				continue;
+			}
+
+			if ( empty( $term_data['description'] ) ) {
+				continue;
+			}
+
+			\pll_save_post_translations( $this->get_translations( $term_data['description'] ) );
+
+		}
+
+	}
+
+	/**
+	 * Update object terms translations.
 	 *
 	 * @since    1.0.0
 	 * @param    array    $terms    Object terms.
