@@ -142,7 +142,7 @@ class PostHandler extends Handler {
 			if ( ! empty( $replicast_info ) ) {
 				$replicast_info         = $replicast_info[ $site->get_id() ];
 				$term->term_id          = $replicast_info['id'];
-				$term->term_taxonomy_id = $replicast_info['term_taxonomy_id'];
+				$term->term_taxonomy_id = isset( $replicast_info['term_taxonomy_id'] ) ? $replicast_info['term_taxonomy_id'] : '';
 			}
 
 			$data['replicast']['terms'][ $term_id ] = $term;
@@ -190,7 +190,7 @@ class PostHandler extends Handler {
 			if ( ! empty( $replicast_info ) ) {
 				$replicast_info         = $replicast_info[ $site->get_id() ];
 				$term->term_id          = $replicast_info['id'];
-				$term->term_taxonomy_id = $replicast_info['term_taxonomy_id'];
+				$term->term_taxonomy_id = isset( $replicast_info['term_taxonomy_id'] ) ? $replicast_info['term_taxonomy_id'] : '';
 				$term->parent           = $parent_id;
 			}
 
@@ -279,7 +279,7 @@ class PostHandler extends Handler {
 	 * @param     int       $site_id    Site ID.
 	 * @param     object    $data       Object data.
 	 */
-	public function handle_object( $site_id, $data = null ) {
+	public function update_object( $site_id, $data = null ) {
 		API::update_remote_info( $this->object, $site_id, $data );
 	}
 
@@ -290,7 +290,7 @@ class PostHandler extends Handler {
 	 * @param     int       $site_id    Site ID.
 	 * @param     object    $data       Object data.
 	 */
-	public function handle_terms( $site_id, $data = null ) {
+	public function update_terms( $site_id, $data = null ) {
 
 		if ( empty( $data->replicast->terms ) ) {
 			return;
@@ -319,9 +319,7 @@ class PostHandler extends Handler {
 	 * @param     int       $site_id    Site ID.
 	 * @param     object    $data       Object data.
 	 */
-	public function handle_media( $site_id, $data = null ) {
-
-		// FIXME: this should be an independent action
+	public function update_media( $site_id, $data = null ) {
 
 		if ( empty( $data->replicast->media ) ) {
 			return;

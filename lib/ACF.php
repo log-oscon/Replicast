@@ -614,14 +614,13 @@ class ACF {
 		// FIXME: and how about child terms?
 		foreach ( $terms as $term ) {
 
-			$term->acf = array();
-
 			$fields = \get_field_objects( "{$term->taxonomy}_{$term->term_id}" );
 
 			if ( ! $fields ) {
 				continue;
 			}
 
+			$term->acf = array();
 			foreach ( $fields as $field_key => $field_value ) {
 				$term->acf[ $field_key ] = array(
 					'key'   => $field_value['key'],
@@ -682,9 +681,8 @@ class ACF {
 	/**
 	 * Update ACF terms "meta".
 	 *
-	 * @since     1.0.0
-	 * @param     array     $terms    Object terms.
-	 * @return    array               Possibly-modified object terms.
+	 * @since    1.0.0
+	 * @param    array    $terms    Object terms.
 	 */
 	public function update_object_terms_meta( $terms ) {
 
@@ -763,9 +761,9 @@ class ACF {
 	/**
 	 * Update ACF terms media.
 	 *
-	 * @since     1.0.0
-	 * @param     array     $media     The values of the field.
-	 * @param     object    $object    The object.
+	 * @since    1.0.0
+	 * @param    array     $media     The values of the field.
+	 * @param    object    $object    The object.
 	 */
 	public function update_object_term_media( $media, $object ) {
 

@@ -289,8 +289,13 @@ class API {
 			$term_id   = $term->term_id;
 			$source_id = static::get_source_id( $term_id, 'term' );
 
-			$hierarchical_terms[ $source_id ]           = $term;
-			$hierarchical_terms[ $source_id ]->children = static::get_child_terms( $term_id, $terms );
+			$hierarchical_terms[ $source_id ] = $term;
+
+			$child_terms = static::get_child_terms( $term_id, $terms );
+			if ( ! empty( $child_terms ) ) {
+				$hierarchical_terms[ $source_id ]->children = $child_terms;
+			}
+
 		}
 
 		return $hierarchical_terms;
@@ -319,8 +324,13 @@ class API {
 			$term_id   = $term->term_id;
 			$source_id = static::get_source_id( $term_id, 'term' );
 
-			$children[ $source_id ]           = $term;
-			$children[ $source_id ]->children = static::get_child_terms( $term_id, $terms );
+			$children[ $source_id ] = $term;
+
+			$child_terms = static::get_child_terms( $term_id, $terms );
+			if ( ! empty( $child_terms ) ) {
+				$children[ $source_id ]->children = $child_terms;
+			}
+
 		}
 
 		return $children;
@@ -595,6 +605,10 @@ class API {
 			// Update term
 			$term = static::update_term( $term_data );
 
+			if ( empty( $term ) ) {
+				continue;
+			}
+
 			$terms[ $source_id ]['term_id']          = $term['term_id'];
 			$terms[ $source_id ]['term_taxonomy_id'] = $term['term_taxonomy_id'];
 
@@ -623,6 +637,13 @@ class API {
 			if ( array_key_exists( $taxonomy, $prepared_ids ) ) {
 				$ids = $prepared_ids[ $taxonomy ];
 			}
+
+			/**
+			 * If this was coming from the database or another source, we would need to make sure
+			 * these were integers.
+			 */
+			$ids = array_map( 'intval', $ids );
+			$ids = array_unique( $ids );
 
 			\wp_set_object_terms( $object->ID, $ids, $taxonomy );
 		}
@@ -665,6 +686,10 @@ class API {
 			// Update term
 			$term = static::update_term( $term_data, $parent_id );
 
+			if ( empty( $term ) ) {
+				continue;
+			}
+
 			$terms[ $source_id ]['term_id']          = $term['term_id'];
 			$terms[ $source_id ]['term_taxonomy_id'] = $term['term_taxonomy_id'];
 
@@ -697,30 +722,38 @@ class API {
 	 */
 	private static function update_term( $term_data, $parent_id = 0 ) {
 
+		$term     = ! empty( $term_data['term_id'] ) ? $term_data['term_id'] : $term_data['name'];
 		$taxonomy = $term_data['taxonomy'];
-		$args     = array(
+
+		$values = array(
+			'name'        => $term_data['name'],
 			'description' => $term_data['description'],
 			'parent'      => $parent_id,
 		);
 
-		// Insert term
-		$term = \wp_insert_term( $term_data['name'], $taxonomy, $args );
+		$term = \term_exists( $term, $taxonomy, $parent_id );
 
-		// Term already exists? update it, then
-		if ( \is_wp_error( $term ) ) {
-
-			if ( ! \is_numeric( $term->get_error_data() ) ) {
-				return array();
-			}
-
-			$term_id = $term->get_error_data();
-
-			// Update term
-			\wp_update_term( $term_id, $taxonomy, $args );
-
-			// Get term
-			$term = \get_term_by( 'id', $term_id, $taxonomy, 'ARRAY_A' );
+		// Insert term if does not exists
+		if ( $term === 0 || $term === null ) {
+			$term = \wp_insert_term( $term_data['name'], $taxonomy, $values );
 		}
+
+		/**
+		 * Check if term is an array because:
+		 * - term_exists returns an array if the pairing exists.
+		 *   (format: array('term_id'=>term id, 'term_taxonomy_id'=>taxonomy id))
+		 * - wp_insert_term returns the Term ID and Term Taxonomy ID.
+		 *   (Example: array('term_id'=>12,'term_taxonomy_id'=>34))
+		 *
+		 * @see    \term_exists()
+		 * @see    \wp_insert_term()
+		 */
+		if ( ! is_array( $term ) ) {
+			return array();
+		}
+
+		// Update term
+		\wp_update_term( $term['term_id'], $taxonomy, $values );
 
 		// Save remote object info
 		if ( ! empty( $term_data['meta'] ) ) {
