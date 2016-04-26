@@ -232,7 +232,7 @@ class SiteAdmin {
 			'manage_terms' => 'manage_sites',
 			'edit_terms'   => 'manage_sites',
 			'delete_terms' => 'manage_sites',
-			'assign_terms' => 'edit_posts',
+			'assign_terms' => 'manage_sites',
 		);
 
 		$this->taxonomy = \register_taxonomy(
