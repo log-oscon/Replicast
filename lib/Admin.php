@@ -198,11 +198,56 @@ class Admin {
 	 * Set admin notices.
 	 *
 	 * @since     1.0.0
-	 * @param     array    $notices    Array of notices.
 	 */
-	public function set_admin_notice( $notices ) {
+	public function set_admin_notice( $status_code = '', $message = '' ) {
+
+		if ( ! function_exists( 'DNH' ) ) {
+			return;
+		}
 
 		$current_user = \wp_get_current_user();
+
+		if ( empty( $message ) ) {
+			$message = \__( 'Something went wrong.', 'replicast' );
+		}
+
+		error_log(print_r($message,true));
+
+		// $args = array(
+		// 	'cap' => 'manage_sites'
+		// );
+
+		\dnh_register_notice(
+			uniqid( 'replicast_notices_' . $current_user->ID ),
+			$this->get_notice_type_by_status_code( $status_code ),
+			$message
+			// $args
+		);
+
+
+					// 			$notices[] = array(
+			// 				'status_code'   => $response->getStatusCode(),
+			// 				'reason_phrase' => $response->getReasonPhrase(),
+			// 				'message'       => sprintf(
+			// 					'%s %s',
+			// 					sprintf(
+			// 						$response->getStatusCode() === 201 ? \__( 'PostHandler published on %s.', 'replicast' ) : \__( 'PostHandler updated on %s.', 'replicast' ),
+			// 						$site->get_name()
+			// 					),
+			// 					sprintf(
+			// 						'<a href="%s" title="%s" target="_blank">%s</a>',
+			// 						\esc_url( $remote_data->link ),
+			// 						\esc_attr( $site->get_name() ),
+			// 						\__( 'View post', 'replicast' )
+			// 					)
+			// 				)
+			// 			);
+
+
+
+
+		/*
+
 		$rendered     = array();
 
 		foreach ( $notices as $notice ) {
@@ -212,7 +257,7 @@ class Admin {
 			$message       = ! empty( $notice['message'] )       ? $notice['message']       : \__( 'Something went wrong.', 'replicast' );
 
 			$rendered[] = array(
-				'type'    => $this->get_notice_type_by_status_code( $status_code ),
+				'type'    => ,
 				'message' => $message
 			);
 
@@ -227,8 +272,8 @@ class Admin {
 
 		}
 
-		\set_transient( 'replicast_notices_' . $current_user->ID, $rendered, 180 );
-
+		\set_transient( , $rendered, 180 );
+		*/
 	}
 
 	/**
@@ -248,7 +293,7 @@ class Admin {
 		switch ( $status_code ) {
 			case '200': // Update
 			case '201': // Create
-				return 'success';
+				return 'updated';
 			default:
 				return 'error';
 		}

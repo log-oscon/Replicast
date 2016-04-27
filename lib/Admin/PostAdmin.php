@@ -692,7 +692,7 @@ class PostAdmin extends Admin {
 		}
 
 		// Admin notices
-		$notices = array();
+		// $notices = array();
 
 		// Get sites
 		$sites = $this->get_sites( $post );
@@ -704,9 +704,15 @@ class PostAdmin extends Admin {
 
 			foreach ( $sites as $site ) {
 
-				$handler->handle_save( $site )
-					->then(
-						function ( $response ) use ( $site, $handler ) {
+				$response = $handler->handle_save( $site );
+
+dnh_register_notice( 'my_notice', 'updated', __( 'This is my notice' ) );
+
+				$this->set_admin_notice( $response->getStatusCode(), $response->getReasonPhrase() );
+
+				// error_log(print_r($response,true));
+					// ->then(
+					// 	function ( $response ) use ( $site, $handler ) {
 
 							// Get the remote object data
 							$remote_data = json_decode( $response->getBody()->getContents() );
@@ -728,9 +734,9 @@ class PostAdmin extends Admin {
 
 							// TODO: build notices
 
-						}
-					)
-					->wait();
+					// 	}
+					// )
+					// ->wait();
 
 			}
 
@@ -794,10 +800,12 @@ class PostAdmin extends Admin {
 			error_log( print_r( $ex->getMessage(), true ) );
 		}
 
-		// Set admin notices
-		if ( ! empty( $notices ) ) {
-			$this->set_admin_notice( $notices );
-		}
+		// error_log(print_r($notices,true));
+
+		// // Set admin notices
+		// if ( ! empty( $notices ) ) {
+		// 	$this->set_admin_notice( $notices );
+		// }
 
 	}
 
