@@ -697,11 +697,14 @@ class PostAdmin extends Admin {
 		// Wrap the post
 		$handler = new PostHandler( $post );
 
+		// Get replicast info
+		$replicast_info = API::get_remote_info( $post );
+
 		try {
 
 			foreach ( $sites as $site ) {
 
-				$response    = $handler->handle_save( $site );
+				$response    = $handler->handle_save( $site, $replicast_info );
 				$remote_data = json_decode( $response->getBody()->getContents() );
 
 				if ( empty( $remote_data ) ) {
@@ -741,9 +744,6 @@ class PostAdmin extends Admin {
 				$handler->update_media( $site_id, $remote_data );
 
 			}
-
-			// Get replicast info
-			$replicast_info = API::get_remote_info( $post );
 
 			// Verify that the current object has been "removed" (aka unchecked) from any site(s)
 			// FIXME: review this later on

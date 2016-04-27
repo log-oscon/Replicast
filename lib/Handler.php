@@ -170,14 +170,11 @@ abstract class Handler {
 	 * Create/update object handler.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client    $site    Site object.
+	 * @param     \Replicast\Client    $site              Site object.
+	 * @param     array                $replicast_info    The remote object info.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function handle_save( $site ) {
-
-		// Get replicast info
-		// FIXME: maybe this should be part of the handler to avoid multiple calls
-		$replicast_info = API::get_remote_info( $this->object );
+	public function handle_save( $site, $replicast_info = array() ) {
 
 		if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
 			return $this->put( $site );
