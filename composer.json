@@ -42,8 +42,7 @@
     }
   },
   "require": {
-    "guzzlehttp/guzzle": "6.1.1",
-    "julien731/wp-dismissible-notices-handler": "^1.0"
+    "guzzlehttp/guzzle": "6.1.1"
   },
   "require-dev": {
     "phpunit/phpunit": "*@stable",
