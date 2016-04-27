@@ -230,7 +230,7 @@ class Admin {
 	 *     'message' => ''
 	 *   )
 	 *
-	 * @since     1.0.0
+	 * @since    1.0.0
 	 * @param    string    $id         The unique ID of the notice.
 	 * @param    string    $type       The type of notice to display.
 	 *                                 Currently it can be 'error' for an error notice or
@@ -272,10 +272,12 @@ class Admin {
 	 * Get the admin notice type based on a HTTP request/response status code.
 	 *
 	 * @since     1.0.0
-	 * @param     string    $status_code    HTTP request/response status code.
-	 * @return    string                    Possible values: error | success | warning.
+	 * @param     int    $status_code    HTTP request/response status code.
+	 * @return    string                 Possible values: error | success | warning.
 	 */
 	public function get_notice_type_by_status_code( $status_code ) {
+
+		$status_code = intval( $status_code );
 
 		// FIXME
 		// Maybe this should be more simpler. For instance, all 2xx status codes should be treated as success.

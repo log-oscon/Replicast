@@ -622,4 +622,21 @@ abstract class Handler {
 
 	}
 
+	/**
+	 * Get admin notice unique ID.
+	 *
+	 * @since     1.0.0
+	 * @param     string    $suffix    Notice unique ID suffix.
+	 * @return    string              	Admin notices unique ID.
+	 */
+	public function get_notice_unique_id( $suffix = 'exception' ) {
+		return sprintf(
+			'replicast_notices_user_%s_%s_ID_%s_%s',
+			\wp_get_current_user()->ID,
+			$this->object_type,
+			$this->object->ID,
+			$suffix
+		);
+	}
+
 }
