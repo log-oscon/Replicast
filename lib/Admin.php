@@ -54,7 +54,7 @@ class Admin {
 
 		\add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 		\add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		\add_action( 'admin_notices',         array( $this, 'display_admin_notices' ) );
+		\add_action( 'admin_notices',         array( $this, 'display_notices' ) );
 
 	}
 
@@ -93,42 +93,6 @@ class Admin {
 			$this->plugin->get_version(),
 			true
 		);
-
-	}
-
-	/**
-	 * Display admin notices.
-	 *
-	 * @since    1.0.0
-	 */
-	public function display_admin_notices() {
-
-		$current_user = \wp_get_current_user();
-
-		// Get notices
-		$notices = (array) \get_transient( 'replicast_notices_' . $current_user->ID );
-
-		/**
-		 * Notices format:
-		 *   array(
-		 *     array(
-		 *       'type'    => '', // Possible values: success, error or warning
-		 *       'message' => ''
-		 *     )
-		 *   )
-		 */
-		foreach ( $notices as $notice ) {
-			if ( ! empty( $notice['message'] ) ) {
-				printf(
-					'<div class="notice notice-%s is-dismissible"><p>%s</p></div>',
-					\esc_attr( $notice['type'] ),
-					$notice['message']
-				);
-			}
-		}
-
-		// Delete notices
-		\delete_transient( 'replicast_notices_' . $current_user->ID );
 
 	}
 
@@ -195,16 +159,59 @@ class Admin {
 	}
 
 	/**
-	 * Set admin notices.
+	 * Display admin notices.
 	 *
-	 * @since     1.0.0
+	 * @since    1.0.0
 	 */
-	public function set_admin_notice( $status_code = '', $message = '' ) {
+	public function display_notices() {
 
-		if ( ! function_exists( 'DNH' ) ) {
-			return;
+		$notices = $this->get_notices();
+
+		foreach ( $notices as $notice ) {
+			if ( ! empty( $notice['message'] ) ) {
+				printf(
+					'<div class="notice notice-%s is-dismissible"><p>%s</p></div>',
+					\esc_attr( $notice['type'] ),
+					$notice['message']
+				);
+			}
 		}
 
+		$this->delete_notices();
+
+	}
+
+	/**
+	 * Get admin notices unique ID.
+	 *
+	 * @since     1.0.0
+	 * @return    string    Admin notices unique ID.
+	 */
+	private function get_notices_unique_id() {
+		$current_user = \wp_get_current_user();
+
+		return 'replicast_notices_' . $current_user->ID;
+	}
+
+	/**
+	 * Get admin notices.
+	 *
+	 * @since     1.0.0
+	 * @return    array    Admin notices.
+	 */
+	private function get_notices() {
+		return (array) \get_transient( $this->get_notices_unique_id() );
+	}
+
+	/**
+	 * Delete admin notices.
+	 *
+	 * @since     1.0.0
+	 * @return    bool    True if successful, false otherwise.
+	 */
+	private function delete_notices() {
+		return \delete_transient( $this->get_notices_unique_id() );
+	}
 		$current_user = \wp_get_current_user();
 
 		if ( empty( $message ) ) {
