@@ -849,10 +849,13 @@ class PostAdmin extends Admin {
 		 */
 		$force_delete = \apply_filters( "replicast_force_{$post->post_type}_delete", false );
 
-
 		try {
 
 			foreach ( $sites as $site ) {
+
+error_log(print_r('### on_trash_post ###',true));
+error_log(print_r($force_delete,true));
+error_log(print_r($site->get_name(),true));
 
 				$handler
 					->handle_delete( $site, $force_delete )
