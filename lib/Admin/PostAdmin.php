@@ -859,15 +859,8 @@ class PostAdmin extends Admin {
 					->then(
 						function ( $response ) use ( $site, $handler, $force_delete ) {
 
-error_log( print_r( $force_delete, true ) );
-error_log( print_r( $site->get_name(), true ) );
-error_log( print_r( $response->getStatusCode(), true ) );
-error_log( print_r( $response->getReasonPhrase(), true ) );
-
 							// Get the remote object data
 							$remote_data = json_decode( $response->getBody()->getContents() );
-
-error_log( print_r( $remote_data, true ) );
 
 							if ( empty( $remote_data ) ) {
 								continue;
