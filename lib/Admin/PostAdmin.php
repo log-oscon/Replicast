@@ -849,7 +849,6 @@ class PostAdmin extends Admin {
 		 */
 		$force_delete = \apply_filters( "replicast_force_{$post->post_type}_delete", false );
 
-		error_log(print_r($post->post_type,true));
 		error_log(print_r($force_delete,true));
 
 		try {
@@ -861,7 +860,9 @@ class PostAdmin extends Admin {
 					->then(
 						function ( $response ) use ( $site, $handler, $force_delete ) {
 
-			error_log( print_r( $ex->getMessage(), true ) );
+			error_log( print_r( $response->getStatusCode(), true ) );
+			error_log( print_r( $response->getReasonPhrase(), true ) );
+			error_log( print_r( $response->getBody()->getContents(), true ) );
 
 							// Get the remote object data
 							$remote_data = json_decode( $response->getBody()->getContents() );
