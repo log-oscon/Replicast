@@ -115,6 +115,14 @@ class Plugin {
 		$admin = new Admin( $this );
 		\add_action( 'init', array( $admin, 'register' ), 90 );
 
+		/** DEBUG **/
+		add_filter( 'pre_delete_post', function( $delete, $post, $force_delete ) {
+			error_log(print_r('--- pre_delete_post',true));
+			error_log(print_r($force_delete,true));
+			error_log(print_r($post,true));
+			return $delete;
+		}, 10, 3 );
+
 	}
 
 	/**
