@@ -605,6 +605,12 @@ abstract class Handler {
 		$headers['X-API-TIMESTAMP'] = $timestamp;
 		$headers['X-API-SIGNATURE'] = $signature;
 
+		error_log(print_r('### do_request',true));
+		error_log(print_r($method,true));
+		error_log(print_r($config['api_url'],true));
+		error_log(print_r($timestamp,true));
+		error_log(print_r($signature,true));
+
 		return $site->get_client()->request(
 			$method,
 			$config['api_url'],
