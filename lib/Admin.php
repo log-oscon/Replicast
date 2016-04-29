@@ -54,7 +54,7 @@ class Admin {
 
 		\add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 		\add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		\add_action( 'admin_notices',         array( $this, 'display_admin_notices' ) );
+		\add_action( 'admin_notices',         array( $this, 'display_notices' ) );
 
 	}
 
@@ -93,42 +93,6 @@ class Admin {
 			$this->plugin->get_version(),
 			true
 		);
-
-	}
-
-	/**
-	 * Display admin notices.
-	 *
-	 * @since    1.0.0
-	 */
-	public function display_admin_notices() {
-
-		$current_user = \wp_get_current_user();
-
-		// Get notices
-		$notices = (array) \get_transient( 'replicast_notices_' . $current_user->ID );
-
-		/**
-		 * Notices format:
-		 *   array(
-		 *     array(
-		 *       'type'    => '', // Possible values: success, error or warning
-		 *       'message' => ''
-		 *     )
-		 *   )
-		 */
-		foreach ( $notices as $notice ) {
-			if ( ! empty( $notice['message'] ) ) {
-				printf(
-					'<div class="notice notice-%s is-dismissible"><p>%s</p></div>',
-					\esc_attr( $notice['type'] ),
-					$notice['message']
-				);
-			}
-		}
-
-		// Delete notices
-		\delete_transient( 'replicast_notices_' . $current_user->ID );
 
 	}
 
@@ -195,51 +159,129 @@ class Admin {
 	}
 
 	/**
-	 * Set admin notices.
+	 * Display admin notices.
 	 *
-	 * @since     1.0.0
-	 * @param     array    $notices    Array of notices.
+	 * @since    1.0.0
 	 */
-	public function set_admin_notice( $notices ) {
+	public function display_notices() {
 
-		$current_user = \wp_get_current_user();
-		$rendered     = array();
+		$notices = $this->get_notices();
 
-		foreach ( $notices as $notice ) {
-
-			$status_code   = ! empty( $notice['status_code'] )   ? $notice['status_code']   : '';
-			$reason_phrase = ! empty( $notice['reason_phrase'] ) ? $notice['reason_phrase'] : '';
-			$message       = ! empty( $notice['message'] )       ? $notice['message']       : \__( 'Something went wrong.', 'replicast' );
-
-			$rendered[] = array(
-				'type'    => $this->get_notice_type_by_status_code( $status_code ),
-				'message' => $message
-			);
-
-			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
-				error_log( sprintf(
-					"\n%s\n%s\n%s",
-					sprintf( \__( 'Status Code: %s', 'replicast' ), $status_code ),
-					sprintf( \__( 'Reason: %s', 'replicast' ), $reason_phrase ),
-					sprintf( \__( 'Message: %s', 'replicast' ), $message )
-				) );
+		foreach ( $notices as $notice_id => $notice ) {
+			if ( ! empty( $notice['message'] ) ) {
+				printf(
+					'<div id="%s" class="%s notice is-dismissible"><p>%s</p></div>',
+					\esc_attr( $notice_id ),
+					\esc_attr( $notice['type'] ),
+					$notice['message']
+				);
 			}
-
 		}
 
-		\set_transient( 'replicast_notices_' . $current_user->ID, $rendered, 180 );
+		$this->delete_notices();
 
+	}
+
+	/**
+	 * Get admin notices unique ID.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @return    string    Admin notices unique ID.
+	 */
+	private function get_notices_unique_id() {
+		return sprintf(
+			'replicast_notices_user_%s',
+			\wp_get_current_user()->ID
+		);
+	}
+
+	/**
+	 * Get admin notices.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @return    array    Admin notices.
+	 */
+	private function get_notices() {
+
+		$notices = \get_transient( $this->get_notices_unique_id() );
+
+		if ( false === $notices ) {
+			return array();
+		}
+
+		return (array) $notices;
+	}
+
+	/**
+	 * Delete admin notices.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @return    bool    True if successful, false otherwise.
+	 */
+	private function delete_notices() {
+		return \delete_transient( $this->get_notices_unique_id() );
+	}
+
+	/**
+	 * Set admin notice.
+	 *
+	 * Notice format:
+	 *   array(
+	 *     'type'    => '', // Possible values: success, error or warning
+	 *     'message' => ''
+	 *   )
+	 *
+	 * @since    1.0.0
+	 * @param    string    $id         The unique ID of the notice.
+	 * @param    string    $type       The type of notice to display.
+	 *                                 Currently it can be 'error' for an error notice or
+	 *                                 'updated' for a success/update notice.
+	 * @param    string    $content    The content of the admin notice.
+	 */
+	public function register_notice( $id, $type = 'error', $content = '' ) {
+
+		if ( empty( $content ) ) {
+			/**
+			 * Filter the default admin notice message.
+			 *
+			 * @since     1.0.0
+			 * @param     string    Default admin notice text.
+			 * @return    string    Possibly-modified admin notice text.
+			 */
+			$content = \apply_filters( 'replicast_default_admin_notice_message', \__( 'Something went wrong.', 'replicast' ) );
+		}
+
+		$notices = $this->get_notices();
+
+		if ( array_key_exists( $id, $notices ) ) {
+			error_log( sprintf(
+				\__( 'A notice with the ID %s has already been registered.', 'replicast' ),
+				$id
+			) );
+			return;
+		}
+
+		$notices[ $id ] = array(
+			'type'    => $type,
+			'message' => $content,
+		);
+
+		\set_transient( $this->get_notices_unique_id(), $notices, 180 );
 	}
 
 	/**
 	 * Get the admin notice type based on a HTTP request/response status code.
 	 *
 	 * @since     1.0.0
-	 * @access    private
-	 * @param     string    $status_code    HTTP request/response status code.
-	 * @return    string                    Possible values: error | success | warning.
+	 * @param     int    $status_code    HTTP request/response status code.
+	 * @return    string                 Possible values: error | success | warning.
 	 */
-	private function get_notice_type_by_status_code( $status_code ) {
+	public function get_notice_type_by_status_code( $status_code ) {
+
+		$status_code = intval( $status_code );
 
 		// FIXME
 		// Maybe this should be more simpler. For instance, all 2xx status codes should be treated as success.
@@ -248,7 +290,7 @@ class Admin {
 		switch ( $status_code ) {
 			case '200': // Update
 			case '201': // Create
-				return 'success';
+				return 'updated';
 			default:
 				return 'error';
 		}

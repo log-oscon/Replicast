@@ -170,14 +170,11 @@ abstract class Handler {
 	 * Create/update object handler.
 	 *
 	 * @since     1.0.0
-	 * @param     \Replicast\Client    $site    Site object.
+	 * @param     \Replicast\Client    $site              Site object.
+	 * @param     array                $replicast_info    The remote object info.
 	 * @return    \GuzzleHttp\Promise
 	 */
-	public function handle_save( $site ) {
-
-		// Get replicast info
-		// FIXME: maybe this should be part of the handler to avoid multiple calls
-		$replicast_info = API::get_remote_info( $this->object );
+	public function handle_save( $site, $replicast_info = array() ) {
 
 		if ( array_key_exists( $site->get_id(), $replicast_info ) ) {
 			return $this->put( $site );
@@ -608,7 +605,7 @@ abstract class Handler {
 		$headers['X-API-TIMESTAMP'] = $timestamp;
 		$headers['X-API-SIGNATURE'] = $signature;
 
-		return $site->get_client()->requestAsync(
+		return $site->get_client()->request(
 			$method,
 			$config['api_url'],
 			array_merge(
@@ -620,6 +617,23 @@ abstract class Handler {
 			)
 		);
 
+	}
+
+	/**
+	 * Get admin notice unique ID.
+	 *
+	 * @since     1.0.0
+	 * @param     string    $suffix    Notice unique ID suffix.
+	 * @return    string              	Admin notices unique ID.
+	 */
+	public function get_notice_unique_id( $suffix = 'exception' ) {
+		return sprintf(
+			'replicast_notices_user_%s_%s_ID_%s_%s',
+			\wp_get_current_user()->ID,
+			$this->object_type,
+			$this->object->ID,
+			$suffix
+		);
 	}
 
 }
