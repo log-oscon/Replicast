@@ -204,9 +204,13 @@ class Admin {
 	 * @return    array    Admin notices.
 	 */
 	private function get_notices() {
-		if ( false === ( $notices = \get_transient( $this->get_notices_unique_id() ) ) ) {
+
+		$notices = \get_transient( $this->get_notices_unique_id() );
+
+		if ( false === $notices ) {
 			return array();
 		}
+
 		return (array) $notices;
 	}
 
