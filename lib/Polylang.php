@@ -167,10 +167,16 @@ class Polylang {
 
 			foreach ( $term->polylang['translations'] as $lang => $translated_object_id ) {
 
-				$remote_info = API::get_remote_info( \get_term( $translated_object_id ) );
+				unset( $data['replicast']['terms'][ $term_id ]->polylang['translations'][ $lang ] );
+
+				$translated_term = \get_term( $translated_object_id, $term->taxonomy );
+				if ( ! $translated_term ) {
+					continue;
+				}
+
+				$remote_info = API::get_remote_info( $translated_term );
 
 				// Update object ID's
-				unset( $data['replicast']['terms'][ $term_id ]->polylang['translations'][ $lang ] );
 				if ( ! empty( $remote_info ) ) {
 					$data['replicast']['terms'][ $term_id ]->polylang['translations'][ $lang ] = $remote_info[ $site->get_id() ]['id'];
 				}
