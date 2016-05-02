@@ -780,7 +780,11 @@ class PostAdmin extends Admin {
 		} catch ( \Exception $ex ) {
 
 			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
-				error_log( $ex->getMessage() );
+				error_log( var_export( $ex->getMessage(), true ) );
+			}
+
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
 			}
 
 			$this->register_notice(
@@ -875,7 +879,11 @@ class PostAdmin extends Admin {
 		} catch ( \Exception $ex ) {
 
 			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
-				error_log( $ex->getMessage() );
+				error_log( var_export( $ex->getMessage(), true ) );
+			}
+
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
 			}
 
 			$this->register_notice(
@@ -970,7 +978,11 @@ class PostAdmin extends Admin {
 		} catch ( \Exception $ex ) {
 
 			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
-				error_log( $ex->getMessage() );
+				error_log( var_export( $ex->getMessage(), true ) );
+			}
+
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
 			}
 
 			$this->register_notice(
