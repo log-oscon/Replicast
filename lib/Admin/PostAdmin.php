@@ -746,7 +746,7 @@ class PostAdmin extends Admin {
 			}
 
 			// Verify that the current object has been "removed" (aka unchecked) from any site(s)
-			// FIXME: review this later on
+			// TODO: review this later on
 			foreach ( $replicast_info as $site_id => $replicast_data ) {
 				if ( ! array_key_exists( $site_id, $sites ) ) {
 
