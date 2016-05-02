@@ -605,11 +605,15 @@ abstract class Handler {
 		$headers['X-API-TIMESTAMP'] = $timestamp;
 		$headers['X-API-SIGNATURE'] = $signature;
 
-		error_log(print_r('### do_request',true));
-		error_log(print_r($method,true));
-		error_log(print_r($config['api_url'],true));
-		error_log(print_r($timestamp,true));
-		error_log(print_r($signature,true));
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( var_export( array(
+				'api_key'        => $config['apy_key'],
+				'request_method' => $method,
+				'request_uri'    => $config['api_url'],
+				'timestamp'      => $timestamp,
+			), true ) );
+			error_log( var_export( $signature, true ) );
+		}
 
 		return $site->get_client()->request(
 			$method,
