@@ -783,11 +783,9 @@ class PostAdmin extends Admin {
 				error_log( var_export( $ex->getMessage(), true ) );
 			}
 
-			error_log(print_r($ex->getResponse()->getHeader( 'X-KEY-AUTH' ),true));
-
-			// if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
-			// }
+			}
 
 			$this->register_notice(
 				$handler->get_notice_unique_id(),
@@ -884,11 +882,9 @@ class PostAdmin extends Admin {
 				error_log( var_export( $ex->getMessage(), true ) );
 			}
 
-			error_log(print_r($ex->getResponse()->getHeader( 'X-KEY-AUTH' ),true));
-
-			// if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
-			// }
+			}
 
 			$this->register_notice(
 				$handler->get_notice_unique_id(),
@@ -985,11 +981,9 @@ class PostAdmin extends Admin {
 				error_log( var_export( $ex->getMessage(), true ) );
 			}
 
-			error_log(print_r($ex->getResponse()->getHeader( 'X-KEY-AUTH' ),true));
-
-			// if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
-			// }
+			}
 
 			$this->register_notice(
 				$handler->get_notice_unique_id(),
