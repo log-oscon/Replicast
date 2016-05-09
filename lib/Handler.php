@@ -605,6 +605,16 @@ abstract class Handler {
 		$headers['X-API-TIMESTAMP'] = $timestamp;
 		$headers['X-API-SIGNATURE'] = $signature;
 
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( var_export( array(
+				'api_key'        => $config['apy_key'],
+				'request_method' => $method,
+				'request_uri'    => $config['api_url'],
+				'timestamp'      => $timestamp,
+			), true ) );
+			error_log( var_export( $signature, true ) );
+		}
+
 		return $site->get_client()->request(
 			$method,
 			$config['api_url'],
