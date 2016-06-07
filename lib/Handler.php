@@ -284,18 +284,7 @@ abstract class Handler {
 		if ( empty( $data['slug'] ) &&
 			! empty( $this->object->post_title ) &&
 			$this->object->post_status === 'draft' ) {
-
-			// Generate the desired slug
-			$post_slug = \sanitize_title( $this->object->post_title );
-
-			// Generate unique slug
-			$data['slug'] = \wp_unique_post_slug(
-				$post_slug,
-				$this->object->ID,
-				$this->object->post_status,
-				$this->object->post_type,
-				$this->object->post_parent
-			);
+			$data['slug'] = \sanitize_title( $this->object->post_title );
 		}
 
 		// Update featured media ID
