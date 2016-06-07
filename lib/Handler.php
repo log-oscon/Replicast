@@ -280,6 +280,13 @@ abstract class Handler {
 			$data['date_gmt'] = \mysql_to_rfc3339( $data['date'] );
 		}
 
+		// Generate post slug for draft
+		if ( empty( $data['slug'] ) &&
+			! empty( $this->object->post_title ) &&
+			$this->object->post_status === 'draft' ) {
+			$data['slug'] = \sanitize_title( $this->object->post_title );
+		}
+
 		// Update featured media ID
 		if ( ! empty( $data['featured_media'] ) ) {
 			$data = $this->prepare_featured_media( $data, $site );
@@ -500,7 +507,7 @@ abstract class Handler {
 
 		$request_uri = $config['api_url'];
 		if ( ! empty( $args ) ) {
-			$request_uri = sprintf( '%s?%s', $request_uri, http_build_query( $args, null, '&', PHP_QUERY_RFC3986 ) );
+			$request_uri = \add_query_arg( $args, $request_uri );
 		}
 
 		/**
