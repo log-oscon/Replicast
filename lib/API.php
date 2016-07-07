@@ -444,7 +444,7 @@ class API {
 			$suppressed_image_sizes = \apply_filters( 'replicast_suppress_image_sizes', array() );
 
 			// Get metadata
-			$metadata = \get_post_meta( $object_id, '_wp_attachment_metadata', true );
+			$metadata = \wp_get_attachment_metadata( $object_id, true );
 
 			// Replace relative url with absolute url
 			$metadata['file'] = \wp_get_attachment_url( $object_id );
@@ -463,13 +463,17 @@ class API {
 				}
 			}
 
-			return array(
-				'id'         => $object_id,
-				'mime-type'  => \get_post_mime_type( $object_id ),
-				'metadata'   => $metadata,
-				'_relations' => $relations,
-			);
+			$attachment = \get_post( $object_id );
 
+			return array(
+				'id'           => $object_id,
+				'post_title'   => $attachment->post_title,
+				'post_excerpt' => $attachment->post_excerpt,
+				'post_content' => $attachment->post_content,
+				'mime-type'    => \get_post_mime_type( $object_id ),
+				'metadata'     => $metadata,
+				'_relations'   => $relations,
+			);
 		}
 
 		$data[ $source_id ]['_relations'] = array_merge_recursive( $data[ $source_id ]['_relations'], $relations );
@@ -849,45 +853,6 @@ class API {
 	}
 
 	/**
-	 * Updates a media object.
-	 *
-	 * @since     1.0.0
-	 * @access    private
-	 * @param     array    $media_data    The values of the field.
-	 * @return    int                     The media object ID.
-	 */
-	private static function update_media( $media_data ) {
-
-		$attachment_id = ! empty( $media_data['id'] ) ? $media_data['id'] : '';
-
-		// Create an attachment if no ID was given
-		if ( empty( $attachment_id ) ) {
-
-			$file = \esc_url( $media_data['metadata']['file'] );
-
-			// Set attachment data
-			$attachment = array(
-				'post_mime_type' => $media_data['mime-type'],
-				'post_title'     => \sanitize_file_name( basename( $file ) ),
-				'post_content'   => '',
-				'post_status'    => 'inherit'
-			);
-
-			// Create the attachment
-			$attachment_id = \wp_insert_attachment( $attachment, $file );
-
-			// Assign metadata to attachment
-			\wp_update_attachment_metadata( $attachment_id, $media_data['metadata'] );
-
-		}
-
-		// Save remote object info
-		\update_post_meta( $attachment_id, Plugin::REPLICAST_SOURCE_INFO, $media_data[ Plugin::REPLICAST_SOURCE_INFO ] );
-
-		return $attachment_id;
-	}
-
-	/**
 	 * Get the object ID.
 	 *
 	 * @since     1.0.0
@@ -1085,6 +1050,47 @@ class API {
 			Plugin::REPLICAST_REMOTE_INFO,
 			$remote_info
 		);
+	}
+
+	/**
+	 * Updates a media object.
+	 *
+	 * @since     1.0.0
+	 * @access    private
+	 * @param     array    $media_data    The values of the field.
+	 * @return    int                     The media object ID.
+	 */
+	private static function update_media( $media_data ) {
+
+		$attachment_id = ! empty( $media_data['id'] ) ? $media_data['id'] : '';
+
+		// Create an attachment if no ID was given
+		if ( empty( $attachment_id ) ) {
+
+			$file  = \esc_url( $media_data['metadata']['file'] );
+			$title = ! empty( $media_data['post_title'] ) ? \sanitize_text_field( $media_data['post_title'] ) : \sanitize_file_name( basename( $file ) );
+
+			// Set attachment data
+			$attachment = array(
+				'post_mime_type' => $media_data['mime-type'],
+				'post_title'     => $title,
+				'post_excerpt'   => \sanitize_text_field( $media_data['post_excerpt'] ),
+				'post_content'   => \sanitize_text_field( $media_data['post_content'] ),
+				'post_status'    => 'inherit'
+			);
+
+			// Create the attachment
+			$attachment_id = \wp_insert_attachment( $attachment, $file );
+
+			// Assign metadata to attachment
+			\wp_update_attachment_metadata( $attachment_id, $media_data['metadata'] );
+
+		}
+
+		// Save remote object info
+		\update_post_meta( $attachment_id, Plugin::REPLICAST_SOURCE_INFO, $media_data[ Plugin::REPLICAST_SOURCE_INFO ] );
+
+		return $attachment_id;
 	}
 
 }
