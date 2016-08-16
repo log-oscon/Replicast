@@ -700,9 +700,9 @@ class PostAdmin extends Admin {
 		// Get replicast info
 		$replicast_info = API::get_remote_info( $post );
 
-		try {
+		foreach ( $sites as $site ) {
 
-			foreach ( $sites as $site ) {
+			try {
 
 				$response    = $handler->handle_save( $site, $replicast_info );
 				$remote_data = json_decode( $response->getBody()->getContents() );
@@ -743,55 +743,55 @@ class PostAdmin extends Admin {
 				// Update media
 				$handler->update_media( $site_id, $remote_data );
 
-			}
+				// Verify that the current object has been "removed" (aka unchecked) from any site(s)
+				// TODO: review this later on
+				foreach ( $replicast_info as $site_id => $replicast_data ) {
+					if ( ! array_key_exists( $site_id, $sites ) ) {
 
-			// Verify that the current object has been "removed" (aka unchecked) from any site(s)
-			// TODO: review this later on
-			foreach ( $replicast_info as $site_id => $replicast_data ) {
-				if ( ! array_key_exists( $site_id, $sites ) ) {
+						$site        = $this->get_site( $site_id );
+						$response    = $handler->handle_delete( $site, true );
+						$remote_data = json_decode( $response->getBody()->getContents() );
 
-					$site        = $this->get_site( $site_id );
-					$response    = $handler->handle_delete( $site, true );
-					$remote_data = json_decode( $response->getBody()->getContents() );
+						if ( empty( $remote_data ) ) {
+							continue;
+						}
 
-					if ( empty( $remote_data ) ) {
-						continue;
+						$status_code = $response->getStatusCode();
+						$message     = sprintf(
+							\__( 'Post permanently deleted on %s.', 'replicast' ),
+							$site->get_name()
+						);
+
+						// Register notice
+						$this->register_notice(
+							$handler->get_notice_unique_id( 'site_' . $site_id ),
+							$this->get_notice_type_by_status_code( $status_code ),
+							$message
+						);
+
+						// Update object
+						$handler->update_object( $site_id );
+
 					}
-
-					$status_code = $response->getStatusCode();
-					$message     = sprintf(
-						\__( 'Post permanently deleted on %s.', 'replicast' ),
-						$site->get_name()
-					);
-
-					// Register notice
-					$this->register_notice(
-						$handler->get_notice_unique_id( 'site_' . $site_id ),
-						$this->get_notice_type_by_status_code( $status_code ),
-						$message
-					);
-
-					// Update object
-					$handler->update_object( $site_id );
-
 				}
+
+			} catch ( \Exception $ex ) {
+
+				if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
+					error_log( var_export( $ex->getMessage(), true ) );
+				}
+
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
+				}
+
+				$this->register_notice(
+					$handler->get_notice_unique_id(),
+					$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
+					$ex->getMessage()
+				);
+
 			}
-
-		} catch ( \Exception $ex ) {
-
-			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
-				error_log( var_export( $ex->getMessage(), true ) );
-			}
-
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
-			}
-
-			$this->register_notice(
-				$handler->get_notice_unique_id(),
-				$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
-				$ex->getMessage()
-			);
 
 		}
 
@@ -842,9 +842,9 @@ class PostAdmin extends Admin {
 		 */
 		$force_delete = \apply_filters( "replicast_force_{$post->post_type}_delete", false );
 
-		try {
+		foreach ( $sites as $site ) {
 
-			foreach ( $sites as $site ) {
+			try {
 
 				$response    = $handler->handle_delete( $site, $force_delete );
 				$remote_data = json_decode( $response->getBody()->getContents() );
@@ -874,23 +874,23 @@ class PostAdmin extends Admin {
 				// Update object
 				$handler->update_object( $site_id, $remote_data );
 
+			} catch ( \Exception $ex ) {
+
+				if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
+					error_log( var_export( $ex->getMessage(), true ) );
+				}
+
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
+				}
+
+				$this->register_notice(
+					$handler->get_notice_unique_id(),
+					$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
+					$ex->getMessage()
+				);
+
 			}
-
-		} catch ( \Exception $ex ) {
-
-			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
-				error_log( var_export( $ex->getMessage(), true ) );
-			}
-
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
-			}
-
-			$this->register_notice(
-				$handler->get_notice_unique_id(),
-				$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
-				$ex->getMessage()
-			);
 
 		}
 
@@ -945,9 +945,9 @@ class PostAdmin extends Admin {
 			return;
 		}
 
-		try {
+		foreach ( $sites as $site ) {
 
-			foreach ( $sites as $site ) {
+			try {
 
 				$response    = $handler->handle_delete( $site, true );
 				$remote_data = json_decode( $response->getBody()->getContents() );
@@ -973,23 +973,23 @@ class PostAdmin extends Admin {
 				// Update object
 				$handler->update_object( $site_id );
 
+			} catch ( \Exception $ex ) {
+
+				if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
+					error_log( var_export( $ex->getMessage(), true ) );
+				}
+
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
+				}
+
+				$this->register_notice(
+					$handler->get_notice_unique_id(),
+					$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
+					$ex->getMessage()
+				);
+
 			}
-
-		} catch ( \Exception $ex ) {
-
-			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
-				error_log( var_export( $ex->getMessage(), true ) );
-			}
-
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
-			}
-
-			$this->register_notice(
-				$handler->get_notice_unique_id(),
-				$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
-				$ex->getMessage()
-			);
 
 		}
 
