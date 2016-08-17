@@ -691,6 +691,9 @@ class PostAdmin extends Admin {
 			return;
 		}
 
+		// Get user ID
+		$user_id = \wp_get_current_user()->ID;
+
 		// Get sites
 		$sites = $this->get_sites( $post );
 
@@ -700,7 +703,10 @@ class PostAdmin extends Admin {
 		// Get replicast info
 		$replicast_info = API::get_remote_info( $post );
 
+		$replicated = array();
 		foreach ( $sites as $site ) {
+
+			$site_id = $site->get_id();
 
 			try {
 
@@ -711,7 +717,6 @@ class PostAdmin extends Admin {
 					continue;
 				}
 
-				$site_id     = $site->get_id();
 				$status_code = $response->getStatusCode();
 				$message     = sprintf(
 					'%s %s',
@@ -729,7 +734,7 @@ class PostAdmin extends Admin {
 
 				// Register notice
 				$this->register_notice(
-					$handler->get_notice_unique_id( 'site_' . $site_id ),
+					$handler->get_notice_unique_id( $site_id, $user_id ),
 					$this->get_notice_type_by_status_code( $status_code ),
 					$message
 				);
@@ -742,6 +747,8 @@ class PostAdmin extends Admin {
 
 				// Update media
 				$handler->update_media( $site_id, $remote_data );
+
+				$replicated[] = $site_id;
 
 				// Verify that the current object has been "removed" (aka unchecked) from any site(s)
 				// TODO: review this later on
@@ -764,7 +771,7 @@ class PostAdmin extends Admin {
 
 						// Register notice
 						$this->register_notice(
-							$handler->get_notice_unique_id( 'site_' . $site_id ),
+							$handler->get_notice_unique_id( $site_id, $user_id ),
 							$this->get_notice_type_by_status_code( $status_code ),
 							$message
 						);
@@ -786,7 +793,7 @@ class PostAdmin extends Admin {
 				}
 
 				$this->register_notice(
-					$handler->get_notice_unique_id(),
+					$handler->get_notice_unique_id( $site_id, $user_id ),
 					$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
 					$ex->getMessage()
 				);
@@ -795,6 +802,8 @@ class PostAdmin extends Admin {
 
 		}
 
+		// Update selected sites
+		\wp_set_object_terms( $handler->get_object_id(), $replicated, Plugin::TAXONOMY_SITE );
 	}
 
 	/**
@@ -827,6 +836,9 @@ class PostAdmin extends Admin {
 			return;
 		}
 
+		// Get user ID
+		$user_id = \wp_get_current_user()->ID;
+
 		// Get sites
 		$sites = $this->get_sites( $post );
 
@@ -844,6 +856,8 @@ class PostAdmin extends Admin {
 
 		foreach ( $sites as $site ) {
 
+			$site_id = $site->get_id();
+
 			try {
 
 				$response    = $handler->handle_delete( $site, $force_delete );
@@ -853,7 +867,6 @@ class PostAdmin extends Admin {
 					continue;
 				}
 
-				$site_id     = $site->get_id();
 				$status_code = $response->getStatusCode();
 				$message     = sprintf(
 					$force_delete ? \__( 'Post permanently deleted on %s.', 'replicast' ) : \__( 'Post moved to the trash on %s.', 'replicast' ),
@@ -862,7 +875,7 @@ class PostAdmin extends Admin {
 
 				// Register notice
 				$this->register_notice(
-					$handler->get_notice_unique_id( 'site_' . $site_id ),
+					$handler->get_notice_unique_id( $site_id, $user_id ),
 					$this->get_notice_type_by_status_code( $status_code ),
 					$message
 				);
@@ -885,7 +898,7 @@ class PostAdmin extends Admin {
 				}
 
 				$this->register_notice(
-					$handler->get_notice_unique_id(),
+					$handler->get_notice_unique_id( $site_id, $user_id ),
 					$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
 					$ex->getMessage()
 				);
@@ -926,6 +939,9 @@ class PostAdmin extends Admin {
 			return;
 		}
 
+		// Get user ID
+		$user_id = \wp_get_current_user()->ID;
+
 		// Get sites
 		$sites = $this->get_sites( $post );
 
@@ -947,6 +963,8 @@ class PostAdmin extends Admin {
 
 		foreach ( $sites as $site ) {
 
+			$site_id = $site->get_id();
+
 			try {
 
 				$response    = $handler->handle_delete( $site, true );
@@ -956,7 +974,6 @@ class PostAdmin extends Admin {
 					continue;
 				}
 
-				$site_id     = $site->get_id();
 				$status_code = $response->getStatusCode();
 				$message     = sprintf(
 					\__( 'Post permanently deleted on %s.', 'replicast' ),
@@ -965,7 +982,7 @@ class PostAdmin extends Admin {
 
 				// Register notice
 				$this->register_notice(
-					$handler->get_notice_unique_id( 'site_' . $site_id ),
+					$handler->get_notice_unique_id( $site_id, $user_id ),
 					$this->get_notice_type_by_status_code( $status_code ),
 					$message
 				);
@@ -984,7 +1001,7 @@ class PostAdmin extends Admin {
 				}
 
 				$this->register_notice(
-					$handler->get_notice_unique_id(),
+					$handler->get_notice_unique_id( $site_id, $user_id ),
 					$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
 					$ex->getMessage()
 				);

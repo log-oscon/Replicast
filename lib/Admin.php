@@ -283,7 +283,7 @@ class Admin {
 
 		$status_code = intval( $status_code );
 
-		// FIXME
+		// FIXME:
 		// Maybe this should be more simpler. For instance, all 2xx status codes should be treated as success.
 		// What happens with a 3xx status code?
 
