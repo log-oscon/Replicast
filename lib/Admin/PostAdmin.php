@@ -337,6 +337,12 @@ class PostAdmin extends Admin {
 			return $link;
 		}
 
+		if ( \is_super_admin() &&
+			! empty( $_GET['replicast_action'] ) &&
+			$_GET['replicast_action'] === 'local_edit' ) {
+			return $link;
+		}
+
 		return \esc_url( $source_info['edit_link'] );
 	}
 
