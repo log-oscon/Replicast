@@ -652,7 +652,8 @@ class API {
 			\wp_set_object_terms( $object->ID, $ids, $taxonomy, false );
 
 			// FIXME: debug
-			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG && (int) $object->ID === 10389 ) {
+			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG &&
+				(int) $object->ID === 10389 && (int) \get_current_blog_id() === 15 ) {
 				$old_term_ids = \wp_get_object_terms( $object->ID, $taxonomies, array( 'fields' => 'ids' ) );
 				error_log( var_export( $old_term_ids, true ) );
 				error_log( var_export( $ids, true ) );
