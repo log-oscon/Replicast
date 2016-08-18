@@ -649,7 +649,7 @@ class API {
 			$ids = array_map( 'intval', $ids );
 			$ids = array_unique( $ids );
 
-			\wp_set_object_terms( $object->ID, $ids, $taxonomy, false );
+			\wp_set_object_terms( $object->ID, $ids, $taxonomy );
 
 			// FIXME: debug
 			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG &&
