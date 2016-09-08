@@ -194,7 +194,7 @@ abstract class Handler {
 	 */
 	public function handle_delete( $site, $force = false ) {
 		return $this->delete( $site, array(
-			'force' => $force
+			'force' => $force,
 		) );
 	}
 
@@ -233,11 +233,11 @@ abstract class Handler {
 		 * @param     array    Name(s) of the suppressed data structures.
 		 * @return    array    Possibly-modified name(s) of the suppressed data structures.
 		 */
-		$structures = \apply_filters( "replicast_suppress_rest_api_structures", array(
+		$structures = \apply_filters( 'replicast_suppress_rest_api_structures', array(
 			'categories',
 			'tags',
 			'_links',
-			'_embedded'
+			'_embedded',
 		) );
 
 		foreach ( $structures as $structure ) {
@@ -326,7 +326,7 @@ abstract class Handler {
 		 * @param     \Replicast\Client    Site object.
 		 * @return    array                Possibly-modified object data.
 		 */
-		$data = \apply_filters( "replicast_prepare_object_for_create", $data, $site );
+		$data = \apply_filters( 'replicast_prepare_object_for_create', $data, $site );
 
 		return $this->prepare_media( $data, $site );
 	}
@@ -408,7 +408,7 @@ abstract class Handler {
 		 * @param     \Replicast\Client    Site object.
 		 * @return    array                Possibly-modified object data.
 		 */
-		$data = \apply_filters( "replicast_prepare_object_for_update", $data, $site );
+		$data = \apply_filters( 'replicast_prepare_object_for_update', $data, $site );
 
 		return $this->prepare_media( $data, $site );
 	}
@@ -633,7 +633,6 @@ abstract class Handler {
 				$body
 			)
 		);
-
 	}
 
 	/**
@@ -652,5 +651,4 @@ abstract class Handler {
 			$suffix
 		);
 	}
-
 }
