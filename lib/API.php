@@ -80,6 +80,15 @@ class API {
 			return array();
 		}
 
+		if ( empty( $request->get_header( 'X-WP-Replicast' ) ) ) {
+			return array();
+		}
+
+		$header = $request->get_header( 'X-WP-Replicast' );
+		if ( $header !== 'true' ) {
+			return array();
+		}
+
 		return array(
 			'meta'  => static::get_object_meta( $object, $request ),
 			'terms' => static::get_object_terms( $object, $request ),
