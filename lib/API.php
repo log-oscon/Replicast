@@ -80,11 +80,11 @@ class API {
 			return array();
 		}
 
-		if ( empty( $request->get_header( 'X-WP-Replicast' ) ) ) {
+		$header = $request->get_header( 'X-WP-Replicast' );
+		if ( empty( $header ) ) {
 			return array();
 		}
 
-		$header = $request->get_header( 'X-WP-Replicast' );
 		if ( $header !== 'true' ) {
 			return array();
 		}
