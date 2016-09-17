@@ -62,9 +62,7 @@ class API {
 					)
 				);
 			}
-
 		}
-
 	}
 
 	/**
@@ -79,6 +77,15 @@ class API {
 	public static function get_rest_fields( $object, $field_name, $request ) {
 
 		if ( $field_name !== 'replicast' ) {
+			return array();
+		}
+
+		$header = $request->get_header( 'X-WP-Replicast' );
+		if ( empty( $header ) ) {
+			return array();
+		}
+
+		if ( $header !== 'true' ) {
 			return array();
 		}
 
@@ -295,7 +302,6 @@ class API {
 			if ( ! empty( $child_terms ) ) {
 				$hierarchical_terms[ $source_id ]->children = $child_terms;
 			}
-
 		}
 
 		return $hierarchical_terms;
@@ -330,7 +336,6 @@ class API {
 			if ( ! empty( $child_terms ) ) {
 				$children[ $source_id ]->children = $child_terms;
 			}
-
 		}
 
 		return $children;
@@ -399,9 +404,7 @@ class API {
 
 					$prepared_data[ $source_id ] = static::get_media( $source_id, $id, $relations, $prepared_data );
 				}
-
 			}
-
 		}
 
 		/**
@@ -556,7 +559,6 @@ class API {
 			foreach ( $meta_values as $meta_value ) {
 				\add_metadata( $meta_type, $object->ID, $meta_key, \maybe_unserialize( $meta_value ) );
 			}
-
 		}
 
 		/**
@@ -576,8 +578,7 @@ class API {
 		 * @param    object    The object from the response.
 		 * @param    string    The object meta type.
 		 */
-		\do_action( "replicast_update_object_meta", $meta, $object, $meta_type );
-
+		\do_action( 'replicast_update_object_meta', $meta, $object, $meta_type );
 	}
 
 	/**
@@ -797,9 +798,7 @@ class API {
 				if ( array_key_exists( 'gallery_shortcode', $relations ) ) {
 					$gallery_media_ids[ $source_id ] = $media[ $source_id ]['id'];
 				}
-
 			}
-
 		}
 
 		// Update galleries media
@@ -1036,9 +1035,7 @@ class API {
 			if ( static::is_term( $object ) ) {
 				$remote_info[ $site_id ]['term_taxonomy_id'] = $remote_data->term_taxonomy_id;
 			}
-
-		}
-		else {
+		} else {
 			unset( $remote_info[ $site_id ] );
 		}
 
@@ -1074,7 +1071,7 @@ class API {
 				'post_title'     => $title,
 				'post_excerpt'   => \sanitize_text_field( $media_data['post_excerpt'] ),
 				'post_content'   => \sanitize_text_field( $media_data['post_content'] ),
-				'post_status'    => 'inherit'
+				'post_status'    => 'inherit',
 			);
 
 			// Create the attachment
@@ -1090,5 +1087,4 @@ class API {
 
 		return $attachment_id;
 	}
-
 }
