@@ -1021,11 +1021,11 @@ class API {
 				'id' => static::get_id( $remote_data ),
 			);
 
-			if ( static::is_post( $object ) ) {
+			if ( static::is_post( $object ) && ! empty( $remote_data->status ) ) {
 				$remote_info[ $site_id ]['status'] = $remote_data->status;
 			}
 
-			if ( static::is_term( $object ) ) {
+			if ( static::is_term( $object ) && ! empty( $remote_data->term_taxonomy_id ) ) {
 				$remote_info[ $site_id ]['term_taxonomy_id'] = $remote_data->term_taxonomy_id;
 			}
 		} else {

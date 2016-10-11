@@ -581,9 +581,15 @@ class PostAdmin extends Admin {
 			$remote_dirname = trailingslashit( $remote_dirname );
 		}
 
-		$pattern = trailingslashit( \_wp_upload_dir_baseurl() ) . $remote_dirname;
+		$upload_dir = \wp_get_upload_dir();
+		if ( empty( $upload_dir['baseurl'] ) ) {
+			return $sources;
+		}
+
+		$pattern = trailingslashit( $upload_dir['baseurl'] ) . $remote_dirname;
 
 		foreach ( $sources as $key => $source ) {
+
 			$source_url = str_replace( $pattern, '', $source['url'] );
 
 			if ( strrpos( $source_url, 'http', -strlen( $source_url ) ) !== false ) {
@@ -992,7 +998,5 @@ class PostAdmin extends Admin {
 			);
 
 		}
-
 	}
-
 }
