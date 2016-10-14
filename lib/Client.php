@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Client wrapper
  *
@@ -25,36 +24,36 @@ class Client {
 	/**
 	 * Term object.
 	 *
-	 * @since     1.0.0
-	 * @access    protected
-	 * @var       \WP_Term
+	 * @since  1.0.0
+	 * @access protected
+	 * @var    \WP_Term
 	 */
 	protected $term;
 
 	/**
 	 * Term meta.
 	 *
-	 * @since     1.0.0
-	 * @access    protected
-	 * @var       array
+	 * @since  1.0.0
+	 * @access protected
+	 * @var    array
 	 */
 	protected $term_meta;
 
 	/**
 	 * HTTP client.
 	 *
-	 * @since     1.0.0
-	 * @access    protected
-	 * @var       \GuzzleHttp\Client
+	 * @since  1.0.0
+	 * @access protected
+	 * @var    \GuzzleHttp\Client
 	 */
 	protected $client;
 
 	/**
 	 * Constructor.
 	 *
-	 * @since    1.0.0
-	 * @param    \WP_Term              $term      The term object.
-	 * @param    \GuzzleHttp\Client    $client    The HTTP client.
+	 * @since 1.0.0
+	 * @param \WP_Term           $term   The term object.
+	 * @param \GuzzleHttp\Client $client The HTTP client.
 	 */
 	public function __construct( $term, $client ) {
 		$this->term      = $term;
@@ -65,8 +64,8 @@ class Client {
 	/**
 	 * Get site ID.
 	 *
-	 * @since     1.0.0
-	 * @return    int    Term ID.
+	 * @since  1.0.0
+	 * @return int Term ID.
 	 */
 	public function get_id() {
 		return $this->term->term_id;
@@ -75,8 +74,8 @@ class Client {
 	/**
 	 * Get site name.
 	 *
-	 * @since     1.0.0
-	 * @return    string    Term name.
+	 * @since  1.0.0
+	 * @return string Term name.
 	 */
 	public function get_name() {
 		return $this->term->name;
@@ -85,8 +84,8 @@ class Client {
 	/**
 	 * Get site config.
 	 *
-	 * @since     1.0.0
-	 * @return    array    Site url, and API url, key and secret.
+	 * @since  1.0.0
+	 * @return array Site url, and API url, key and secret.
 	 */
 	public function get_config() {
 		$url = \parse_url( $this->term_meta['api_url'][0] );
@@ -100,8 +99,8 @@ class Client {
 	/**
 	 * Get site meta data.
 	 *
-	 * @since     1.0.0
-	 * @return    array    The meta data from a site term.
+	 * @since  1.0.0
+	 * @return array The meta data from a site term.
 	 */
 	public function get_meta() {
 		return \get_term_meta( $this->term->term_id );
@@ -110,8 +109,8 @@ class Client {
 	/**
 	 * Get site HTTP client.
 	 *
-	 * @since     1.0.0
-	 * @return    \GuzzleHttp\Client    The HTTP client.
+	 * @since  1.0.0
+	 * @return \GuzzleHttp\Client The HTTP client.
 	 */
 	public function get_client() {
 		return $this->client;
@@ -120,8 +119,8 @@ class Client {
 	/**
 	 * Check if site is valid.
 	 *
-	 * @since     1.0.0
-	 * @return    bool    True if all the required fields are filled. False, otherwise.
+	 * @since  1.0.0
+	 * @return bool True if all the required fields are filled. False, otherwise.
 	 */
 	public function is_valid() {
 
@@ -131,7 +130,7 @@ class Client {
 			'api_secret',
 		);
 
-		foreach( $required_keys as $key ) {
+		foreach ( $required_keys as $key ) {
 			if ( empty( $this->term_meta[ $key ] ) || empty( $this->term_meta[ $key ][0] ) ) {
 				return false;
 			}
@@ -139,5 +138,4 @@ class Client {
 
 		return true;
 	}
-
 }

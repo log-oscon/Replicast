@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Handles ´post´ content type replication
  *

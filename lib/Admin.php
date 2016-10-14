@@ -1,5 +1,4 @@
 <?php
-
 /**
  * The dashboard-specific functionality of the plugin
  *
