@@ -28,18 +28,6 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * The code that runs during plugin activation.
- * This action is documented in lib/Activator.php
- */
-\register_activation_hook( __FILE__, '\Replicast\Activator::activate' );
-
-/**
- * The code that runs during plugin deactivation.
- * This action is documented in lib/Deactivator.php
- */
-\register_deactivation_hook( __FILE__, '\Replicast\Deactivator::deactivate' );
-
-/**
  * Begins execution of the plugin.
  *
  * @since    1.0.0
