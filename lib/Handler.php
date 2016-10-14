@@ -639,16 +639,36 @@ abstract class Handler {
 	}
 
 	/**
+	 * Get object ID.
+	 *
+	 * @since  1.0.3
+	 * @return int Object ID.
+	 */
+	public function get_object_id() {
+		return $this->object->ID;
+	}
+
+	/**
 	 * Get admin notice unique ID.
 	 *
-	 * @since     1.0.0
-	 * @param     string    $suffix    Notice unique ID suffix.
-	 * @return    string              	Admin notices unique ID.
+	 * @since  1.0.3 Added site ID.
+	 * @since  1.0.0
+	 *
+	 * @param  int    $site_id Site ID.
+	 * @param  int    $user_id User ID.
+	 * @param  string $suffix  Notice unique ID suffix.
+	 * @return string          Admin notices unique ID.
 	 */
-	public function get_notice_unique_id( $suffix = 'exception' ) {
+	public function get_notice_unique_id( $site_id = 0, $user_id = false, $suffix = 'exception' ) {
+
+		if ( ! $user_id ) {
+			$user_id = \wp_get_current_user()->ID;
+		}
+
 		return sprintf(
-			'replicast_notices_user_%s_%s_ID_%s_%s',
-			\wp_get_current_user()->ID,
+			'replicast_notices_site_%s_user_%s_%s_ID_%s_%s',
+			$site_id,
+			$user_id,
 			$this->object_type,
 			$this->object->ID,
 			$suffix

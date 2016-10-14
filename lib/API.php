@@ -743,16 +743,6 @@ class API {
 			$term = \wp_insert_term( $term_data['name'], $taxonomy, $values );
 		}
 
-		/**
-		 * Check if term is an array because:
-		 * - term_exists returns an array if the pairing exists.
-		 *   (format: array('term_id'=>term id, 'term_taxonomy_id'=>taxonomy id))
-		 * - wp_insert_term returns the Term ID and Term Taxonomy ID.
-		 *   (Example: array('term_id'=>12,'term_taxonomy_id'=>34))
-		 *
-		 * @see    \term_exists()
-		 * @see    \wp_insert_term()
-		 */
 		if ( ! is_array( $term ) ) {
 			return array();
 		}

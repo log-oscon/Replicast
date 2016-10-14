@@ -147,7 +147,6 @@ class Admin {
 			$url    = \parse_url( \get_term_meta( $term->term_id, 'api_url', true ) );
 			$client = new \GuzzleHttp\Client( array(
 				'base_uri' => sprintf( '%s://%s', $url['scheme'], $url['host'] ),
-				'debug'    => \apply_filters( 'replicast_client_debug', defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG )
 			) );
 
 			$site = new Client( $term, $client );
@@ -283,7 +282,7 @@ class Admin {
 
 		$status_code = intval( $status_code );
 
-		// FIXME
+		// FIXME:
 		// Maybe this should be more simpler. For instance, all 2xx status codes should be treated as success.
 		// What happens with a 3xx status code?
 
