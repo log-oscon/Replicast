@@ -10,7 +10,7 @@
  * @subpackage Replicast/lib
  */
 
-namespace Replicast;
+namespace Replicast\Module;
 
 use Replicast\Admin;
 use Replicast\API;
@@ -20,7 +20,7 @@ use Replicast\API;
  *
  * @since      1.0.0
  * @package    Replicast
- * @subpackage Replicast/lib
+ * @subpackage Replicast/lib/Module
  * @author     log.OSCON, Lda. <engenharia@log.pt>
  */
 class ACF {
