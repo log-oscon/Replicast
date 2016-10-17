@@ -528,20 +528,20 @@ abstract class Handler {
 			$body['json'] = $data;
 		}
 
-		// The WP REST API doesn't expect a PUT
+		// The WP REST API doesn't expect a PUT.
 		if ( $method === static::EDITABLE ) {
 			$method = 'POST';
 		}
 
-		// Generate request signature
+		// Generate request signature.
 		$signature = $this->generate_signature( $method, $config, $timestamp, $args );
 
-		// Auth headers
+		// Set auth headers.
 		$headers['X-API-KEY']       = $config['apy_key'];
 		$headers['X-API-TIMESTAMP'] = $timestamp;
 		$headers['X-API-SIGNATURE'] = $signature;
 
-		// Custom header
+		// Set custom header.
 		$headers[ Plugin::REPLICAST_REQUEST_HEADER ] = true;
 
 		if ( REPLICAST_DEBUG ) {
