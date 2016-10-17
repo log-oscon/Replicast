@@ -35,6 +35,15 @@ class Admin {
 	protected $plugin;
 
 	/**
+	 * The logger's instance.
+	 *
+	 * @since  1.2.0
+	 * @access protected
+	 * @var    \Monolog\Logger
+	 */
+	protected $logger;
+
+	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since 1.0.0
@@ -42,6 +51,7 @@ class Admin {
 	 */
 	public function __construct( $plugin ) {
 		$this->plugin = $plugin;
+		$this->logger = new Logger( Handler::class );
 	}
 
 	/**

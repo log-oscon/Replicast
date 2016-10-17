@@ -680,7 +680,7 @@ class PostAdmin extends Admin {
 					}
 				}
 			} catch ( \Exception $ex ) {
-				$this->plugin->log()->error( $ex->getMessage() );
+				$this->logger->log()->error( $ex->getMessage() );
 
 				$this->register_notice(
 					$handler->get_notice_unique_id( $site_id, $user_id ),
@@ -776,7 +776,7 @@ class PostAdmin extends Admin {
 				$handler->update_object( $site_id, $remote_data );
 
 			} catch ( \Exception $ex ) {
-				$this->plugin->log()->error( $ex->getMessage() );
+				$this->logger->log()->error( $ex->getMessage() );
 
 				$this->register_notice(
 					$handler->get_notice_unique_id( $site_id, $user_id ),
@@ -869,7 +869,7 @@ class PostAdmin extends Admin {
 				$handler->update_object( $site_id );
 
 			} catch ( \Exception $ex ) {
-				$this->plugin->log()->error( $ex->getMessage() );
+				$this->logger->log()->error( $ex->getMessage() );
 
 				$this->register_notice(
 					$handler->get_notice_unique_id( $site_id, $user_id ),
