@@ -626,6 +626,9 @@ abstract class Handler {
 			$request->set_param( $k, $v );
 		}
 
+		// Set custom header.
+		$request->set_header( Plugin::REPLICAST_REQUEST_HEADER, true );
+
 		// Make request.
 		$result = $wp_rest_server->dispatch( $request );
 
