@@ -642,6 +642,8 @@ abstract class Handler {
 		 * @since 1.0.0
 		 * @param string Name of the selected hashing algorithm.
 		 */
-		return hash( \apply_filters( 'replicast_key_auth_signature_algo', 'sha256' ), \wp_json_encode( $args ) . $config['api_secret'] );
+		$algo = \apply_filters( 'replicast_key_auth_signature_algo', 'sha256' );
+
+		return hash( $algo, \wp_json_encode( $args ) . $config['api_secret'] );
 	}
 }
