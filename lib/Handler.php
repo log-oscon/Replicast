@@ -612,9 +612,6 @@ abstract class Handler {
 		$headers['X-API-TIMESTAMP'] = $timestamp;
 		$headers['X-API-SIGNATURE'] = $signature;
 
-		// Custom header
-		$headers['X-WP-Replicast'] = true;
-
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 			error_log( var_export( array(
 				'api_key'        => $config['apy_key'],
@@ -641,7 +638,7 @@ abstract class Handler {
 	/**
 	 * Get object ID.
 	 *
-	 * @since  1.0.3
+	 * @since  1.1.0
 	 * @return int Object ID.
 	 */
 	public function get_object_id() {
@@ -651,7 +648,7 @@ abstract class Handler {
 	/**
 	 * Get admin notice unique ID.
 	 *
-	 * @since  1.0.3 Added site ID.
+	 * @since  1.1.0 Added site ID.
 	 * @since  1.0.0
 	 *
 	 * @param  int    $site_id Site ID.
