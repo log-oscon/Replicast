@@ -523,9 +523,6 @@ abstract class Handler {
 		$headers['X-API-TIMESTAMP'] = $timestamp;
 		$headers['X-API-SIGNATURE'] = $signature;
 
-		// Custom header
-		$headers['X-WP-Replicast'] = true;
-
 		return $site->get_client()->request(
 			$method,
 			$config['api_url'],
