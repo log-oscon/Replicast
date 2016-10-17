@@ -690,8 +690,7 @@ class PostAdmin extends Admin {
 			} catch ( \Exception $ex ) {
 
 				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
-					error_log( var_export( $ex->getMessage(), true ) );
+					$this->plugin->log()->debug( $ex->getMessage() );
 				}
 
 				$this->register_notice(
@@ -790,8 +789,7 @@ class PostAdmin extends Admin {
 			} catch ( \Exception $ex ) {
 
 				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
-					error_log( var_export( $ex->getMessage(), true ) );
+					$this->plugin->log()->debug( $ex->getMessage() );
 				}
 
 				$this->register_notice(
@@ -887,8 +885,7 @@ class PostAdmin extends Admin {
 			} catch ( \Exception $ex ) {
 
 				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
-					error_log( var_export( $ex->getMessage(), true ) );
+					$this->plugin->log()->debug( $ex->getMessage() );
 				}
 
 				$this->register_notice(

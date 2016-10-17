@@ -14,6 +14,9 @@
 
 namespace Replicast;
 
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
 /**
  * The core plugin class.
  *
@@ -75,6 +78,15 @@ class Plugin {
 	protected $version;
 
 	/**
+	 * Logger instance.
+	 *
+	 * @since  1.2.0
+	 * @access protected
+	 * @var    \Monolog\Logger
+	 */
+	protected $log;
+
+	/**
 	 * Define the core functionality of the plugin.
 	 *
 	 * @since 1.0.0
@@ -94,6 +106,7 @@ class Plugin {
 	 */
 	public function run() {
 		$this->set_locale();
+		$this->set_log();
 
 		$this->define_api_hooks();
 		$this->define_admin_hooks();
@@ -126,6 +139,26 @@ class Plugin {
 	}
 
 	/**
+	 * Retrieve the logger instance.
+	 *
+	 * @since  1.2.0
+	 * @return \Monolog\Logger The logger instance.
+	 */
+	public function log() {
+		return $this->log;
+	}
+	/**
+	 * Retrieve the log path.
+	 *
+	 * @since  1.2.0
+	 * @return string The log path.
+	 */
+	public function get_log_dir() {
+		$upload_dir = \wp_upload_dir();
+		return sprintf( '%s/%s-logs/', $upload_dir['basedir'], $this->get_name() );
+	}
+
+	/**
 	 * Define the locale for this plugin for internationalization.
 	 *
 	 * Uses the I18n class in order to set the domain and to register the hook
@@ -138,6 +171,26 @@ class Plugin {
 		$i18n = new I18n();
 		$i18n->set_domain( $this->get_name() );
 		$i18n->load_plugin_textdomain();
+	}
+
+	/**
+	 * Define the logger for this plugin.
+	 *
+	 * @since  1.2.0
+	 * @access private
+	 */
+	private function set_log() {
+		$this->log = new Logger( $this->get_name() );
+		$this->log->pushHandler( new StreamHandler(
+			sprintf(
+				'%s%s.log',
+				$this->get_log_dir(),
+				$this->get_name()
+			),
+			Logger::DEBUG
+		) );
+
+		$this->log->warning('Foo');
 	}
 
 	/**

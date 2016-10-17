@@ -42,7 +42,8 @@
     }
   },
   "require": {
-    "guzzlehttp/guzzle": "6.1.1"
+    "guzzlehttp/guzzle": "6.1.1",
+    "monolog/monolog": "^1.21"
   },
   "require-dev": {
     "phpunit/phpunit": "*@stable",

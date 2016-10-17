@@ -29,10 +29,10 @@ class Admin {
 	 * The plugin's instance.
 	 *
 	 * @since  1.0.0
-	 * @access private
+	 * @access protected
 	 * @var    \Replicast\Plugin
 	 */
-	private $plugin;
+	protected $plugin;
 
 	/**
 	 * Initialize the class and set its properties.
