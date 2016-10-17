@@ -680,10 +680,7 @@ class PostAdmin extends Admin {
 					}
 				}
 			} catch ( \Exception $ex ) {
-
-				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					$this->plugin->log()->debug( $ex->getMessage() );
-				}
+				$this->plugin->log()->error( $ex->getMessage() );
 
 				$this->register_notice(
 					$handler->get_notice_unique_id( $site_id, $user_id ),
@@ -779,10 +776,7 @@ class PostAdmin extends Admin {
 				$handler->update_object( $site_id, $remote_data );
 
 			} catch ( \Exception $ex ) {
-
-				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					$this->plugin->log()->debug( $ex->getMessage() );
-				}
+				$this->plugin->log()->error( $ex->getMessage() );
 
 				$this->register_notice(
 					$handler->get_notice_unique_id( $site_id, $user_id ),
@@ -875,10 +869,7 @@ class PostAdmin extends Admin {
 				$handler->update_object( $site_id );
 
 			} catch ( \Exception $ex ) {
-
-				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					$this->plugin->log()->debug( $ex->getMessage() );
-				}
+				$this->plugin->log()->error( $ex->getMessage() );
 
 				$this->register_notice(
 					$handler->get_notice_unique_id( $site_id, $user_id ),

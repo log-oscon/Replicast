@@ -27,6 +27,16 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+// Add define( 'REPLICAST_DEBUG', true ); to enable error logging.
+if ( ! defined( 'REPLICAST_DEBUG' ) ) {
+	define( 'REPLICAST_DEBUG', false );
+}
+
+// Add define( 'REPLICAST_DEBUG_LOG', '<PATH_TO_DIR>' ); to indicate the log directory.
+if ( ! defined( 'REPLICAST_LOG_DIR' ) ) {
+	define( 'REPLICAST_LOG_DIR', WP_CONTENT_DIR . '/uploads' ); // full path, no trailing slash
+}
+
 /**
  * Begins execution of the plugin.
  *

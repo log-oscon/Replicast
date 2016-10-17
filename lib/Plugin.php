@@ -15,6 +15,7 @@
 namespace Replicast;
 
 use Monolog\Logger;
+use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 
 /**
@@ -147,16 +148,6 @@ class Plugin {
 	public function log() {
 		return $this->log;
 	}
-	/**
-	 * Retrieve the log path.
-	 *
-	 * @since  1.2.0
-	 * @return string The log path.
-	 */
-	public function get_log_dir() {
-		$upload_dir = \wp_upload_dir();
-		return sprintf( '%s/%s-logs/', $upload_dir['basedir'], $this->get_name() );
-	}
 
 	/**
 	 * Define the locale for this plugin for internationalization.
@@ -181,16 +172,24 @@ class Plugin {
 	 */
 	private function set_log() {
 		$this->log = new Logger( $this->get_name() );
-		$this->log->pushHandler( new StreamHandler(
+
+		// Define the output format
+		$date      = 'Y-m-d H:i:s';
+		$output    = "[%datetime%] %level_name%: %message% %context% %extra%\n";
+		$formatter = new LineFormatter( $output, $date );
+
+		// Create the lod handler
+		$stream = new StreamHandler(
 			sprintf(
-				'%s%s.log',
-				$this->get_log_dir(),
+				'%1$s/%2$s-logs/%2$s.log',
+				\untrailingslashit( REPLICAST_LOG_DIR ),
 				$this->get_name()
 			),
 			Logger::DEBUG
-		) );
+		);
+		$stream->setFormatter( $formatter );
 
-		$this->log->warning('Foo');
+		$this->log->pushHandler( $stream );
 	}
 
 	/**
