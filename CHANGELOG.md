@@ -1,9 +1,10 @@
 ## Changelog ##
 
-### 1.0.3 ###
+### 1.1.0 ###
 * Reflect "replication" failures in selected sites (e.g. checkbox uncheck).
-* Added Site ID to admin notices.
-* Removed client debug filter.
+* Added the site ID to admin notices.
+* Removed the client debug filter.
+* Applied the WordPress Coding Standards.
 
 ### 1.0.2 ###
 * Replaced `_wp_upload_dir_baseurl()` deprecated function. 
