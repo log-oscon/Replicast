@@ -1,5 +1,8 @@
 ## Changelog ##
 
+### 1.3.0 ###
+* Custom header `X-WP-Replicast`.
+
 ### 1.2.0 ###
 * Custom logging.
 

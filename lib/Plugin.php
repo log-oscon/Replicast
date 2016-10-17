@@ -39,6 +39,14 @@ class Plugin {
 	const TAXONOMY_SITE = 'remote_site';
 
 	/**
+	 * Request custom header.
+	 *
+	 * @since 1.3.0
+	 * @var   string
+	 */
+	const REPLICAST_REQUEST_HEADER = 'X-WP-Replicast';
+
+	/**
 	 * Identifies the meta variable that saves the information
 	 * regarding the "to where" the central object was replicated.
 	 *
