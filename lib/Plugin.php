@@ -14,10 +14,6 @@
 
 namespace Replicast;
 
-use Monolog\Logger;
-use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\StreamHandler;
-
 /**
  * The core plugin class.
  *
@@ -79,15 +75,6 @@ class Plugin {
 	protected $version;
 
 	/**
-	 * Logger instance.
-	 *
-	 * @since  1.2.0
-	 * @access protected
-	 * @var    \Monolog\Logger
-	 */
-	protected $log;
-
-	/**
 	 * Define the core functionality of the plugin.
 	 *
 	 * @since 1.0.0
@@ -107,7 +94,6 @@ class Plugin {
 	 */
 	public function run() {
 		$this->set_locale();
-		$this->set_log();
 
 		$this->define_api_hooks();
 		$this->define_admin_hooks();
@@ -140,16 +126,6 @@ class Plugin {
 	}
 
 	/**
-	 * Retrieve the logger instance.
-	 *
-	 * @since  1.2.0
-	 * @return \Monolog\Logger The logger instance.
-	 */
-	public function log() {
-		return $this->log;
-	}
-
-	/**
 	 * Define the locale for this plugin for internationalization.
 	 *
 	 * Uses the I18n class in order to set the domain and to register the hook
@@ -162,34 +138,6 @@ class Plugin {
 		$i18n = new I18n();
 		$i18n->set_domain( $this->get_name() );
 		$i18n->load_plugin_textdomain();
-	}
-
-	/**
-	 * Define the logger for this plugin.
-	 *
-	 * @since  1.2.0
-	 * @access private
-	 */
-	private function set_log() {
-		$this->log = new Logger( $this->get_name() );
-
-		// Define the output format
-		$date      = 'Y-m-d H:i:s';
-		$output    = "[%datetime%] %level_name%: %message% %context% %extra%\n";
-		$formatter = new LineFormatter( $output, $date );
-
-		// Create the lod handler
-		$stream = new StreamHandler(
-			sprintf(
-				'%1$s/%2$s-logs/%2$s.log',
-				\untrailingslashit( REPLICAST_LOG_DIR ),
-				$this->get_name()
-			),
-			Logger::DEBUG
-		);
-		$stream->setFormatter( $formatter );
-
-		$this->log->pushHandler( $stream );
 	}
 
 	/**
