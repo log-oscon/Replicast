@@ -376,10 +376,6 @@ class PostAdmin extends Admin {
 			return $query_args;
 		}
 
-		if ( ! empty( $_GET['replicast_debug'] ) && $_GET['replicast_debug'] ) {
-			return $query_args;
-		}
-
 		if ( $query_args['post_type'] !== 'attachment' ) {
 			return $query_args;
 		}
@@ -399,10 +395,6 @@ class PostAdmin extends Admin {
 	public function hide_attachments_on_list_mode( $query ) {
 
 		if ( ! \is_admin() ) {
-			return;
-		}
-
-		if ( ! empty( $_GET['replicast_debug'] ) && $_GET['replicast_debug'] ) {
 			return;
 		}
 
