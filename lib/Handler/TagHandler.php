@@ -30,6 +30,8 @@ class TagHandler extends Handler {
 	 * @param \WP_Term $term Term object.
 	 */
 	public function __construct( \WP_Term $term ) {
+		parent::__construct();
+
 		$this->rest_base   = 'tags';
 		$this->object      = $term;
 		$this->object_type = $term->taxonomy;

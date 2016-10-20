@@ -1,5 +1,8 @@
 ## Changelog ##
 
+### 1.2.0 ###
+* Custom logging.
+
 ### 1.1.0 ###
 * Reflect "replication" failures in selected sites (e.g. checkbox uncheck).
 * Added the site ID to admin notices.

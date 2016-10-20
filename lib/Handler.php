@@ -59,6 +59,15 @@ abstract class Handler {
 	const DELETABLE = 'DELETE';
 
 	/**
+	 * The logger's instance.
+	 *
+	 * @since  1.2.0
+	 * @access protected
+	 * @var    \Monolog\Logger
+	 */
+	protected $logger;
+
+	/**
 	 * Object type.
 	 *
 	 * @since  1.0.0
@@ -118,6 +127,15 @@ abstract class Handler {
 	 * @var    array
 	 */
 	protected $attributes = array();
+
+	/**
+	 * Constructor.
+	 *
+	 * @since 1.0.0
+	 */
+	public function __construct() {
+		$this->logger = new Logger( Handler::class );
+	}
 
 	/**
 	 * Create object on a site.
@@ -523,6 +541,18 @@ abstract class Handler {
 		$headers['X-API-TIMESTAMP'] = $timestamp;
 		$headers['X-API-SIGNATURE'] = $signature;
 
+		if ( REPLICAST_DEBUG ) {
+			$this->logger->log()->debug(
+				'Doing a request',
+				array(
+					'method'   => $method,
+					'endpoint' => $config['api_url'],
+					'headers'  => $headers,
+					'data'     => $data,
+				)
+			);
+		}
+
 		return $site->get_client()->request(
 			$method,
 			$config['api_url'],
@@ -642,6 +672,8 @@ abstract class Handler {
 		 * @since 1.0.0
 		 * @param string Name of the selected hashing algorithm.
 		 */
-		return hash( \apply_filters( 'replicast_key_auth_signature_algo', 'sha256' ), \wp_json_encode( $args ) . $config['api_secret'] );
+		$algo = \apply_filters( 'replicast_key_auth_signature_algo', 'sha256' );
+
+		return hash( $algo, \wp_json_encode( $args ) . $config['api_secret'] );
 	}
 }

@@ -472,7 +472,7 @@ class PostAdmin extends Admin {
 		// Retrieve the uploads sub-directory from the full size remote image.
 		$remote_dirname = \_wp_get_attachment_relative_path( $image_src );
 		if ( $remote_dirname ) {
-			$remote_dirname = trailingslashit( $remote_dirname );
+			$remote_dirname = \trailingslashit( $remote_dirname );
 		}
 
 		$upload_dir = \wp_get_upload_dir();
@@ -480,7 +480,7 @@ class PostAdmin extends Admin {
 			return $sources;
 		}
 
-		$pattern = trailingslashit( $upload_dir['baseurl'] ) . $remote_dirname;
+		$pattern = \trailingslashit( $upload_dir['baseurl'] ) . $remote_dirname;
 
 		foreach ( $sources as $key => $source ) {
 
@@ -682,10 +682,7 @@ class PostAdmin extends Admin {
 					$handler->update_object( $site_id );
 				}
 			} catch ( \Exception $ex ) {
-
-				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					error_log( var_export( $ex->getMessage(), true ) );
-				}
+				$this->logger->log()->error( $ex->getMessage() );
 
 				$this->register_notice(
 					$handler->get_notice_unique_id( $site_id, $user_id ),
@@ -781,10 +778,7 @@ class PostAdmin extends Admin {
 				$handler->update_object( $site_id, $remote_data );
 
 			} catch ( \Exception $ex ) {
-
-				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					error_log( var_export( $ex->getMessage(), true ) );
-				}
+				$this->logger->log()->error( $ex->getMessage() );
 
 				$this->register_notice(
 					$handler->get_notice_unique_id( $site_id, $user_id ),
@@ -877,10 +871,7 @@ class PostAdmin extends Admin {
 				$handler->update_object( $site_id );
 
 			} catch ( \Exception $ex ) {
-
-				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					error_log( var_export( $ex->getMessage(), true ) );
-				}
+				$this->logger->log()->error( $ex->getMessage() );
 
 				$this->register_notice(
 					$handler->get_notice_unique_id( $site_id, $user_id ),

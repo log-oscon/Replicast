@@ -109,7 +109,7 @@ class SiteAdmin {
 	 * @return string Taxonomy filter key.
 	 */
 	public function get_filter_key() {
-		return 'replicast_' . $this->name . '_filter';
+		return 'replicast_' . $this->get_name() . '_filter';
 	}
 
 	/**
@@ -221,7 +221,7 @@ class SiteAdmin {
 		);
 
 		$this->taxonomy = \register_taxonomy(
-			$this->name,
+			$this->get_name(),
 			static::get_post_types(),
 			array(
 				'label'              => \__( 'Sites', 'replicast' ),
