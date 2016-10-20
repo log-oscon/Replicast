@@ -63,6 +63,7 @@ class API {
 	/**
 	 * Retrieve the field value.
 	 *
+	 * @since  1.3.0 Custom header for replicast external requests.
 	 * @since  1.0.0
 	 * @param  array            $object     Details of current content object.
 	 * @param  string           $field_name Name of field.

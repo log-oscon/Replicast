@@ -465,6 +465,7 @@ abstract class Handler {
 	/**
 	 * Do a REST request.
 	 *
+	 * @since  1.3.0 Custom header for replicast requests.
 	 * @since  1.0.0
 	 * @access protected
 	 * @param  string            $method Request method.
@@ -574,6 +575,7 @@ abstract class Handler {
 	 *
 	 * @global \WP_REST_Server $wp_rest_server ResponseHandler instance (usually \WP_REST_Server).
 	 *
+	 * @since  1.3.0 Custom header for replicast internal requests.
 	 * @since  1.0.0
 	 * @access private
 	 * @return \WP_REST_Response Response object.
