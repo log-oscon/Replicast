@@ -465,6 +465,7 @@ abstract class Handler {
 	/**
 	 * Do a REST request.
 	 *
+	 * @since  1.3.0 Custom header for replicast requests.
 	 * @since  1.0.0
 	 * @access protected
 	 * @param  string            $method Request method.
@@ -528,18 +529,21 @@ abstract class Handler {
 			$body['json'] = $data;
 		}
 
-		// The WP REST API doesn't expect a PUT
+		// The WP REST API doesn't expect a PUT.
 		if ( $method === static::EDITABLE ) {
 			$method = 'POST';
 		}
 
-		// Generate request signature
+		// Generate request signature.
 		$signature = $this->generate_signature( $method, $config, $timestamp, $args );
 
-		// Auth headers
+		// Set auth headers.
 		$headers['X-API-KEY']       = $config['apy_key'];
 		$headers['X-API-TIMESTAMP'] = $timestamp;
 		$headers['X-API-SIGNATURE'] = $signature;
+
+		// Set custom header.
+		$headers[ Plugin::REPLICAST_REQUEST_HEADER ] = true;
 
 		if ( REPLICAST_DEBUG ) {
 			$this->logger->log()->debug(
@@ -571,6 +575,7 @@ abstract class Handler {
 	 *
 	 * @global \WP_REST_Server $wp_rest_server ResponseHandler instance (usually \WP_REST_Server).
 	 *
+	 * @since  1.3.0 Custom header for replicast internal requests.
 	 * @since  1.0.0
 	 * @access private
 	 * @return \WP_REST_Response Response object.
@@ -622,6 +627,9 @@ abstract class Handler {
 		foreach ( $attributes as $k => $v ) {
 			$request->set_param( $k, $v );
 		}
+
+		// Set custom header.
+		$request->set_header( Plugin::REPLICAST_REQUEST_HEADER, true );
 
 		// Make request.
 		$result = $wp_rest_server->dispatch( $request );

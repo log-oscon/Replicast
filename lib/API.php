@@ -47,11 +47,6 @@ class API {
 	 * @since 1.0.0
 	 */
 	public function register() {
-
-		if ( ! function_exists( 'register_rest_field' ) ) {
-			return;
-		}
-
 		foreach ( Admin\SiteAdmin::get_post_types() as $post_type ) {
 			\register_rest_field(
 				$post_type,
@@ -68,6 +63,7 @@ class API {
 	/**
 	 * Retrieve the field value.
 	 *
+	 * @since  1.3.0 Custom header for replicast external requests.
 	 * @since  1.0.0
 	 * @param  array            $object     Details of current content object.
 	 * @param  string           $field_name Name of field.
@@ -77,6 +73,11 @@ class API {
 	public static function get_rest_fields( $object, $field_name, $request ) {
 
 		if ( $field_name !== 'replicast' ) {
+			return array();
+		}
+
+		$header = $request->get_header( Plugin::REPLICAST_REQUEST_HEADER );
+		if ( ! $header ) {
 			return array();
 		}
 
