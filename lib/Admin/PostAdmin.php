@@ -1,5 +1,4 @@
 <?php
-
 /**
  * The dashboard-specific functionality of the `post` taxonomy
  *
@@ -29,18 +28,18 @@ class PostAdmin extends Admin {
 	/**
 	 * Register hooks.
 	 *
-	 * @since    1.0.1    Changed priority to 30 to come after Polylang
-	 * @since    1.0.0
+	 * @since 1.0.1 Changed priority to 30 to come after Polylang
+	 * @since 1.0.0
 	 */
 	public function register() {
 
-		// Post handling
+		// Post handling.
 		\add_action( 'save_post',          array( $this, 'on_save_post' ), 30, 3 );
 		\add_action( 'attachment_updated', array( $this, 'on_save_post' ), 30, 3 );
 		\add_action( 'trashed_post',       array( $this, 'on_trash_post' ) );
 		\add_action( 'before_delete_post', array( $this, 'on_delete_post' ) );
 
-		// Admin UI - Posts
+		// Admin UI - Posts.
 		foreach ( SiteAdmin::get_post_types() as $post_type ) {
 
 			if ( \is_post_type_hierarchical( $post_type ) ) {
@@ -60,33 +59,32 @@ class PostAdmin extends Admin {
 		\add_filter( 'wp_get_attachment_url',        array( $this, 'get_attachment_url' ), 10, 2 );
 		\add_filter( 'wp_prepare_attachment_for_js', array( $this, 'prepare_attachment_for_js' ), 10, 3 );
 
-		// Admin UI - Taxonomies
+		// Admin UI - Taxonomies.
 		foreach ( \get_taxonomies() as $taxonomy ) {
 			\add_filter( "{$taxonomy}_row_actions",          array( $this, 'hide_row_actions' ), 10, 2 );
 			\add_filter( "manage_edit-{$taxonomy}_columns",  array( $this, 'manage_taxonomies_columns' ) );
 			\add_filter( "manage_{$taxonomy}_custom_column", array( $this, 'manage_taxonomies_custom_column' ), 10, 3 );
 		}
 
-		// Admin UI - Featured Image
+		// Admin UI - Featured Image.
 		\add_filter( 'admin_post_thumbnail_html', array( $this, 'update_post_thumbnail' ), 10, 2 );
 
-		// Admin UI - Media Library
+		// Admin UI - Media Library.
 		\add_filter( 'media_row_actions', array( $this, 'hide_row_actions' ), 10, 2 );
 
 		if ( ! \is_super_admin() ) {
 			\add_filter( 'ajax_query_attachments_args', array( $this, 'hide_attachments_on_grid_mode' ) );
 			\add_action( 'pre_get_posts',               array( $this, 'hide_attachments_on_list_mode' ) );
 		}
-
 	}
 
 	/**
 	 * Filter posts columns.
 	 *
-	 * @since     1.0.0
-	 * @param     array     $columns      An array of column names.
-	 * @param     string    $post_type    The post type slug.
-	 * @return    array                   Possibly-modified array of column names.
+	 * @since  1.0.0
+	 * @param  array  $columns   An array of column names.
+	 * @param  string $post_type The post type slug.
+	 * @return array             Possibly-modified array of column names.
 	 */
 	public function manage_posts_columns( $columns, $post_type = 'page' ) {
 
@@ -97,10 +95,10 @@ class PostAdmin extends Admin {
 		/**
 		 * Filter the posts columns.
 		 *
-		 * @since     1.0.0
-		 * @param     array     An array of column names.
-		 * @param     string    The object type slug.
-		 * @return    array     Possibly-modified array of column names.
+		 * @since  1.0.0
+		 * @param  array  An array of column names.
+		 * @param  string The object type slug.
+		 * @return array  Possibly-modified array of column names.
 		 */
 		return \apply_filters(
 			'replicast_posts_columns',
@@ -112,19 +110,18 @@ class PostAdmin extends Admin {
 	/**
 	 * Filter taxonomies columns.
 	 *
-	 * @since     1.0.0
-	 * @param     array     $columns      An array of column names.
-	 * @param     string    $post_type    The post type slug.
-	 * @return    array                   Possibly-modified array of column names.
+	 * @since  1.0.0
+	 * @param  array $columns An array of column names.
+	 * @return array          Possibly-modified array of column names.
 	 */
 	public function manage_taxonomies_columns( $columns ) {
 
 		/**
 		 * Filter the taxonomies columns.
 		 *
-		 * @since     1.0.0
-		 * @param     array    An array of column names.
-		 * @return    array    Possibly-modified array of column names.
+		 * @since  1.0.0
+		 * @param  array An array of column names.
+		 * @return array Possibly-modified array of column names.
 		 */
 		return \apply_filters(
 			'replicast_taxonomies_columns',
@@ -133,46 +130,11 @@ class PostAdmin extends Admin {
 	}
 
 	/**
-	 * Manage columns.
-	 *
-	 * @since     1.0.0
-	 * @access    private
-	 * @param     array     $columns    An array of column names.
-	 * @return    array                 Possibly-modified array of column names.
-	 */
-	private function manage_columns( $columns ) {
-
-		$sorted_columns = array();
-
-		/**
-		 * Filter the column header title.
-		 *
-		 * @since     1.0.0
-		 * @param     string    Column header title.
-		 * @return    string    Possibly-modified column header title.
-		 */
-		$replicast_title = \apply_filters( 'replicast_column_title', \__( 'Replicast', 'replicast' ) );
-
-		$sorted_columns = array(
-			'replicast' => sprintf(
-				'<span class="screen-reader-text">%s</span>',
-				\esc_attr( $replicast_title )
-			)
-		);
-
-		foreach ( $columns as $column_key => $column_title ) {
-			$sorted_columns[ $column_key ] = $column_title;
-		}
-
-		return $sorted_columns;
-	}
-
-	/**
 	 * Renders the custom column contents for a supported post type.
 	 *
-	 * @since    1.0.0
-	 * @param    string    $column_name    The name of the column to display.
-	 * @param    int       $object_id      The current object ID.
+	 * @since 1.0.0
+	 * @param string $column_name The name of the column to display.
+	 * @param int    $object_id   The current object ID.
 	 */
 	public function manage_posts_custom_column( $column_name, $object_id ) {
 
@@ -186,11 +148,11 @@ class PostAdmin extends Admin {
 	/**
 	 * Renders the custom column contents for a taxonomy.
 	 *
-	 * @since     1.0.0
-	 * @param     string    $content        The column contents.
-	 * @param     string    $column_name    The name of the column to display.
-	 * @param     int       $object_id      The current object ID.
-	 * @return    string                    Possibly-modified column contents.
+	 * @since  1.0.0
+	 * @param  string $content     The column contents.
+	 * @param  string $column_name The name of the column to display.
+	 * @param  int    $object_id   The current object ID.
+	 * @return string              Possibly-modified column contents.
 	 */
 	public function manage_taxonomies_custom_column( $content, $column_name, $object_id ) {
 
@@ -202,57 +164,15 @@ class PostAdmin extends Admin {
 	}
 
 	/**
-	 * Custom column contents.
-	 *
-	 * @since     1.0.0
-	 * @access    private
-	 * @param     int       $object_id    The current object ID.
-	 * @param     string    $meta_type    Type of object metadata.
-	 * @return    string                  Column contents.
-	 */
-	private function manage_custom_column( $object_id, $meta_type ) {
-
-		$source_info = API::get_source_info( $object_id, $meta_type );
-
-		if ( empty( $source_info ) ) {
-			return '';
-		}
-
-		$icon = sprintf(
-			'<span class="dashicons dashicons-image-rotate" aria-label="%s"></span>',
-			\esc_attr__( 'Replicast', 'replicast' )
-		);
-
-		$html = sprintf(
-			'<a href="%s" title="%s">%s</a>',
-			\esc_url( $source_info['edit_link'] ),
-			\esc_attr__( 'Edit', 'replicast' ),
-			$icon
-		);
-
-		/**
-		 * Filter the custom column contents.
-		 *
-		 * @since     1.0.0
-		 * @param     string      Column contents.
-		 * @param     mixed       Single metadata value, or array of values.
-		 *                        If the $meta_type or $object_id parameters are invalid, false is returned.
-		 * @param     \WP_Post    The current object ID.
-		 * @return    string      Possibly-modified column contents.
-		 */
-		return \apply_filters( 'manage_column_html', $html, $source_info, $object_id );
-	}
-
-	/**
 	 * Manage posts editing.
 	 *
-	 * @since     1.0.0
-	 * @param     array       $allcaps    All the capabilities of the user.
-	 * @param     array       $caps       Required capability.
-	 * @param     array       $args       [0] Requested capability
-	 *                                    [1] User ID
-	 *                                    [2] Associated object ID
-	 * @return    array                   Possibly-modified array of all the user's capabilities.
+	 * @since  1.0.0
+	 * @param  array $allcaps All the capabilities of the user.
+	 * @param  array $caps    Required capability.
+	 * @param  array $args    [0] Requested capability.
+	 *                        [1] User ID.
+	 *                        [2] Associated object ID.
+	 * @return array          Possibly-modified array of all the user's capabilities.
 	 */
 	public function manage_posts_edit( $allcaps, $caps, $args ) {
 
@@ -274,7 +194,6 @@ class PostAdmin extends Admin {
 			return $allcaps;
 		}
 
-		// @see 'manage_taxonomies_edit'
 		if ( ! empty( $screen->taxonomy ) ) {
 			return $allcaps;
 		}
@@ -283,20 +202,20 @@ class PostAdmin extends Admin {
 			return $allcaps;
 		}
 
-		// Post ID
+		// Post ID.
 		if ( empty( $args[2] ) ) {
 			return $allcaps;
 		}
 
-		// Check if the current object is an original or a duplicate
+		// Check if the current object is an original or a duplicate.
 		if ( empty( API::get_source_info( $args[2] ) ) ) {
 			return $allcaps;
 		}
 
-		// Retrieves an object which describes any registered post type
+		// Retrieves an object which describes any registered post type.
 		$obj = \get_post_type_object( $screen->post_type );
 
-		// Builds an object with all post type capabilities out of a post type object
+		// Builds an object with all post type capabilities out of a post type object.
 		$post_type_caps = \get_post_type_capabilities( (object) array(
 			'capability_type' => $obj->capability_type,
 			'capabilities'    => array(),
@@ -307,7 +226,7 @@ class PostAdmin extends Admin {
 			return $allcaps;
 		}
 
-		// Disable certain capabilities
+		// Disable certain capabilities.
 		foreach ( $post_type_caps as $cap_key => $cap_value ) {
 
 			if ( ! in_array( $cap_key, array( 'edit_post', 'edit_posts', 'edit_published_posts', 'edit_others_posts' ) ) ) {
@@ -323,11 +242,11 @@ class PostAdmin extends Admin {
 	/**
 	 * Filter the post edit link.
 	 *
-	 * @since     1.0.0
-	 * @param     string    $link       The edit link.
-	 * @param     int       $post_id    Post ID.
-	 * @param     string    $context    The link context.
-	 * @return                          Possibly-modified post edit link.
+	 * @since  1.0.0
+	 * @param  string $link    The edit link.
+	 * @param  int    $post_id Post ID.
+	 * @param  string $context The link context.
+	 * @return string          Possibly-modified post edit link.
 	 */
 	public function get_edit_post_link( $link, $post_id, $context ) {
 
@@ -343,10 +262,10 @@ class PostAdmin extends Admin {
 	/**
 	 * Filter the list of row action links.
 	 *
-	 * @since     1.0.0
-	 * @param     array       $defaults    An array of row actions.
-	 * @param     \WP_Post    $object      The current object.
-	 * @return    array                    Possibly-modified array of row actions.
+	 * @since  1.0.0
+	 * @param  array    $defaults An array of row actions.
+	 * @param  \WP_Post $object   The current object.
+	 * @return array              Possibly-modified array of row actions.
 	 */
 	public function hide_row_actions( $defaults, $object ) {
 
@@ -363,24 +282,24 @@ class PostAdmin extends Admin {
 		/**
 		 * Extend the list of supported row action links by meta type.
 		 *
-		 * @since     1.0.0
-		 * @param     array    An array of row actions.
-		 * @param     int      The object ID.
-		 * @return    array    Possibly-modified array of row actions.
+		 * @since  1.0.0
+		 * @param  array An array of row actions.
+		 * @param  int   The object ID.
+		 * @return array Possibly-modified array of row actions.
 		 */
 		$actions = \apply_filters( "replicast_hide_{$meta_type}_row_actions", $actions, $defaults, $object_id );
 
 		/**
 		 * Extend the list of supported row action links.
 		 *
-		 * @since     1.0.0
-		 * @param     array    An array of row actions.
-		 * @param     int      The object ID.
-		 * @return    array    Possibly-modified array of row actions.
+		 * @since  1.0.0
+		 * @param  array An array of row actions.
+		 * @param  int   The object ID.
+		 * @return array Possibly-modified array of row actions.
 		 */
 		$actions = \apply_filters( 'replicast_hide_row_actions', $actions, $defaults, $object_id );
 
-		// 'Edit link' points to the object original location
+		// 'Edit link' points to the object original location.
 		$actions['edit'] = sprintf(
 			'<a href="%s" title="%s">%s</a>',
 			\esc_url( $source_info['edit_link'] ),
@@ -394,10 +313,10 @@ class PostAdmin extends Admin {
 	/**
 	 * Update post thumbnail with the remote thumbnail image.
 	 *
-	 * @since     1.0.0
-	 * @param     string    $content    Post thumbnail markup.
-	 * @param     int       $post_id    Post ID.
-	 * @return    string                Possibly-modified post thumbnail markup.
+	 * @since  1.0.0
+	 * @param  string $content Post thumbnail markup.
+	 * @param  int    $post_id Post ID.
+	 * @return string          Possibly-modified post thumbnail markup.
 	 */
 	public function update_post_thumbnail( $content, $post_id ) {
 
@@ -412,7 +331,7 @@ class PostAdmin extends Admin {
 			return $content;
 		}
 
-		// Get thumbnail metadata
+		// Get thumbnail metadata.
 		$metadata = \get_post_meta( $object_id, '_wp_attachment_metadata', true );
 
 		if ( empty( $metadata ) ) {
@@ -447,17 +366,13 @@ class PostAdmin extends Admin {
 	/**
 	 * Hide remote attachments on media library grid mode.
 	 *
-	 * @since     1.0.0
-	 * @param     array    $query_args    Query args.
-	 * @return    array                   Possibly-modified query args.
+	 * @since  1.0.0
+	 * @param  array $query_args Query args.
+	 * @return array             Possibly-modified query args.
 	 */
 	public function hide_attachments_on_grid_mode( $query_args ) {
 
 		if ( ! \is_admin() ) {
-			return $query_args;
-		}
-
-		if ( ! empty( $_GET['replicast_debug'] ) && $_GET['replicast_debug'] ) {
 			return $query_args;
 		}
 
@@ -474,16 +389,12 @@ class PostAdmin extends Admin {
 	/**
 	 * Hide remote attachments on media library list mode.
 	 *
-	 * @since    1.0.0
-	 * @param    \WP_Query    $query    Query object.
+	 * @since 1.0.0
+	 * @param \WP_Query $query Query object.
 	 */
 	public function hide_attachments_on_list_mode( $query ) {
 
 		if ( ! \is_admin() ) {
-			return;
-		}
-
-		if ( ! empty( $_GET['replicast_debug'] ) && $_GET['replicast_debug'] ) {
 			return;
 		}
 
@@ -492,22 +403,6 @@ class PostAdmin extends Admin {
 		}
 
 		$query->set( 'meta_query', $this->hide_attachments() );
-
-	}
-
-	/**
-	 * Meta query for hiding remote attachments.
-	 *
-	 * @since     1.0.0
-	 * @access    private
-	 */
-	private function hide_attachments() {
-		return array(
-			array(
-				'key'     => Plugin::REPLICAST_SOURCE_INFO,
-				'compare' => 'NOT EXISTS',
-			)
-		);
 	}
 
 	/**
@@ -515,12 +410,11 @@ class PostAdmin extends Admin {
 	 *
 	 * @see  image_downsize
 	 *
-	 * @since     1.0.0
-	 * @param     array|false     $image            Either array with src, width & height, icon src, or false.
-	 * @param     int             $attachment_id    Image attachment ID.
-	 * @param     string|array    $size             Size of image. Image size or array of width and height values
-	 *                                              (in that order).
-	 * @return    array                             Array with src, width & height, icon src.
+	 * @since  1.0.0
+	 * @param  array|false  $image         Either array with src, width & height, icon src, or false.
+	 * @param  int          $attachment_id Image attachment ID.
+	 * @param  string|array $size          Size of image. Image size or array of width and height values.
+	 * @return    array                    Array with src, width & height, icon src.
 	 */
 	public function get_attachment_image_src( $image, $attachment_id, $size ) {
 
@@ -528,7 +422,7 @@ class PostAdmin extends Admin {
 			return $image;
 		}
 
-        // Get attachment metadata
+		// Get attachment metadata.
 		$metadata = \get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
 
 		$url             = $metadata['file'];
@@ -542,7 +436,7 @@ class PostAdmin extends Admin {
 			$width           = $intermediate['width'];
 			$height          = $intermediate['height'];
 			$is_intermediate = true;
-		} elseif( ! empty( $metadata['sizes'] ) && ! empty( $metadata['sizes'][ $size ] ) ) {
+		} else if ( ! empty( $metadata['sizes'] ) && ! empty( $metadata['sizes'][ $size ] ) ) {
 			$url    = $metadata['sizes'][ $size ]['file'];
 			$width  = $metadata['sizes'][ $size ]['width'];
 			$height = $metadata['sizes'][ $size ]['height'];
@@ -554,13 +448,13 @@ class PostAdmin extends Admin {
 	/**
 	 * Filter an image's 'srcset' sources.
 	 *
-	 * @since     1.0.0
-	 * @param     array     $sources          Source data to include in the 'srcset'.
-	 * @param     array     $size_array       Array of width and height values in pixels (in that order).
-	 * @param     string    $image_src        The 'src' of the image.
-	 * @param     array     $image_meta       The image meta data as returned by 'wp_get_attachment_metadata()'.
-	 * @param     int       $attachment_id    Image attachment ID or 0.
-	 * @return                                Possibly-modified source data to include in the 'srcset'.
+	 * @since  1.0.0
+	 * @param  array  $sources       Source data to include in the 'srcset'.
+	 * @param  array  $size_array    Array of width and height values in pixels (in that order).
+	 * @param  string $image_src     The 'src' of the image.
+	 * @param  array  $image_meta    The image meta data as returned by 'wp_get_attachment_metadata()'.
+	 * @param  int    $attachment_id Image attachment ID or 0.
+	 * @return array                 Possibly-modified source data to include in the 'srcset'.
 	 */
 	public function calculate_image_srcset( $sources, $size_array, $image_src, $image_meta, $attachment_id ) {
 
@@ -572,10 +466,10 @@ class PostAdmin extends Admin {
 		 * Remove the local baseurl that was previously added by 'wp_calculate_image_srcset()'
 		 * on all the image sources.
 		 *
-		 * @see  \wp_calculate_image_srcset()
+		 * @see \wp_calculate_image_srcset()
 		 */
 
-		// Retrieve the uploads sub-directory from the full size remote image
+		// Retrieve the uploads sub-directory from the full size remote image.
 		$remote_dirname = \_wp_get_attachment_relative_path( $image_src );
 		if ( $remote_dirname ) {
 			$remote_dirname = trailingslashit( $remote_dirname );
@@ -597,7 +491,7 @@ class PostAdmin extends Admin {
 				continue;
 			}
 
-			// Full width image
+			// Full width image.
 			$sources[ $key ]['url'] = $image_src;
 		}
 
@@ -607,10 +501,10 @@ class PostAdmin extends Admin {
 	/**
 	 * Filter the attachment URL.
 	 *
-	 * @since     1.0.0
-	 * @param     string    $url              URL for the given attachment.
-	 * @param     int       $attachment_id    Attachment ID.
-	 * @return                                Possibly-modified URL for the given attachment
+	 * @since  1.0.0
+	 * @param  string $url           URL for the given attachment.
+	 * @param  int    $attachment_id Attachment ID.
+	 * @return string                Possibly-modified URL for the given attachment
 	 */
 	public function get_attachment_url( $url, $attachment_id ) {
 
@@ -618,7 +512,7 @@ class PostAdmin extends Admin {
 			return $url;
 		}
 
-		// Get attachment metadata
+		// Get attachment metadata.
 		$metadata = \get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
 
 		return $metadata['file'];
@@ -627,11 +521,11 @@ class PostAdmin extends Admin {
 	/**
 	 * Filter the attachment data prepared for JavaScript.
 	 *
-	 * @since     1.0.0
-	 * @param     array         $response      Array of prepared attachment data.
-	 * @param     int|object    $attachment    Attachment ID or object.
-	 * @param     array         $meta          Array of attachment meta data.
-	 * @return    array                        Possibly-modified array of prepared attachment data.
+	 * @since  1.0.0
+	 * @param  array      $response   Array of prepared attachment data.
+	 * @param  int|object $attachment Attachment ID or object.
+	 * @param  array      $meta       Array of attachment meta data.
+	 * @return array                  Possibly-modified array of prepared attachment data.
 	 */
 	public function prepare_attachment_for_js( $response, $attachment, $meta ) {
 
@@ -645,11 +539,11 @@ class PostAdmin extends Admin {
 			return $response;
 		}
 
-		// Update links
+		// Update links.
 		$response['link']     = $source_info['permalink'];
 		$response['editLink'] = $source_info['edit_link'];
 
-		// Remove unsupported actions
+		// Remove unsupported actions.
 		unset( $response['nonces']['update'] );
 		unset( $response['nonces']['delete'] );
 
@@ -660,55 +554,61 @@ class PostAdmin extends Admin {
 	 * Triggered whenever a post is published, or if it is edited and
 	 * the status is changed to publish.
 	 *
-	 * @since    1.0.0
-	 * @param    int         $post_id                      The post ID.
-	 * @param    \WP_Post    $post                         The \WP_Post object.
-	 * @param    \WP_Post    $post_before    (optional)    The \WP_Post object before the update. Only for attachments.
+	 * @since 1.0.0
+	 * @param int      $post_id                The post ID.
+	 * @param \WP_Post $post                   The \WP_Post object.
+	 * @param \WP_Post $post_before (optional) The \WP_Post object before the update. Only for attachments.
 	 */
 	public function on_save_post( $post_id, \WP_Post $post, $post_before = null ) {
 
-		// Bail out if not admin and bypass REST API requests
+		// Bail out if not admin and bypass REST API requests.
 		if ( ! \is_admin() ) {
 			return;
 		}
 
-		// If post is an autosave, return
+		// If post is an autosave, return.
 		if ( \wp_is_post_autosave( $post_id ) ) {
 			return;
 		}
 
-		// If post is a revision, return
+		// If post is a revision, return.
 		if ( \wp_is_post_revision( $post_id ) ) {
 			return;
 		}
 
-		// If current user can't edit posts, return
+		// If current user can't edit posts, return.
 		if ( ! \current_user_can( 'edit_post', $post_id ) ) {
 			return;
 		}
 
-		// PostHandlers with trash status are processed in \Request\Admin on_trash_post
+		// PostHandlers with trash status are processed in \Request\Admin on_trash_post.
 		if ( $post->post_status === 'trash' ) {
 			return;
 		}
 
-		// Double check post status
+		// Double check post status.
 		if ( ! in_array( $post->post_status, SiteAdmin::get_post_status() ) ) {
 			return;
 		}
 
-		// Get sites
+		// Get user ID.
+		$user_id = \wp_get_current_user()->ID;
+
+		// Get sites.
 		$sites = $this->get_sites( $post );
 
-		// Wrap the post
+		// Wrap the post.
 		$handler = new PostHandler( $post );
 
-		// Get replicast info
+		// Get replicast info.
 		$replicast_info = API::get_remote_info( $post );
 
-		try {
+		$replicated = array();
+		foreach ( $sites as $site ) {
 
-			foreach ( $sites as $site ) {
+			$site_id = $site->get_id();
+
+			try {
 
 				$response    = $handler->handle_save( $site, $replicast_info );
 				$remote_data = json_decode( $response->getBody()->getContents() );
@@ -717,7 +617,6 @@ class PostAdmin extends Admin {
 					continue;
 				}
 
-				$site_id     = $site->get_id();
 				$status_code = $response->getStatusCode();
 				$message     = sprintf(
 					'%s %s',
@@ -733,28 +632,30 @@ class PostAdmin extends Admin {
 					)
 				);
 
-				// Register notice
+				// Register notice.
 				$this->register_notice(
-					$handler->get_notice_unique_id( 'site_' . $site_id ),
+					$handler->get_notice_unique_id( $site_id, $user_id ),
 					$this->get_notice_type_by_status_code( $status_code ),
 					$message
 				);
 
-				// Update object
+				// Update object.
 				$handler->update_object( $site_id, $remote_data );
 
-				// Update terms
+				// Update terms.
 				$handler->update_terms( $site_id, $remote_data );
 
-				// Update media
+				// Update media.
 				$handler->update_media( $site_id, $remote_data );
 
-			}
+				$replicated[] = $site_id;
 
-			// Verify that the current object has been "removed" (aka unchecked) from any site(s)
-			// TODO: review this later on
-			foreach ( $replicast_info as $site_id => $replicast_data ) {
-				if ( ! array_key_exists( $site_id, $sites ) ) {
+				// Verify that the current object has been "removed" (aka unchecked) from any site(s).
+				foreach ( $replicast_info as $site_id => $replicast_data ) {
+
+					if ( array_key_exists( $site_id, $sites ) ) {
+						continue;
+					}
 
 					$site        = $this->get_site( $site_id );
 					$response    = $handler->handle_delete( $site, true );
@@ -770,87 +671,87 @@ class PostAdmin extends Admin {
 						$site->get_name()
 					);
 
-					// Register notice
+					// Register notice.
 					$this->register_notice(
-						$handler->get_notice_unique_id( 'site_' . $site_id ),
+						$handler->get_notice_unique_id( $site_id, $user_id ),
 						$this->get_notice_type_by_status_code( $status_code ),
 						$message
 					);
 
-					// Update object
+					// Update object.
 					$handler->update_object( $site_id );
-
 				}
+			} catch ( \Exception $ex ) {
+
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( var_export( $ex->getMessage(), true ) );
+				}
+
+				$this->register_notice(
+					$handler->get_notice_unique_id( $site_id, $user_id ),
+					$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
+					$ex->getMessage()
+				);
 			}
-
-		} catch ( \Exception $ex ) {
-
-			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
-				error_log( var_export( $ex->getMessage(), true ) );
-			}
-
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
-			}
-
-			$this->register_notice(
-				$handler->get_notice_unique_id(),
-				$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
-				$ex->getMessage()
-			);
-
 		}
 
+		// Update selected sites.
+		\wp_set_object_terms( $handler->get_object_id(), $replicated, Plugin::TAXONOMY_SITE );
 	}
 
 	/**
 	 * Fired when a post (or page) is about to be trashed.
 	 *
-	 * @since    1.0.0
-	 * @param    int    $post_id    The post ID.
+	 * @since 1.0.0
+	 * @param int $post_id The post ID.
 	 */
 	public function on_trash_post( $post_id ) {
 
-		// Bail out if not admin and bypass REST API requests
+		// Bail out if not admin and bypass REST API requests.
 		if ( ! \is_admin() ) {
 			return;
 		}
 
-		// If current user can't delete posts, return
+		// If current user can't delete posts, return.
 		if ( ! \current_user_can( 'delete_posts' ) ) {
 			return;
 		}
 
-		// Retrieves post data given a post ID
+		// Retrieves post data given a post ID.
 		$post = \get_post( $post_id );
 
 		if ( ! $post ) {
 			return;
 		}
 
-		// Double check post status
+		// Double check post status.
 		if ( $post->post_status !== 'trash' ) {
 			return;
 		}
 
-		// Get sites
+		// Get user ID.
+		$user_id = \wp_get_current_user()->ID;
+
+		// Get sites.
 		$sites = $this->get_sites( $post );
 
-		// Wrap the post
+		// Wrap the post.
 		$handler = new PostHandler( $post );
 
 		/**
 		 * Filter for whether to bypass trash or force deletion.
 		 *
-		 * @since     1.0.0
-		 * @param     bool    Flag for bypass trash or force deletion.
-		 * @return    bool    Possibly-modified flag for bypass trash or force deletion.
+		 * @since  1.0.0
+		 * @param  bool Flag for bypass trash or force deletion.
+		 * @return bool Possibly-modified flag for bypass trash or force deletion.
 		 */
 		$force_delete = \apply_filters( "replicast_force_{$post->post_type}_delete", false );
 
-		try {
+		foreach ( $sites as $site ) {
 
-			foreach ( $sites as $site ) {
+			$site_id = $site->get_id();
+
+			try {
 
 				$response    = $handler->handle_delete( $site, $force_delete );
 				$remote_data = json_decode( $response->getBody()->getContents() );
@@ -859,16 +760,15 @@ class PostAdmin extends Admin {
 					continue;
 				}
 
-				$site_id     = $site->get_id();
 				$status_code = $response->getStatusCode();
 				$message     = sprintf(
 					$force_delete ? \__( 'Post permanently deleted on %s.', 'replicast' ) : \__( 'Post moved to the trash on %s.', 'replicast' ),
 					$site->get_name()
 				);
 
-				// Register notice
+				// Register notice.
 				$this->register_notice(
-					$handler->get_notice_unique_id( 'site_' . $site_id ),
+					$handler->get_notice_unique_id( $site_id, $user_id ),
 					$this->get_notice_type_by_status_code( $status_code ),
 					$message
 				);
@@ -877,73 +777,69 @@ class PostAdmin extends Admin {
 					$remote_data = null;
 				}
 
-				// Update object
+				// Update object.
 				$handler->update_object( $site_id, $remote_data );
 
+			} catch ( \Exception $ex ) {
+
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( var_export( $ex->getMessage(), true ) );
+				}
+
+				$this->register_notice(
+					$handler->get_notice_unique_id( $site_id, $user_id ),
+					$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
+					$ex->getMessage()
+				);
 			}
-
-		} catch ( \Exception $ex ) {
-
-			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
-				error_log( var_export( $ex->getMessage(), true ) );
-			}
-
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
-			}
-
-			$this->register_notice(
-				$handler->get_notice_unique_id(),
-				$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
-				$ex->getMessage()
-			);
-
 		}
-
 	}
 
 	/**
 	 * Fired when a post, page or attachment is permanently deleted.
 	 *
-	 * @since    1.0.0
-	 * @param    int    $post_id    The post ID.
+	 * @since 1.0.0
+	 * @param int $post_id The post ID.
 	 */
 	public function on_delete_post( $post_id ) {
 
-		// Bail out if not admin and bypass REST API requests
+		// Bail out if not admin and bypass REST API requests.
 		if ( ! \is_admin() ) {
 			return;
 		}
 
-		// If current user can't delete posts, return
+		// If current user can't delete posts, return.
 		if ( ! \current_user_can( 'delete_posts' ) ) {
 			return;
 		}
 
-		// Retrieves post data given a post ID
+		// Retrieves post data given a post ID.
 		$post = \get_post( $post_id );
 
 		if ( ! $post ) {
 			return;
 		}
 
-		// Double check post type
+		// Double check post type.
 		if ( $post->post_type !== 'revision' ) {
 			return;
 		}
 
-		// Get sites
+		// Get user ID.
+		$user_id = \wp_get_current_user()->ID;
+
+		// Get sites.
 		$sites = $this->get_sites( $post );
 
-		// Wrap the post
+		// Wrap the post.
 		$handler = new PostHandler( $post );
 
 		/**
 		 * Filter for whether to bypass trash or force deletion.
 		 *
-		 * @since     1.0.0
-		 * @param     bool    Flag for bypass trash or force deletion.
-		 * @return    bool    Possibly-modified flag for bypass trash or force deletion.
+		 * @since  1.0.0
+		 * @param  bool Flag for bypass trash or force deletion.
+		 * @return bool Possibly-modified flag for bypass trash or force deletion.
 		 */
 		$force_delete = \apply_filters( "replicast_force_{$post->post_type}_delete", false );
 
@@ -951,9 +847,11 @@ class PostAdmin extends Admin {
 			return;
 		}
 
-		try {
+		foreach ( $sites as $site ) {
 
-			foreach ( $sites as $site ) {
+			$site_id = $site->get_id();
+
+			try {
 
 				$response    = $handler->handle_delete( $site, true );
 				$remote_data = json_decode( $response->getBody()->getContents() );
@@ -962,41 +860,126 @@ class PostAdmin extends Admin {
 					continue;
 				}
 
-				$site_id     = $site->get_id();
 				$status_code = $response->getStatusCode();
 				$message     = sprintf(
 					\__( 'Post permanently deleted on %s.', 'replicast' ),
 					$site->get_name()
 				);
 
-				// Register notice
+				// Register notice.
 				$this->register_notice(
-					$handler->get_notice_unique_id( 'site_' . $site_id ),
+					$handler->get_notice_unique_id( $site_id, $user_id ),
 					$this->get_notice_type_by_status_code( $status_code ),
 					$message
 				);
 
-				// Update object
+				// Update object.
 				$handler->update_object( $site_id );
 
+			} catch ( \Exception $ex ) {
+
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( var_export( $ex->getMessage(), true ) );
+				}
+
+				$this->register_notice(
+					$handler->get_notice_unique_id( $site_id, $user_id ),
+					$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
+					$ex->getMessage()
+				);
 			}
-
-		} catch ( \Exception $ex ) {
-
-			if ( defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG ) {
-				error_log( var_export( $ex->getMessage(), true ) );
-			}
-
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( var_export( $ex->getResponse()->getHeader( 'X-KEY-AUTH' ), true ) );
-			}
-
-			$this->register_notice(
-				$handler->get_notice_unique_id(),
-				$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
-				$ex->getMessage()
-			);
-
 		}
+	}
+
+	/**
+	 * Manage columns.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 * @param  array $columns An array of column names.
+	 * @return array         Possibly-modified array of column names.
+	 */
+	private function manage_columns( $columns ) {
+
+		$sorted_columns = array();
+
+		/**
+		 * Filter the column header title.
+		 *
+		 * @since  1.0.0
+		 * @param  string Column header title.
+		 * @return string Possibly-modified column header title.
+		 */
+		$replicast_title = \apply_filters( 'replicast_column_title', \__( 'Replicast', 'replicast' ) );
+
+		$sorted_columns = array(
+			'replicast' => sprintf(
+				'<span class="screen-reader-text">%s</span>',
+				\esc_attr( $replicast_title )
+			)
+		);
+
+		foreach ( $columns as $column_key => $column_title ) {
+			$sorted_columns[ $column_key ] = $column_title;
+		}
+
+		return $sorted_columns;
+	}
+
+	/**
+	 * Custom column contents.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 * @param  int    $object_id The current object ID.
+	 * @param  string $meta_type Type of object metadata.
+	 * @return string            Column contents.
+	 */
+	private function manage_custom_column( $object_id, $meta_type ) {
+
+		$source_info = API::get_source_info( $object_id, $meta_type );
+
+		if ( empty( $source_info ) ) {
+			return '';
+		}
+
+		$icon = sprintf(
+			'<span class="dashicons dashicons-image-rotate" aria-label="%s"></span>',
+			\esc_attr__( 'Replicast', 'replicast' )
+		);
+
+		$html = sprintf(
+			'<a href="%s" title="%s">%s</a>',
+			\esc_url( $source_info['edit_link'] ),
+			\esc_attr__( 'Edit', 'replicast' ),
+			$icon
+		);
+
+		/**
+		 * Filter the custom column contents.
+		 *
+		 * @since  1.0.0
+		 * @param  string   Column contents.
+		 * @param  mixed    Single metadata value, or array of values.
+		 *                  If the $meta_type or $object_id parameters are invalid, false is returned.
+		 * @param  \WP_Post The current object ID.
+		 * @return string   Possibly-modified column contents.
+		 */
+		return \apply_filters( 'manage_column_html', $html, $source_info, $object_id );
+	}
+
+	/**
+	 * Meta query for hiding remote attachments.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 */
+	private function hide_attachments() {
+		return array(
+			array(
+				'key'     => Plugin::REPLICAST_SOURCE_INFO,
+				'compare' => 'NOT EXISTS',
+			),
+		);
 	}
 }

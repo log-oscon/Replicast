@@ -1,5 +1,9 @@
 # Replicast
 
+## TODO
+* Refazer mecanismo das "admin notices" (evitar duplicação)  
+
+
 ## Roadmap
 
 | Posts                               | Estado | Observações |

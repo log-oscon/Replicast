@@ -9,7 +9,7 @@
  * Plugin Name:       Replicast
  * Plugin URI:        http://log.pt/
  * Description:       Replicate content across WordPress installs via the WP REST API.
- * Version:           1.0.2
+ * Version:           1.1.0
  * Author:            log.OSCON, Lda.
  * Author URI:        http://log.pt/
  * License:           GPL-2.0+
@@ -28,23 +28,11 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * The code that runs during plugin activation.
- * This action is documented in lib/Activator.php
- */
-\register_activation_hook( __FILE__, '\Replicast\Activator::activate' );
-
-/**
- * The code that runs during plugin deactivation.
- * This action is documented in lib/Deactivator.php
- */
-\register_deactivation_hook( __FILE__, '\Replicast\Deactivator::deactivate' );
-
-/**
  * Begins execution of the plugin.
  *
  * @since    1.0.0
  */
 \add_action( 'plugins_loaded', function () {
-	$plugin = new \Replicast\Plugin( 'replicast', '1.0.2' );
+	$plugin = new \Replicast\Plugin( 'replicast', '1.1.0' );
 	$plugin->run();
 } );

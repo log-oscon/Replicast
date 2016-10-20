@@ -1,5 +1,4 @@
 <?php
-
 /**
  * The dashboard-specific functionality of the plugin
  *
@@ -29,17 +28,17 @@ class Admin {
 	/**
 	 * The plugin's instance.
 	 *
-	 * @since     1.0.0
-	 * @access    private
-	 * @var       \Replicast\Plugin    This plugin's instance.
+	 * @since  1.0.0
+	 * @access private
+	 * @var    \Replicast\Plugin
 	 */
 	private $plugin;
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Plugin    $plugin    This plugin's instance.
+	 * @since 1.0.0
+	 * @param \Replicast\Plugin $plugin This plugin's instance.
 	 */
 	public function __construct( $plugin ) {
 		$this->plugin = $plugin;
@@ -48,23 +47,20 @@ class Admin {
 	/**
 	 * Register hooks.
 	 *
-	 * @since    1.0.0
+	 * @since 1.0.0
 	 */
 	public function register() {
-
 		\add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 		\add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		\add_action( 'admin_notices',         array( $this, 'display_notices' ) );
-
 	}
 
 	/**
 	 * Register the stylesheets for the Dashboard.
 	 *
-	 * @since    1.0.0
+	 * @since 1.0.0
 	 */
 	public function enqueue_styles() {
-
 		\wp_enqueue_style(
 			$this->plugin->get_name(),
 			\plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/replicast.css',
@@ -72,13 +68,12 @@ class Admin {
 			$this->plugin->get_version(),
 			'all'
 		);
-
 	}
 
 	/**
 	 * Register the scripts for the Dashboard.
 	 *
-	 * @since    1.0.0
+	 * @since 1.0.0
 	 */
 	public function enqueue_scripts() {
 
@@ -93,15 +88,14 @@ class Admin {
 			$this->plugin->get_version(),
 			true
 		);
-
 	}
 
 	/**
 	 * Returns an array of sites.
 	 *
-	 * @since     1.0.0
-	 * @param     \WP_Post    $post    The post object.
-	 * @return    array                List of sites.
+	 * @since  1.0.0
+	 * @param  \WP_Post $post The post object.
+	 * @return array          List of sites.
 	 */
 	public function get_sites( $post ) {
 
@@ -130,9 +124,9 @@ class Admin {
 	/**
 	 * Returns a site.
 	 *
-	 * @since     1.0.0
-	 * @param     int|\WP_Term    $term    The term ID or the term object.
-	 * @return    \Replicast\Client        A site object.
+	 * @since  1.0.0
+	 * @param  int|\WP_Term $term The term ID or the term object.
+	 * @return \Replicast\Client  A site object.
 	 */
 	public function get_site( $term ) {
 
@@ -147,7 +141,6 @@ class Admin {
 			$url    = \parse_url( \get_term_meta( $term->term_id, 'api_url', true ) );
 			$client = new \GuzzleHttp\Client( array(
 				'base_uri' => sprintf( '%s://%s', $url['scheme'], $url['host'] ),
-				'debug'    => \apply_filters( 'replicast_client_debug', defined( 'REPLICAST_DEBUG' ) && REPLICAST_DEBUG )
 			) );
 
 			$site = new Client( $term, $client );
@@ -179,50 +172,6 @@ class Admin {
 		}
 
 		$this->delete_notices();
-
-	}
-
-	/**
-	 * Get admin notices unique ID.
-	 *
-	 * @since     1.0.0
-	 * @access    private
-	 * @return    string    Admin notices unique ID.
-	 */
-	private function get_notices_unique_id() {
-		return sprintf(
-			'replicast_notices_user_%s',
-			\wp_get_current_user()->ID
-		);
-	}
-
-	/**
-	 * Get admin notices.
-	 *
-	 * @since     1.0.0
-	 * @access    private
-	 * @return    array    Admin notices.
-	 */
-	private function get_notices() {
-
-		$notices = \get_transient( $this->get_notices_unique_id() );
-
-		if ( false === $notices ) {
-			return array();
-		}
-
-		return (array) $notices;
-	}
-
-	/**
-	 * Delete admin notices.
-	 *
-	 * @since     1.0.0
-	 * @access    private
-	 * @return    bool    True if successful, false otherwise.
-	 */
-	private function delete_notices() {
-		return \delete_transient( $this->get_notices_unique_id() );
 	}
 
 	/**
@@ -234,12 +183,12 @@ class Admin {
 	 *     'message' => ''
 	 *   )
 	 *
-	 * @since    1.0.0
-	 * @param    string    $id         The unique ID of the notice.
-	 * @param    string    $type       The type of notice to display.
-	 *                                 Currently it can be 'error' for an error notice or
-	 *                                 'updated' for a success/update notice.
-	 * @param    string    $content    The content of the admin notice.
+	 * @since 1.0.0
+	 * @param string $id      The unique ID of the notice.
+	 * @param string $type    The type of notice to display.
+	 *                        Currently it can be 'error' for an error notice or
+	 *                        'updated' for a success/update notice.
+	 * @param string $content The content of the admin notice.
 	 */
 	public function register_notice( $id, $type = 'error', $content = '' ) {
 
@@ -247,9 +196,9 @@ class Admin {
 			/**
 			 * Filter the default admin notice message.
 			 *
-			 * @since     1.0.0
-			 * @param     string    Default admin notice text.
-			 * @return    string    Possibly-modified admin notice text.
+			 * @since  1.0.0
+			 * @param  string Default admin notice text.
+			 * @return string Possibly-modified admin notice text.
 			 */
 			$content = \apply_filters( 'replicast_default_admin_notice_message', \__( 'Something went wrong.', 'replicast' ) );
 		}
@@ -275,26 +224,69 @@ class Admin {
 	/**
 	 * Get the admin notice type based on a HTTP request/response status code.
 	 *
-	 * @since     1.0.0
-	 * @param     int    $status_code    HTTP request/response status code.
-	 * @return    string                 Possible values: error | success | warning.
+	 * @since  1.0.0
+	 * @param  int $status_code HTTP request/response status code.
+	 * @return string           Possible values: error | success | warning.
 	 */
 	public function get_notice_type_by_status_code( $status_code ) {
 
 		$status_code = intval( $status_code );
 
-		// FIXME
-		// Maybe this should be more simpler. For instance, all 2xx status codes should be treated as success.
-		// What happens with a 3xx status code?
+		/**
+		 * FIXME: Maybe this should be more simpler.
+		 * For instance, all 2xx status codes should be treated as success.
+		 * What happens with a 3xx status code?
+		 */
 
 		switch ( $status_code ) {
-			case '200': // Update
-			case '201': // Create
+			case '200': // Update.
+			case '201': // Create.
 				return 'updated';
 			default:
 				return 'error';
 		}
-
 	}
 
+	/**
+	 * Get admin notices unique ID.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 * @return string Admin notices unique ID.
+	 */
+	private function get_notices_unique_id() {
+		return sprintf(
+			'replicast_notices_user_%s',
+			\wp_get_current_user()->ID
+		);
+	}
+
+	/**
+	 * Get admin notices.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 * @return array Admin notices.
+	 */
+	private function get_notices() {
+
+		$notices = \get_transient( $this->get_notices_unique_id() );
+
+		if ( false === $notices ) {
+			return array();
+		}
+
+		return (array) $notices;
+	}
+
+	/**
+	 * Delete admin notices.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 * @return bool True if successful, false otherwise.
+	 */
+	private function delete_notices() {
+		return \delete_transient( $this->get_notices_unique_id() );
+	}
 }
