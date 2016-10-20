@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Add Polylang support
  *
@@ -7,10 +6,10 @@
  * @since      1.0.0
  *
  * @package    Replicast
- * @subpackage Replicast/lib
+ * @subpackage Replicast/lib/Module
  */
 
-namespace Replicast;
+namespace Replicast\Module;
 
 use Replicast\API;
 
@@ -19,7 +18,7 @@ use Replicast\API;
  *
  * @since      1.0.0
  * @package    Replicast
- * @subpackage Replicast/lib
+ * @subpackage Replicast/lib/Module
  * @author     log.OSCON, Lda. <engenharia@log.pt>
  */
 class Polylang {
@@ -27,17 +26,17 @@ class Polylang {
 	/**
 	 * The plugin's instance.
 	 *
-	 * @since     1.0.0
-	 * @access    private
-	 * @var       \Replicast\Plugin    This plugin's instance.
+	 * @since  1.0.0
+	 * @access private
+	 * @var    \Replicast\Plugin
 	 */
 	private $plugin;
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
-	 * @since    1.0.0
-	 * @param    \Replicast\Plugin    $plugin    This plugin's instance.
+	 * @since 1.0.0
+	 * @param \Replicast\Plugin $plugin This plugin's instance.
 	 */
 	public function __construct( $plugin ) {
 		$this->plugin = $plugin;
@@ -46,27 +45,29 @@ class Polylang {
 	/**
 	 * Register hooks.
 	 *
-	 * @since    1.0.0
+	 * @since 1.0.0
 	 */
 	public function register() {
 
 		\add_filter( 'replicast_suppress_object_taxonomies', array( $this, 'suppress_taxonomies' ) );
-		\add_filter( 'replicast_get_object_terms',           array( $this, 'get_object_terms_translations' ) );
+
+		\add_action( 'replicast_update_object_terms',        array( $this, 'update_object_translations' ), 10 );
+
 		\add_filter( 'replicast_prepare_object_for_create',  array( $this, 'prepare_object_translations' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_update',  array( $this, 'prepare_object_translations' ), 10, 2 );
+
+		\add_filter( 'replicast_get_object_terms',           array( $this, 'get_object_terms_translations' ) );
 		\add_filter( 'replicast_prepare_object_for_create',  array( $this, 'prepare_object_terms_translations' ), 20, 2 );
 		\add_filter( 'replicast_prepare_object_for_update',  array( $this, 'prepare_object_terms_translations' ), 20, 2 );
-		\add_action( 'replicast_update_object_terms',        array( $this, 'update_object_translations' ), 10 );
 		\add_action( 'replicast_update_object_terms',        array( $this, 'update_object_terms_translations' ), 20 );
-
 	}
 
 	/**
 	 * Suppress taxonomies.
 	 *
-	 * @since     1.0.0
-	 * @param     array    $suppressed    Name(s) of the suppressed taxonomies.
-	 * @return    array                   Possibly-modified name(s) of the suppressed taxonomies.
+	 * @since  1.0.0
+	 * @param  array $suppressed Name(s) of the suppressed taxonomies.
+	 * @return array             Possibly-modified name(s) of the suppressed taxonomies.
 	 */
 	public function suppress_taxonomies( $suppressed = array() ) {
 		return array_merge( array(
@@ -77,9 +78,9 @@ class Polylang {
 	/**
 	 * Retrieve object terms translations.
 	 *
-	 * @since     1.0.0
-	 * @param     array    $terms    Object terms.
-	 * @return    array              Possibly-modified object terms.
+	 * @since  1.0.0
+	 * @param  array $terms Object terms.
+	 * @return array        Possibly-modified object terms.
 	 */
 	public function get_object_terms_translations( $terms ) {
 
@@ -98,7 +99,6 @@ class Polylang {
 			if ( function_exists( 'pll_get_term_translations' ) ) {
 				$term->polylang['translations'] = \pll_get_term_translations( $term->term_id );
 			}
-
 		}
 
 		return $terms;
@@ -107,10 +107,10 @@ class Polylang {
 	/**
 	 * Prepare object translations.
 	 *
-	 * @since     1.0.0
-	 * @param     array                $data    Prepared data.
-	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Possibly-modified data.
+	 * @since  1.0.0
+	 * @param  array             $data Prepared data.
+	 * @param  \Replicast\Client $site Site object.
+	 * @return array                   Possibly-modified data.
 	 */
 	public function prepare_object_translations( $data, $site ) {
 
@@ -130,16 +130,14 @@ class Polylang {
 
 				$remote_info = API::get_remote_info( \get_post( $translated_object_id ) );
 
-				// Update object ID
+				// Update object ID.
 				unset( $translations[ $lang ] );
 				if ( ! empty( $remote_info ) ) {
 					$translations[ $lang ] = $remote_info[ $site->get_id() ]['id'];
 				}
-
 			}
 
 			$term->description = $this->set_translations( $translations );
-
 		}
 
 		return $data;
@@ -148,10 +146,10 @@ class Polylang {
 	/**
 	 * Prepare object terms translations.
 	 *
-	 * @since     1.0.0
-	 * @param     array                $data    Prepared data.
-	 * @param     \Replicast\Client    $site    Site object.
-	 * @return    array                         Possibly-modified data.
+	 * @since  1.0.0
+	 * @param  array             $data Prepared data.
+	 * @param  \Replicast\Client $site Site object.
+	 * @return array                   Possibly-modified data.
 	 */
 	public function prepare_object_terms_translations( $data, $site ) {
 
@@ -176,13 +174,11 @@ class Polylang {
 
 				$remote_info = API::get_remote_info( $translated_term );
 
-				// Update object ID's
+				// Update object ID's.
 				if ( ! empty( $remote_info ) ) {
 					$data['replicast']['terms'][ $term_id ]->polylang['translations'][ $lang ] = $remote_info[ $site->get_id() ]['id'];
 				}
-
 			}
-
 		}
 
 		return $data;
@@ -191,8 +187,8 @@ class Polylang {
 	/**
 	 * Update object translations.
 	 *
-	 * @since    1.0.0
-	 * @param    array    $terms    Object terms.
+	 * @since 1.0.0
+	 * @param array $terms Object terms.
 	 */
 	public function update_object_translations( $terms ) {
 
@@ -211,16 +207,14 @@ class Polylang {
 			}
 
 			\pll_save_post_translations( $this->get_translations( $term_data['description'] ) );
-
 		}
-
 	}
 
 	/**
 	 * Update object terms translations.
 	 *
-	 * @since    1.0.0
-	 * @param    array    $terms    Object terms.
+	 * @since 1.0.0
+	 * @param array $terms Object terms.
 	 */
 	public function update_object_terms_translations( $terms ) {
 
@@ -248,18 +242,16 @@ class Polylang {
 				uksort( $translations, array( $this, 'sort_by_language' ) );
 				\pll_save_term_translations( $translations );
 			}
-
 		}
-
 	}
 
 	/**
 	 * Get object translations.
 	 *
-	 * @since     1.0.0
-	 * @access    private
-	 * @param     string    $description    Object translations serialized.
-	 * @return    array                     Object translations unserialized.
+	 * @since  1.0.0
+	 * @access private
+	 * @param  string $description Object translations serialized.
+	 * @return array               Object translations unserialized.
 	 */
 	private function get_translations( $description ) {
 		return unserialize( $description );
@@ -268,10 +260,10 @@ class Polylang {
 	/**
 	 * Set object translations.
 	 *
-	 * @since     1.0.0
-	 * @access    private
-	 * @param     array    $translations    Object translations unserialized.
-	 * @return    string                    Object translations serialized.
+	 * @since  1.0.0
+	 * @access private
+	 * @param  array $translations Object translations unserialized.
+	 * @return string              Object translations serialized.
 	 */
 	private function set_translations( $translations ) {
 		return serialize( $translations );
@@ -280,13 +272,13 @@ class Polylang {
 	/**
 	 * Comparison function for array sorting by language.
 	 *
-	 * @since     1.0.0
-	 * @access    private
-	 * @param     string    $lang            Language slug.
-	 * @param     string    $current_lang    Current language slug.
-	 * @return    int                        Integer less than, equal to, or greater than zero
-	 *                                       if the first argument is considered to be respectively
-	 *                                       less than, equal to, or greater than the second.
+	 * @since  1.0.0
+	 * @access private
+	 * @param  string $lang         Language slug.
+	 * @param  string $current_lang Current language slug.
+	 * @return int                  Integer less than, equal to, or greater than zero
+	 *                              if the first argument is considered to be respectively
+	 *                              less than, equal to, or greater than the second.
 	 */
 	private function sort_by_language( $lang, $current_lang ) {
 
@@ -296,5 +288,4 @@ class Polylang {
 
 		return strcasecmp( $lang, $current_lang );
 	}
-
 }
