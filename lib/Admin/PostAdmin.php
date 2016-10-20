@@ -472,7 +472,7 @@ class PostAdmin extends Admin {
 		// Retrieve the uploads sub-directory from the full size remote image.
 		$remote_dirname = \_wp_get_attachment_relative_path( $image_src );
 		if ( $remote_dirname ) {
-			$remote_dirname = trailingslashit( $remote_dirname );
+			$remote_dirname = \trailingslashit( $remote_dirname );
 		}
 
 		$upload_dir = \wp_get_upload_dir();
@@ -480,7 +480,7 @@ class PostAdmin extends Admin {
 			return $sources;
 		}
 
-		$pattern = trailingslashit( $upload_dir['baseurl'] ) . $remote_dirname;
+		$pattern = \trailingslashit( $upload_dir['baseurl'] ) . $remote_dirname;
 
 		foreach ( $sources as $key => $source ) {
 
