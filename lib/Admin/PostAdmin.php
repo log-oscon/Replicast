@@ -652,32 +652,34 @@ class PostAdmin extends Admin {
 
 				// Verify that the current object has been "removed" (aka unchecked) from any site(s).
 				foreach ( $replicast_info as $site_id => $replicast_data ) {
-					if ( ! array_key_exists( $site_id, $sites ) ) {
 
-						$site        = $this->get_site( $site_id );
-						$response    = $handler->handle_delete( $site, true );
-						$remote_data = json_decode( $response->getBody()->getContents() );
-
-						if ( empty( $remote_data ) ) {
-							continue;
-						}
-
-						$status_code = $response->getStatusCode();
-						$message     = sprintf(
-							\__( 'Post permanently deleted on %s.', 'replicast' ),
-							$site->get_name()
-						);
-
-						// Register notice.
-						$this->register_notice(
-							$handler->get_notice_unique_id( $site_id, $user_id ),
-							$this->get_notice_type_by_status_code( $status_code ),
-							$message
-						);
-
-						// Update object.
-						$handler->update_object( $site_id );
+					if ( array_key_exists( $site_id, $sites ) ) {
+						continue;
 					}
+
+					$site        = $this->get_site( $site_id );
+					$response    = $handler->handle_delete( $site, true );
+					$remote_data = json_decode( $response->getBody()->getContents() );
+
+					if ( empty( $remote_data ) ) {
+						continue;
+					}
+
+					$status_code = $response->getStatusCode();
+					$message     = sprintf(
+						\__( 'Post permanently deleted on %s.', 'replicast' ),
+						$site->get_name()
+					);
+
+					// Register notice.
+					$this->register_notice(
+						$handler->get_notice_unique_id( $site_id, $user_id ),
+						$this->get_notice_type_by_status_code( $status_code ),
+						$message
+					);
+
+					// Update object.
+					$handler->update_object( $site_id );
 				}
 			} catch ( \Exception $ex ) {
 
