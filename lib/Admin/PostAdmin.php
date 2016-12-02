@@ -580,17 +580,17 @@ class PostAdmin extends Admin {
 
 		// If current user can't edit posts, return.
 		if ( ! \current_user_can( 'edit_post', $post_id ) ) {
-			return;
+			return new \WP_Error( 'invalid_cap', \__( 'Invalid user capability.', 'replicast' ) );
 		}
 
-		// PostHandlers with trash status are processed in \Request\Admin on_trash_post.
+		// Handled on `on_trash_post`.
 		if ( $post->post_status === 'trash' ) {
-			return;
+			return new \WP_Error( 'invalid_post_status', \__( 'Invalid post status.', 'replicast' ) );
 		}
 
 		// Double check post status.
 		if ( ! in_array( $post->post_status, SiteAdmin::get_post_status() ) ) {
-			return;
+			return new \WP_Error( 'invalid_post_status', \__( 'Invalid post status.', 'replicast' ) );
 		}
 
 		// Get user ID.
@@ -715,19 +715,19 @@ class PostAdmin extends Admin {
 
 		// If current user can't delete posts, return.
 		if ( ! \current_user_can( 'delete_posts' ) ) {
-			return;
+			return new \WP_Error( 'invalid_cap', \__( 'Invalid user capability.', 'replicast' ) );
 		}
 
 		// Retrieves post data given a post ID.
 		$post = \get_post( $post_id );
 
 		if ( ! $post ) {
-			return;
+			return new \WP_Error( 'invalid_post', \__( 'Invalid post ID.', 'replicast' ) );
 		}
 
 		// Double check post status.
 		if ( $post->post_status !== 'trash' ) {
-			return;
+			return new \WP_Error( 'invalid_post_status', \__( 'Invalid post status.', 'replicast' ) );
 		}
 
 		// Get user ID.
@@ -810,19 +810,19 @@ class PostAdmin extends Admin {
 
 		// If current user can't delete posts, return.
 		if ( ! \current_user_can( 'delete_posts' ) ) {
-			return;
+			return new \WP_Error( 'invalid_cap', \__( 'Invalid user capability.', 'replicast' ) );
 		}
 
 		// Retrieves post data given a post ID.
 		$post = \get_post( $post_id );
 
 		if ( ! $post ) {
-			return;
+			return new \WP_Error( 'invalid_post', \__( 'Invalid post ID.', 'replicast' ) );
 		}
 
 		// Double check post type.
 		if ( $post->post_type !== 'revision' ) {
-			return;
+			return new \WP_Error( 'invalid_post_type', \__( 'Invalid post type.', 'replicast' ) );
 		}
 
 		// Get user ID.
