@@ -554,15 +554,17 @@ class PostAdmin extends Admin {
 	 * Triggered whenever a post is published, or if it is edited and
 	 * the status is changed to publish.
 	 *
+	 * @since 1.4.0 Check for `REST_REQUEST` constant.
 	 * @since 1.0.0
+	 *
 	 * @param int      $post_id                The post ID.
 	 * @param \WP_Post $post                   The \WP_Post object.
 	 * @param \WP_Post $post_before (optional) The \WP_Post object before the update. Only for attachments.
 	 */
 	public function on_save_post( $post_id, \WP_Post $post, $post_before = null ) {
 
-		// Bail out if not admin and bypass REST API requests.
-		if ( ! \is_admin() ) {
+		// Bypass REST API requests.
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 			return;
 		}
 
@@ -699,13 +701,15 @@ class PostAdmin extends Admin {
 	/**
 	 * Fired when a post (or page) is about to be trashed.
 	 *
+	 * @since 1.4.0 Check for `REST_REQUEST` constant.
 	 * @since 1.0.0
+	 *
 	 * @param int $post_id The post ID.
 	 */
 	public function on_trash_post( $post_id ) {
 
-		// Bail out if not admin and bypass REST API requests.
-		if ( ! \is_admin() ) {
+		// Bypass REST API requests.
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 			return;
 		}
 
@@ -792,13 +796,15 @@ class PostAdmin extends Admin {
 	/**
 	 * Fired when a post, page or attachment is permanently deleted.
 	 *
+	 * @since 1.4.0 Check for `REST_REQUEST` constant.
 	 * @since 1.0.0
+	 *
 	 * @param int $post_id The post ID.
 	 */
 	public function on_delete_post( $post_id ) {
 
-		// Bail out if not admin and bypass REST API requests.
-		if ( ! \is_admin() ) {
+		// Bypass REST API requests.
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 			return;
 		}
 

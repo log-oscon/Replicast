@@ -109,7 +109,9 @@ class ACF {
 	 * Leaving these same relationships remotely unchanged. To address this, we are sending the objects
 	 * that were removed in a private meta variable which is then processed.
 	 *
+	 * @since  1.4.0 Check for `REST_REQUEST` constant.
 	 * @since  1.0.0
+	 *
 	 * @param  mixed $value     The value of the field.
 	 * @param  int   $object_id The object ID.
 	 * @param  array $field     The field object.
@@ -117,8 +119,8 @@ class ACF {
 	 */
 	public function get_relations( $value, $object_id, $field ) {
 
-		// Bail out if not admin and bypass REST API requests.
-		if ( ! \is_admin() ) {
+		// Bypass REST API requests.
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 			return $value;
 		}
 
