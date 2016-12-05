@@ -1,0 +1,9 @@
+<wpml-config>
+  <custom-fields>
+  </custom-fields>
+  <custom-types>
+  </custom-types>
+  <taxonomies>
+    <taxonomy translate="0">remote_site</taxonomy>
+  </taxonomies>
+</wpml-config>
