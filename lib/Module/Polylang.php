@@ -92,11 +92,11 @@ class Polylang {
 
 			$term->polylang = array();
 
-			if ( function_exists( 'pll_get_term_language' ) ) {
+			if ( function_exists( '\pll_get_term_language' ) ) {
 				$term->polylang['language'] = \pll_get_term_language( $term->term_id );
 			}
 
-			if ( function_exists( 'pll_get_term_translations' ) ) {
+			if ( function_exists( '\pll_get_term_translations' ) ) {
 				$term->polylang['translations'] = \pll_get_term_translations( $term->term_id );
 			}
 		}
@@ -192,7 +192,7 @@ class Polylang {
 	 */
 	public function update_object_translations( $terms ) {
 
-		if ( ! function_exists( 'pll_save_post_translations' ) ) {
+		if ( ! function_exists( '\pll_save_post_translations' ) ) {
 			return;
 		}
 
@@ -227,7 +227,7 @@ class Polylang {
 			$term_id       = $term_data['term_id'];
 			$term_language = '';
 
-			if ( function_exists( 'pll_current_language' ) ) {
+			if ( function_exists( '\pll_current_language' ) ) {
 				$term_language = \pll_current_language();
 			}
 
@@ -282,7 +282,7 @@ class Polylang {
 	 */
 	private function sort_by_language( $lang, $current_lang ) {
 
-		if ( empty( $current_lang ) && function_exists( 'pll_current_language' ) ) {
+		if ( empty( $current_lang ) && function_exists( '\pll_current_language' ) ) {
 			$current_lang = \pll_current_language();
 		}
 
