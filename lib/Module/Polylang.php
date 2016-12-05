@@ -70,9 +70,7 @@ class Polylang {
 	 * @return array             Possibly-modified name(s) of the suppressed taxonomies.
 	 */
 	public function suppress_taxonomies( $suppressed = array() ) {
-		return array_merge( array(
-			'term_translations',
-		), $suppressed );
+		return array_merge( array( 'term_translations' ), $suppressed );
 	}
 
 	/**
