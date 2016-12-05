@@ -688,7 +688,7 @@ class PostAdmin extends Admin {
 
 				$this->register_notice(
 					$handler->get_notice_unique_id( $site_id, $user_id ),
-					$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
+					$this->get_notice_type_by_status_code( $ex ),
 					$ex->getMessage()
 				);
 			}
@@ -786,7 +786,7 @@ class PostAdmin extends Admin {
 
 				$this->register_notice(
 					$handler->get_notice_unique_id( $site_id, $user_id ),
-					$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
+					$this->get_notice_type_by_status_code( $ex ),
 					$ex->getMessage()
 				);
 			}
@@ -881,7 +881,7 @@ class PostAdmin extends Admin {
 
 				$this->register_notice(
 					$handler->get_notice_unique_id( $site_id, $user_id ),
-					$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
+					$this->get_notice_type_by_status_code( $ex ),
 					$ex->getMessage()
 				);
 			}
