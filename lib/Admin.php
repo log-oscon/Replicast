@@ -234,7 +234,9 @@ class Admin {
 	/**
 	 * Get the admin notice type based on a HTTP request/response status code.
 	 *
+	 * @since  1.4.0 Exception proper handling.
 	 * @since  1.0.0
+	 *
 	 * @param  int|\Exception $status_code HTTP request/response status code, or a
 	 *                                     \Exception instance object.
 	 * @return string                      Possible values: error | success | warning.
