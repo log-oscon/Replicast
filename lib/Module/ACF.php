@@ -148,7 +148,7 @@ class ACF {
 
 				$selected_post_id = is_object( $selected_post ) ? $selected_post->ID : $selected_post;
 
-				if ( ! in_array( $selected_post_id, $next_relation ) ) {
+				if ( ! in_array( $selected_post_id, $next_relation, true ) ) {
 					$ids_to_remove[] = $selected_post_id;
 				}
 
@@ -289,7 +289,7 @@ class ACF {
 			$field_type = \acf_extract_var( $meta['raw'], 'type' );
 			$field_key  = \acf_extract_var( $meta['raw'], 'key' );
 
-			if ( in_array( $field_type, $suppressed_meta ) ) {
+			if ( in_array( $field_type, $suppressed_meta, true ) ) {
 				continue;
 			}
 
@@ -348,7 +348,7 @@ class ACF {
 			$field_value = $field['value'];
 			$field_name  = $field['name'];
 
-			if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+			if ( ! in_array( $field_type, array( 'gallery', 'image' ), true ) ) {
 				continue;
 			}
 
@@ -407,7 +407,7 @@ class ACF {
 
 				foreach ( $relations as $field_type => $field_key ) {
 
-					if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+					if ( ! in_array( $field_type, array( 'gallery', 'image' ), true ) ) {
 						continue;
 					}
 
@@ -489,7 +489,7 @@ class ACF {
 
 				$field_type = \acf_extract_var( $field_value['value'], 'type' );
 
-				if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+				if ( ! in_array( $field_type, array( 'gallery', 'image' ), true ) ) {
 					continue;
 				}
 
@@ -553,7 +553,7 @@ class ACF {
 
 				$field_type = \acf_extract_var( $field_value, 'type' );
 
-				if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+				if ( ! in_array( $field_type, array( 'gallery', 'image' ), true ) ) {
 					continue;
 				}
 
@@ -615,7 +615,7 @@ class ACF {
 
 				foreach ( $relations as $field_type => $field_key ) {
 
-					if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+					if ( ! in_array( $field_type, array( 'gallery', 'image' ), true ) ) {
 						continue;
 					}
 

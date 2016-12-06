@@ -333,7 +333,7 @@ class SiteAdmin {
 	public function get_filter_dropdown() {
 		global $post_type;
 
-		if ( ! in_array( $post_type, static::get_post_types() ) ) {
+		if ( ! in_array( $post_type, static::get_post_types(), true ) ) {
 			return;
 		}
 
@@ -365,7 +365,7 @@ class SiteAdmin {
 			return;
 		}
 
-		if ( ! in_array( $post_type, static::get_post_types() ) ) {
+		if ( ! in_array( $post_type, static::get_post_types(), true ) ) {
 			return;
 		}
 

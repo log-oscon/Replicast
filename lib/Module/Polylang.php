@@ -84,11 +84,14 @@ class Polylang {
 
 		foreach ( $terms as $term ) {
 
-			if ( in_array( $term->taxonomy, array( 'post_translations', 'language' ) ) ) {
+			if ( in_array( $term->taxonomy, array( 'post_translations', 'language' ), true ) ) {
 				continue;
 			}
 
-			$term->polylang = array();
+			$term->polylang = array(
+				'language'     => '',
+				'translations' => array(),
+			);
 
 			if ( function_exists( '\pll_get_term_language' ) ) {
 				$term->polylang['language'] = \pll_get_term_language( $term->term_id );

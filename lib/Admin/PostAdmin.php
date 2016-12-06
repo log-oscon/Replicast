@@ -88,7 +88,7 @@ class PostAdmin extends Admin {
 	 */
 	public function manage_posts_columns( $columns, $post_type = 'page' ) {
 
-		if ( ! in_array( $post_type, SiteAdmin::get_post_types() ) ) {
+		if ( ! in_array( $post_type, SiteAdmin::get_post_types(), true ) ) {
 			return $columns;
 		}
 
@@ -229,7 +229,7 @@ class PostAdmin extends Admin {
 		// Disable certain capabilities.
 		foreach ( $post_type_caps as $cap_key => $cap_value ) {
 
-			if ( ! in_array( $cap_key, array( 'edit_post', 'edit_posts', 'edit_published_posts', 'edit_others_posts' ) ) ) {
+			if ( ! in_array( $cap_key, array( 'edit_post', 'edit_posts', 'edit_published_posts', 'edit_others_posts' ), true ) ) {
 				continue;
 			}
 

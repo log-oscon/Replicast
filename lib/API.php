@@ -126,7 +126,7 @@ class API {
 		$prepared_data = array();
 		foreach ( $meta as $meta_key => $meta_value ) {
 
-			if ( \is_protected_meta( $meta_key ) && ! in_array( $meta_key, $exposed_meta ) ) {
+			if ( \is_protected_meta( $meta_key ) && ! in_array( $meta_key, $exposed_meta, true ) ) {
 				continue;
 			}
 
@@ -248,11 +248,11 @@ class API {
 		$prepared_taxonomies = array();
 		foreach ( $taxonomies as $taxonomy_name => $taxonomy ) {
 
-			if ( in_array( $taxonomy_name, array( Plugin::TAXONOMY_SITE ) ) ) {
+			if ( in_array( $taxonomy_name, array( Plugin::TAXONOMY_SITE ), true ) ) {
 				continue;
 			}
 
-			if ( in_array( $taxonomy_name, $suppressed_taxonomies ) ) {
+			if ( in_array( $taxonomy_name, $suppressed_taxonomies, true ) ) {
 				continue;
 			}
 
@@ -377,7 +377,7 @@ class API {
 			if ( ! empty( $metadata['sizes'] ) ) {
 				foreach ( $metadata['sizes'] as $size => $value ) {
 
-					if ( in_array( $size, $suppressed_image_sizes ) ) {
+					if ( in_array( $size, $suppressed_image_sizes, true ) ) {
 						unset( $metadata['sizes'][ $size ] );
 						continue;
 					}
@@ -472,7 +472,7 @@ class API {
 		// Update metadata.
 		foreach ( $meta as $meta_key => $meta_values ) {
 
-			if ( in_array( $meta_key, $suppressed_meta ) ) {
+			if ( in_array( $meta_key, $suppressed_meta, true ) ) {
 				continue;
 			}
 
