@@ -1,5 +1,8 @@
 ## Changelog ##
 
+### 1.4.1 ###
+* Improved Polylang support.
+
 ### 1.4.0 ###
 * Check for `REST_REQUEST` constant.
 
