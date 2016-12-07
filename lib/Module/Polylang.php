@@ -126,14 +126,17 @@ class Polylang {
 			}
 
 			$translations = $this->get_translations( $term->description );
+			if ( empty( $translations ) ) {
+				continue;
+			}
 
 			foreach ( $translations as $lang => $translated_object_id ) {
 
+				// Update object ID.
 				$remote_info = API::get_remote_info( \get_post( $translated_object_id ) );
 
-				// Update object ID.
 				unset( $translations[ $lang ] );
-				if ( ! empty( $remote_info ) ) {
+				if ( ! empty( $remote_info[ $site->get_id() ]['id'] ) ) {
 					$translations[ $lang ] = $remote_info[ $site->get_id() ]['id'];
 				}
 			}
