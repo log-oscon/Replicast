@@ -282,7 +282,11 @@ class PostAdmin extends Admin {
 			return $defaults;
 		}
 
-		$actions = array( 'view' => $defaults['view'] );
+		$actions = array();
+
+		if ( ! empty( $defaults['view'] ) ) {
+			$actions['view'] = $defaults['view'];
+		}
 
 		/**
 		 * Extend the list of supported row action links by meta type.
