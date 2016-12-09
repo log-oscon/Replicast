@@ -1,5 +1,8 @@
 ## Changelog ##
 
+### 1.4.0 ###
+* Check for `REST_REQUEST` constant.
+
 ### 1.3.0 ###
 * Custom header `X-WP-Replicast`.
 

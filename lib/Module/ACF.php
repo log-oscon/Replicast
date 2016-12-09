@@ -109,7 +109,9 @@ class ACF {
 	 * Leaving these same relationships remotely unchanged. To address this, we are sending the objects
 	 * that were removed in a private meta variable which is then processed.
 	 *
+	 * @since  1.4.0 Check for `REST_REQUEST` constant.
 	 * @since  1.0.0
+	 *
 	 * @param  mixed $value     The value of the field.
 	 * @param  int   $object_id The object ID.
 	 * @param  array $field     The field object.
@@ -117,8 +119,8 @@ class ACF {
 	 */
 	public function get_relations( $value, $object_id, $field ) {
 
-		// Bail out if not admin and bypass REST API requests.
-		if ( ! \is_admin() ) {
+		// Bypass REST API requests.
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 			return $value;
 		}
 
@@ -146,7 +148,7 @@ class ACF {
 
 				$selected_post_id = is_object( $selected_post ) ? $selected_post->ID : $selected_post;
 
-				if ( ! in_array( $selected_post_id, $next_relation ) ) {
+				if ( ! in_array( $selected_post_id, $next_relation, true ) ) {
 					$ids_to_remove[] = $selected_post_id;
 				}
 
@@ -287,7 +289,7 @@ class ACF {
 			$field_type = \acf_extract_var( $meta['raw'], 'type' );
 			$field_key  = \acf_extract_var( $meta['raw'], 'key' );
 
-			if ( in_array( $field_type, $suppressed_meta ) ) {
+			if ( in_array( $field_type, $suppressed_meta, true ) ) {
 				continue;
 			}
 
@@ -346,7 +348,7 @@ class ACF {
 			$field_value = $field['value'];
 			$field_name  = $field['name'];
 
-			if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+			if ( ! in_array( $field_type, array( 'gallery', 'image' ), true ) ) {
 				continue;
 			}
 
@@ -405,7 +407,7 @@ class ACF {
 
 				foreach ( $relations as $field_type => $field_key ) {
 
-					if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+					if ( ! in_array( $field_type, array( 'gallery', 'image' ), true ) ) {
 						continue;
 					}
 
@@ -487,7 +489,7 @@ class ACF {
 
 				$field_type = \acf_extract_var( $field_value['value'], 'type' );
 
-				if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+				if ( ! in_array( $field_type, array( 'gallery', 'image' ), true ) ) {
 					continue;
 				}
 
@@ -551,7 +553,7 @@ class ACF {
 
 				$field_type = \acf_extract_var( $field_value, 'type' );
 
-				if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+				if ( ! in_array( $field_type, array( 'gallery', 'image' ), true ) ) {
 					continue;
 				}
 
@@ -613,7 +615,7 @@ class ACF {
 
 				foreach ( $relations as $field_type => $field_key ) {
 
-					if ( ! in_array( $field_type, array( 'gallery', 'image' ) ) ) {
+					if ( ! in_array( $field_type, array( 'gallery', 'image' ), true ) ) {
 						continue;
 					}
 

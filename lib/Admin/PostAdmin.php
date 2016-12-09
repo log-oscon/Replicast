@@ -88,7 +88,7 @@ class PostAdmin extends Admin {
 	 */
 	public function manage_posts_columns( $columns, $post_type = 'page' ) {
 
-		if ( ! in_array( $post_type, SiteAdmin::get_post_types() ) ) {
+		if ( ! in_array( $post_type, SiteAdmin::get_post_types(), true ) ) {
 			return $columns;
 		}
 
@@ -180,7 +180,7 @@ class PostAdmin extends Admin {
 			return $allcaps;
 		}
 
-		if ( ! function_exists( 'get_current_screen' ) ) {
+		if ( ! function_exists( '\get_current_screen' ) ) {
 			return $allcaps;
 		}
 
@@ -229,7 +229,7 @@ class PostAdmin extends Admin {
 		// Disable certain capabilities.
 		foreach ( $post_type_caps as $cap_key => $cap_value ) {
 
-			if ( ! in_array( $cap_key, array( 'edit_post', 'edit_posts', 'edit_published_posts', 'edit_others_posts' ) ) ) {
+			if ( ! in_array( $cap_key, array( 'edit_post', 'edit_posts', 'edit_published_posts', 'edit_others_posts' ), true ) ) {
 				continue;
 			}
 
@@ -249,6 +249,11 @@ class PostAdmin extends Admin {
 	 * @return string          Possibly-modified post edit link.
 	 */
 	public function get_edit_post_link( $link, $post_id, $context ) {
+
+		// Bypass REST API requests.
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+			return $link;
+		}
 
 		$source_info = API::get_source_info( $post_id );
 
@@ -277,7 +282,11 @@ class PostAdmin extends Admin {
 			return $defaults;
 		}
 
-		$actions = array( 'view' => $defaults['view'] );
+		$actions = array();
+
+		if ( ! empty( $defaults['view'] ) ) {
+			$actions['view'] = $defaults['view'];
+		}
 
 		/**
 		 * Extend the list of supported row action links by meta type.
@@ -554,15 +563,17 @@ class PostAdmin extends Admin {
 	 * Triggered whenever a post is published, or if it is edited and
 	 * the status is changed to publish.
 	 *
+	 * @since 1.4.0 Check for `REST_REQUEST` constant.
 	 * @since 1.0.0
+	 *
 	 * @param int      $post_id                The post ID.
 	 * @param \WP_Post $post                   The \WP_Post object.
 	 * @param \WP_Post $post_before (optional) The \WP_Post object before the update. Only for attachments.
 	 */
 	public function on_save_post( $post_id, \WP_Post $post, $post_before = null ) {
 
-		// Bail out if not admin and bypass REST API requests.
-		if ( ! \is_admin() ) {
+		// Bypass REST API requests.
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 			return;
 		}
 
@@ -578,17 +589,17 @@ class PostAdmin extends Admin {
 
 		// If current user can't edit posts, return.
 		if ( ! \current_user_can( 'edit_post', $post_id ) ) {
-			return;
+			return new \WP_Error( 'invalid_cap', \__( 'Invalid user capability.', 'replicast' ) );
 		}
 
-		// PostHandlers with trash status are processed in \Request\Admin on_trash_post.
+		// Handled on `on_trash_post`.
 		if ( $post->post_status === 'trash' ) {
-			return;
+			return new \WP_Error( 'invalid_post_status', \__( 'Invalid post status.', 'replicast' ) );
 		}
 
 		// Double check post status.
 		if ( ! in_array( $post->post_status, SiteAdmin::get_post_status() ) ) {
-			return;
+			return new \WP_Error( 'invalid_post_status', \__( 'Invalid post status.', 'replicast' ) );
 		}
 
 		// Get user ID.
@@ -686,7 +697,7 @@ class PostAdmin extends Admin {
 
 				$this->register_notice(
 					$handler->get_notice_unique_id( $site_id, $user_id ),
-					$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
+					$this->get_notice_type_by_status_code( $ex ),
 					$ex->getMessage()
 				);
 			}
@@ -699,31 +710,33 @@ class PostAdmin extends Admin {
 	/**
 	 * Fired when a post (or page) is about to be trashed.
 	 *
+	 * @since 1.4.0 Check for `REST_REQUEST` constant.
 	 * @since 1.0.0
+	 *
 	 * @param int $post_id The post ID.
 	 */
 	public function on_trash_post( $post_id ) {
 
-		// Bail out if not admin and bypass REST API requests.
-		if ( ! \is_admin() ) {
+		// Bypass REST API requests.
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 			return;
 		}
 
 		// If current user can't delete posts, return.
 		if ( ! \current_user_can( 'delete_posts' ) ) {
-			return;
+			return new \WP_Error( 'invalid_cap', \__( 'Invalid user capability.', 'replicast' ) );
 		}
 
 		// Retrieves post data given a post ID.
 		$post = \get_post( $post_id );
 
 		if ( ! $post ) {
-			return;
+			return new \WP_Error( 'invalid_post', \__( 'Invalid post ID.', 'replicast' ) );
 		}
 
 		// Double check post status.
 		if ( $post->post_status !== 'trash' ) {
-			return;
+			return new \WP_Error( 'invalid_post_status', \__( 'Invalid post status.', 'replicast' ) );
 		}
 
 		// Get user ID.
@@ -782,7 +795,7 @@ class PostAdmin extends Admin {
 
 				$this->register_notice(
 					$handler->get_notice_unique_id( $site_id, $user_id ),
-					$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
+					$this->get_notice_type_by_status_code( $ex ),
 					$ex->getMessage()
 				);
 			}
@@ -792,31 +805,33 @@ class PostAdmin extends Admin {
 	/**
 	 * Fired when a post, page or attachment is permanently deleted.
 	 *
+	 * @since 1.4.0 Check for `REST_REQUEST` constant.
 	 * @since 1.0.0
+	 *
 	 * @param int $post_id The post ID.
 	 */
 	public function on_delete_post( $post_id ) {
 
-		// Bail out if not admin and bypass REST API requests.
-		if ( ! \is_admin() ) {
+		// Bypass REST API requests.
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 			return;
 		}
 
 		// If current user can't delete posts, return.
 		if ( ! \current_user_can( 'delete_posts' ) ) {
-			return;
+			return new \WP_Error( 'invalid_cap', \__( 'Invalid user capability.', 'replicast' ) );
 		}
 
 		// Retrieves post data given a post ID.
 		$post = \get_post( $post_id );
 
 		if ( ! $post ) {
-			return;
+			return new \WP_Error( 'invalid_post', \__( 'Invalid post ID.', 'replicast' ) );
 		}
 
 		// Double check post type.
 		if ( $post->post_type !== 'revision' ) {
-			return;
+			return new \WP_Error( 'invalid_post_type', \__( 'Invalid post type.', 'replicast' ) );
 		}
 
 		// Get user ID.
@@ -875,7 +890,7 @@ class PostAdmin extends Admin {
 
 				$this->register_notice(
 					$handler->get_notice_unique_id( $site_id, $user_id ),
-					$this->get_notice_type_by_status_code( $ex->getResponse()->getStatusCode() ),
+					$this->get_notice_type_by_status_code( $ex ),
 					$ex->getMessage()
 				);
 			}

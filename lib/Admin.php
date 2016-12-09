@@ -234,11 +234,20 @@ class Admin {
 	/**
 	 * Get the admin notice type based on a HTTP request/response status code.
 	 *
+	 * @since  1.4.0 Exception proper handling.
 	 * @since  1.0.0
-	 * @param  int $status_code HTTP request/response status code.
-	 * @return string           Possible values: error | success | warning.
+	 *
+	 * @param  int|\Exception $status_code HTTP request/response status code, or a
+	 *                                     \Exception instance object.
+	 * @return string                      Possible values: error | success | warning.
 	 */
-	public function get_notice_type_by_status_code( $status_code ) {
+	public function get_notice_type_by_status_code( $status_code = 0 ) {
+
+		if ( $status_code instanceof \Exception ) {
+			if ( $status_code->hasResponse() ) {
+				$status_code = $status_code->getResponse()->getStatusCode();
+			}
+		}
 
 		$status_code = intval( $status_code );
 

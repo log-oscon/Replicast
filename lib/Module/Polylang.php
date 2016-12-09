@@ -51,7 +51,7 @@ class Polylang {
 
 		\add_filter( 'replicast_suppress_object_taxonomies', array( $this, 'suppress_taxonomies' ) );
 
-		\add_action( 'replicast_update_object_terms',        array( $this, 'update_object_translations' ), 10 );
+		\add_action( 'replicast_update_object_terms',        array( $this, 'update_object_translations' ), 10, 2 );
 
 		\add_filter( 'replicast_prepare_object_for_create',  array( $this, 'prepare_object_translations' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_update',  array( $this, 'prepare_object_translations' ), 10, 2 );
@@ -70,9 +70,7 @@ class Polylang {
 	 * @return array             Possibly-modified name(s) of the suppressed taxonomies.
 	 */
 	public function suppress_taxonomies( $suppressed = array() ) {
-		return array_merge( array(
-			'term_translations',
-		), $suppressed );
+		return array_merge( array( 'term_translations' ), $suppressed );
 	}
 
 	/**
@@ -86,17 +84,20 @@ class Polylang {
 
 		foreach ( $terms as $term ) {
 
-			if ( in_array( $term->taxonomy, array( 'post_translations', 'language' ) ) ) {
+			if ( in_array( $term->taxonomy, array( 'post_translations', 'language' ), true ) ) {
 				continue;
 			}
 
-			$term->polylang = array();
+			$term->polylang = array(
+				'language'     => '',
+				'translations' => array(),
+			);
 
-			if ( function_exists( 'pll_get_term_language' ) ) {
+			if ( function_exists( '\pll_get_term_language' ) ) {
 				$term->polylang['language'] = \pll_get_term_language( $term->term_id );
 			}
 
-			if ( function_exists( 'pll_get_term_translations' ) ) {
+			if ( function_exists( '\pll_get_term_translations' ) ) {
 				$term->polylang['translations'] = \pll_get_term_translations( $term->term_id );
 			}
 		}
@@ -125,14 +126,17 @@ class Polylang {
 			}
 
 			$translations = $this->get_translations( $term->description );
+			if ( empty( $translations ) ) {
+				continue;
+			}
 
 			foreach ( $translations as $lang => $translated_object_id ) {
 
+				// Update object ID.
 				$remote_info = API::get_remote_info( \get_post( $translated_object_id ) );
 
-				// Update object ID.
 				unset( $translations[ $lang ] );
-				if ( ! empty( $remote_info ) ) {
+				if ( ! empty( $remote_info[ $site->get_id() ]['id'] ) ) {
 					$translations[ $lang ] = $remote_info[ $site->get_id() ]['id'];
 				}
 			}
@@ -172,12 +176,13 @@ class Polylang {
 					continue;
 				}
 
-				$remote_info = API::get_remote_info( $translated_term );
-
 				// Update object ID's.
-				if ( ! empty( $remote_info ) ) {
-					$data['replicast']['terms'][ $term_id ]->polylang['translations'][ $lang ] = $remote_info[ $site->get_id() ]['id'];
+				$remote_info = API::get_remote_info( $translated_term );
+				if ( empty( $remote_info[ $site->get_id() ]['id'] ) ) {
+					continue;
 				}
+
+				$data['replicast']['terms'][ $term_id ]->polylang['translations'][ $lang ] = $remote_info[ $site->get_id() ]['id'];
 			}
 		}
 
@@ -187,15 +192,20 @@ class Polylang {
 	/**
 	 * Update object translations.
 	 *
+	 * @since 1.4.1 Execute \pll_save_post_translations for all posts.
 	 * @since 1.0.0
-	 * @param array $terms Object terms.
+	 *
+	 * @param array  $terms  Object terms.
+	 * @param object $object The object from the response.
 	 */
-	public function update_object_translations( $terms ) {
+	public function update_object_translations( $terms, $object ) {
 
-		if ( ! function_exists( 'pll_save_post_translations' ) ) {
+		if ( ! function_exists( '\pll_save_post_translations' ) ) {
 			return;
 		}
 
+		// Get post translations.
+		$post_translations = array();
 		foreach ( $terms as $term_data ) {
 
 			if ( $term_data['taxonomy'] !== 'post_translations' ) {
@@ -206,7 +216,35 @@ class Polylang {
 				continue;
 			}
 
-			\pll_save_post_translations( $this->get_translations( $term_data['description'] ) );
+			$post_translations = $this->get_translations( $term_data['description'] );
+		}
+
+		// Get post language and add it, if not exists, to the post translations set.
+		$post_language = \pll_get_post_language( $object->ID );
+		if ( empty( $post_translations[ $post_language ] ) ) {
+			$post_translations[ $post_language ] = $object->ID;
+		}
+
+		/**
+		 * Polylang's \pll_save_post_translations() function makes use of reset() in the
+		 * `post_translations` array, which means that, specially in the posts creation,
+		 * the translated posts are only associated in the post with the language that
+		 * is in the first position of the array.
+		 * What is being done is running the \pll_save_post_translations() function on
+		 * all posts that are translated.
+		 *
+		 * @see \pll_save_post_translations()
+		 *
+		 * @since 1.4.1
+		 */
+		foreach ( $post_translations as $lang => $post_id ) {
+
+			// Change index order.
+			$current_lang = $post_translations[ $lang ];
+			unset( $post_translations[ $lang ] );
+			$post_translations[ $lang ] = $current_lang;
+
+			\pll_save_post_translations( $post_translations );
 		}
 	}
 
@@ -227,7 +265,7 @@ class Polylang {
 			$term_id       = $term_data['term_id'];
 			$term_language = '';
 
-			if ( function_exists( 'pll_current_language' ) ) {
+			if ( function_exists( '\pll_current_language' ) ) {
 				$term_language = \pll_current_language();
 			}
 
@@ -282,7 +320,7 @@ class Polylang {
 	 */
 	private function sort_by_language( $lang, $current_lang ) {
 
-		if ( empty( $current_lang ) && function_exists( 'pll_current_language' ) ) {
+		if ( empty( $current_lang ) && function_exists( '\pll_current_language' ) ) {
 			$current_lang = \pll_current_language();
 		}
 
