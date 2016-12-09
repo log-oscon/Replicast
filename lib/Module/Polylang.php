@@ -126,14 +126,17 @@ class Polylang {
 			}
 
 			$translations = $this->get_translations( $term->description );
+			if ( empty( $translations ) ) {
+				continue;
+			}
 
 			foreach ( $translations as $lang => $translated_object_id ) {
 
+				// Update object ID.
 				$remote_info = API::get_remote_info( \get_post( $translated_object_id ) );
 
-				// Update object ID.
 				unset( $translations[ $lang ] );
-				if ( ! empty( $remote_info ) ) {
+				if ( ! empty( $remote_info[ $site->get_id() ]['id'] ) ) {
 					$translations[ $lang ] = $remote_info[ $site->get_id() ]['id'];
 				}
 			}
@@ -173,12 +176,13 @@ class Polylang {
 					continue;
 				}
 
-				$remote_info = API::get_remote_info( $translated_term );
-
 				// Update object ID's.
-				if ( ! empty( $remote_info ) ) {
-					$data['replicast']['terms'][ $term_id ]->polylang['translations'][ $lang ] = $remote_info[ $site->get_id() ]['id'];
+				$remote_info = API::get_remote_info( $translated_term );
+				if ( empty( $remote_info[ $site->get_id() ]['id'] ) ) {
+					continue;
 				}
+
+				$data['replicast']['terms'][ $term_id ]->polylang['translations'][ $lang ] = $remote_info[ $site->get_id() ]['id'];
 			}
 		}
 

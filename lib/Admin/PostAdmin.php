@@ -250,6 +250,11 @@ class PostAdmin extends Admin {
 	 */
 	public function get_edit_post_link( $link, $post_id, $context ) {
 
+		// Bypass REST API requests.
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+			return $link;
+		}
+
 		$source_info = API::get_source_info( $post_id );
 
 		if ( empty( $source_info ) ) {
@@ -277,7 +282,11 @@ class PostAdmin extends Admin {
 			return $defaults;
 		}
 
-		$actions = array( 'view' => $defaults['view'] );
+		$actions = array();
+
+		if ( ! empty( $defaults['view'] ) ) {
+			$actions['view'] = $defaults['view'];
+		}
 
 		/**
 		 * Extend the list of supported row action links by meta type.
