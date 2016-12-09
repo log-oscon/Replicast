@@ -200,9 +200,16 @@ class Polylang {
 	 */
 	public function update_object_translations( $terms, $object ) {
 
+		if ( ! function_exists( '\pll_languages_list' ) ) {
+			return;
+		}
+
 		if ( ! function_exists( '\pll_save_post_translations' ) ) {
 			return;
 		}
+
+		// Get local available languages.
+		$available_langs = \pll_languages_list();
 
 		// Get post translations.
 		$post_translations = array();
@@ -238,6 +245,11 @@ class Polylang {
 		 * @since 1.4.1
 		 */
 		foreach ( $post_translations as $lang => $post_id ) {
+
+			// Only import post translations for available languages.
+			if ( ! in_array( $lang, $available_langs, true ) ) {
+				continue;
+			}
 
 			// Change index order.
 			$current_lang = $post_translations[ $lang ];
