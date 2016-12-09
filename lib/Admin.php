@@ -243,7 +243,7 @@ class Admin {
 	 */
 	public function get_notice_type_by_status_code( $status_code = 0 ) {
 
-		if ( $status_code instanceof \Exception ) {
+		if ( $status_code instanceof \GuzzleHttp\Exception ) {
 			if ( $status_code->hasResponse() ) {
 				$status_code = $status_code->getResponse()->getStatusCode();
 			}
