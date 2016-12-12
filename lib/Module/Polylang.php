@@ -51,7 +51,7 @@ class Polylang {
 
 		\add_filter( 'replicast_suppress_object_taxonomies', array( $this, 'suppress_taxonomies' ) );
 
-		\add_action( 'replicast_update_object_terms',        array( $this, 'update_object_translations' ), 10 );
+		\add_action( 'replicast_update_object_terms',        array( $this, 'update_object_translations' ), 10, 2 );
 
 		\add_filter( 'replicast_prepare_object_for_create',  array( $this, 'prepare_object_translations' ), 10, 2 );
 		\add_filter( 'replicast_prepare_object_for_update',  array( $this, 'prepare_object_translations' ), 10, 2 );
@@ -192,15 +192,27 @@ class Polylang {
 	/**
 	 * Update object translations.
 	 *
+	 * @since 1.4.1 Execute \pll_save_post_translations for all posts.
 	 * @since 1.0.0
-	 * @param array $terms Object terms.
+	 *
+	 * @param array  $terms  Object terms.
+	 * @param object $object The object from the response.
 	 */
-	public function update_object_translations( $terms ) {
+	public function update_object_translations( $terms, $object ) {
+
+		if ( ! function_exists( '\pll_languages_list' ) ) {
+			return;
+		}
 
 		if ( ! function_exists( '\pll_save_post_translations' ) ) {
 			return;
 		}
 
+		// Get local available languages.
+		$available_langs = \pll_languages_list();
+
+		// Get post translations.
+		$post_translations = array();
 		foreach ( $terms as $term_data ) {
 
 			if ( $term_data['taxonomy'] !== 'post_translations' ) {
@@ -211,7 +223,40 @@ class Polylang {
 				continue;
 			}
 
-			\pll_save_post_translations( $this->get_translations( $term_data['description'] ) );
+			$post_translations = $this->get_translations( $term_data['description'] );
+		}
+
+		// Get post language and add it, if not exists, to the post translations set.
+		$post_language = \pll_get_post_language( $object->ID );
+		if ( empty( $post_translations[ $post_language ] ) ) {
+			$post_translations[ $post_language ] = $object->ID;
+		}
+
+		/**
+		 * Polylang's \pll_save_post_translations() function makes use of reset() in the
+		 * `post_translations` array, which means that, specially in the posts creation,
+		 * the translated posts are only associated in the post with the language that
+		 * is in the first position of the array.
+		 * What is being done is running the \pll_save_post_translations() function on
+		 * all posts that are translated.
+		 *
+		 * @see \pll_save_post_translations()
+		 *
+		 * @since 1.4.1
+		 */
+		foreach ( $post_translations as $lang => $post_id ) {
+
+			// Only import post translations for available languages.
+			if ( ! in_array( $lang, $available_langs, true ) ) {
+				continue;
+			}
+
+			// Change index order.
+			$current_lang = $post_translations[ $lang ];
+			unset( $post_translations[ $lang ] );
+			$post_translations[ $lang ] = $current_lang;
+
+			\pll_save_post_translations( $post_translations );
 		}
 	}
 

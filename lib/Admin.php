@@ -237,19 +237,19 @@ class Admin {
 	 * @since  1.4.0 Exception proper handling.
 	 * @since  1.0.0
 	 *
-	 * @param  int|\Exception $status_code HTTP request/response status code, or a
-	 *                                     \Exception instance object.
+	 * @param  int|\Exception $status_code HTTP request/response status code, or an
+	 *                                     Exception instance object.
 	 * @return string                      Possible values: error | success | warning.
 	 */
 	public function get_notice_type_by_status_code( $status_code = 0 ) {
 
-		if ( $status_code instanceof \Exception ) {
-			if ( $status_code->hasResponse() ) {
+		if ( ! is_integer( $status_code ) ) {
+			if ( $status_code instanceof \GuzzleHttp\Exception && $status_code->hasResponse() ) {
 				$status_code = $status_code->getResponse()->getStatusCode();
+			} else {
+				$status_code = 0;
 			}
 		}
-
-		$status_code = intval( $status_code );
 
 		/**
 		 * FIXME: Maybe this should be more simpler.

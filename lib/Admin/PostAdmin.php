@@ -36,8 +36,8 @@ class PostAdmin extends Admin {
 		// Post handling.
 		\add_action( 'save_post',          array( $this, 'on_save_post' ), 30, 3 );
 		\add_action( 'attachment_updated', array( $this, 'on_save_post' ), 30, 3 );
-		\add_action( 'trashed_post',       array( $this, 'on_trash_post' ) );
-		\add_action( 'before_delete_post', array( $this, 'on_delete_post' ) );
+		\add_action( 'trashed_post',       array( $this, 'on_trash_post' ), 30 );
+		\add_action( 'before_delete_post', array( $this, 'on_delete_post' ), 30 );
 
 		// Admin UI - Posts.
 		foreach ( SiteAdmin::get_post_types() as $post_type ) {
