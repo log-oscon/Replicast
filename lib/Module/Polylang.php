@@ -268,23 +268,24 @@ class Polylang {
 	 */
 	public function update_object_terms_translations( $terms ) {
 
+		// Get local available languages.
+		$available_langs = \pll_languages_list();
+
 		foreach ( $terms as $term_data ) {
 
-			if ( empty( $term_data['polylang'] ) ) {
+			if ( empty( $term_data['polylang']['language'] ) ) {
 				continue;
 			}
 
 			$term_id       = $term_data['term_id'];
-			$term_language = '';
+			$term_language = $term_data['polylang']['language'];
 
-			if ( function_exists( '\pll_current_language' ) ) {
-				$term_language = \pll_current_language();
+			// Only import post translations for available languages.
+			if ( ! in_array( $term_language, $available_langs, true ) ) {
+				continue;
 			}
 
-			if ( ! empty( $term_data['polylang']['language'] ) ) {
-				$term_language = $term_data['polylang']['language'];
-				\pll_set_term_language( $term_id, $term_language );
-			}
+			\pll_set_term_language( $term_id, $term_language );
 
 			if ( ! empty( $term_data['polylang']['translations'] ) ) {
 				$translations = $term_data['polylang']['translations'];
