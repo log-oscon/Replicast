@@ -287,12 +287,11 @@ class ACF {
 			}
 
 			$field_type = \acf_extract_var( $meta['raw'], 'type' );
-			$field_key  = \acf_extract_var( $meta['raw'], 'key' );
-
 			if ( in_array( $field_type, $suppressed_meta, true ) ) {
 				continue;
 			}
 
+			$field_key  = \acf_extract_var( $meta['raw'], 'key' );
 			$meta_value = '';
 
 			// In theory, the $meta['rendered'] field has no more than one element, but you never know :-).
@@ -344,14 +343,12 @@ class ACF {
 
 		foreach ( $fields as $field ) {
 
-			$field_type  = $field['type'];
-			$field_value = $field['value'];
-			$field_name  = $field['name'];
-
+			$field_type = $field['type'];
 			if ( ! in_array( $field_type, array( 'gallery', 'image' ), true ) ) {
 				continue;
 			}
 
+			$field_value = $field['value'];
 			if ( empty( $field_value ) ) {
 				continue;
 			}
@@ -359,7 +356,7 @@ class ACF {
 			$relations = array(
 				'post' => array(
 					$object['id'] => array(
-						$field_type => $field_name,
+						$field_type => $field['name'],
 					),
 				),
 			);
@@ -552,7 +549,6 @@ class ACF {
 			foreach ( $fields as $field_key => $field_value ) {
 
 				$field_type = \acf_extract_var( $field_value, 'type' );
-
 				if ( ! in_array( $field_type, array( 'gallery', 'image' ), true ) ) {
 					continue;
 				}
@@ -646,8 +642,6 @@ class ACF {
 	 */
 	private function prepare_taxonomy( $field_value, $site ) {
 
-		$value = '';
-
 		if ( empty( $field_value ) ) {
 			$field_value = array();
 		}
@@ -656,6 +650,7 @@ class ACF {
 			$field_value = array( $field_value );
 		}
 
+		$value = '';
 		foreach ( $field_value as $term ) {
 
 			if ( is_numeric( $term ) ) {
@@ -666,9 +661,8 @@ class ACF {
 				continue;
 			}
 
-			$remote_info = API::get_remote_info( $term );
-
 			// Update object ID.
+			$remote_info = API::get_remote_info( $term );
 			if ( ! empty( $remote_info ) ) {
 				$value[] = $remote_info[ $site->get_id() ]['id'];
 			}
@@ -693,20 +687,17 @@ class ACF {
 	private function prepare_image( $field_value, $site ) {
 
 		$value = '';
-
 		if ( empty( $field_value['id'] ) ) {
 			return $value;
 		}
 
 		$image = \get_post( $field_value['id'] );
-
 		if ( ! $image ) {
 			return $value;
 		}
 
-		$remote_info = API::get_remote_info( $image );
-
 		// Update object ID.
+		$remote_info = API::get_remote_info( $image );
 		if ( ! empty( $remote_info ) ) {
 			return $remote_info[ $site->get_id() ]['id'];
 		}
@@ -725,8 +716,6 @@ class ACF {
 	 */
 	private function prepare_gallery( $field_value, $site ) {
 
-		$value = '';
-
 		if ( empty( $field_value ) ) {
 			$field_value = array();
 		}
@@ -735,6 +724,7 @@ class ACF {
 			$field_value = array( $field_value );
 		}
 
+		$value = '';
 		foreach ( $field_value as $related_image ) {
 			$image_meta = $this->prepare_image( $related_image, $site );
 			if ( ! empty( $image_meta ) ) {
@@ -760,8 +750,6 @@ class ACF {
 	 */
 	private function prepare_relationship( $field_value, $site ) {
 
-		$value = '';
-
 		if ( empty( $field_value ) ) {
 			$field_value = array();
 		}
@@ -770,6 +758,7 @@ class ACF {
 			$field_value = array( $field_value );
 		}
 
+		$value = '';
 		foreach ( $field_value as $related_post ) {
 
 			if ( is_numeric( $related_post ) ) {
@@ -780,9 +769,8 @@ class ACF {
 				continue;
 			}
 
-			$remote_info = API::get_remote_info( $related_post );
-
 			// Update object ID.
+			$remote_info = API::get_remote_info( $related_post );
 			if ( ! empty( $remote_info ) ) {
 				$value[] = $remote_info[ $site->get_id() ]['id'];
 			}
