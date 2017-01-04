@@ -607,7 +607,12 @@ class API {
 		foreach ( $media as $source_id => $media_data ) {
 
 			// Update media.
-			$media[ $source_id ]['id'] = static::update_media( $media_data );
+			$attachment_id = static::update_media( $media_data );
+			if ( ! $attachment_id ) {
+				continue;
+			}
+
+			$media[ $source_id ]['id'] = $attachment_id;
 
 			if ( empty( $media_data['_relations']['post'] ) ) {
 				continue;
@@ -879,7 +884,7 @@ class API {
 	 * @since  1.0.0
 	 * @access private
 	 * @param  array $media_data The values of the field.
-	 * @return int               The media object ID.
+	 * @return int|bool          The media object ID. False, otherwise.
 	 */
 	private static function update_media( $media_data ) {
 
@@ -889,7 +894,13 @@ class API {
 		if ( empty( $attachment_id ) ) {
 
 			$file  = \esc_url( $media_data['metadata']['file'] );
-			$title = ! empty( $media_data['post_title'] ) ? \sanitize_text_field( $media_data['post_title'] ) : \sanitize_file_name( basename( $file ) );
+
+			$title = '';
+			if ( ! empty( $media_data['post_title'] ) ) {
+				$title = \sanitize_text_field( $media_data['post_title'] );
+			} else {
+				$title = \sanitize_file_name( basename( $file ) );
+			}
 
 			// Set attachment data.
 			$attachment = array(
@@ -903,9 +914,13 @@ class API {
 			// Create the attachment.
 			$attachment_id = \wp_insert_attachment( $attachment, $file );
 
+			if ( \is_wp_error( $attachment_id ) ) {
+				error_log( $attachment_id->get_error_message() );
+				return false;
+			}
+
 			// Assign metadata to attachment.
 			\wp_update_attachment_metadata( $attachment_id, $media_data['metadata'] );
-
 		}
 
 		// Save remote object info.
