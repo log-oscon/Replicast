@@ -193,6 +193,7 @@ class Polylang {
 	 * Update object translations.
 	 *
 	 * @since 1.4.1 Execute \pll_save_post_translations for all posts.
+	 *              Move the current object language to first position.
 	 * @since 1.0.0
 	 *
 	 * @param array  $terms  Object terms.
@@ -226,6 +227,14 @@ class Polylang {
 			$post_translations = $this->get_translations( $term_data['description'] );
 		}
 
+		// Only import post translations for available languages.
+		foreach ( $post_translations as $lang => $post_id ) {
+			if ( in_array( $lang, $available_langs, true ) ) {
+				continue;
+			}
+			unset( $post_translations[ $lang ] );
+		}
+
 		// Get post language and add it, if not exists, to the post translations set.
 		$post_language = \pll_get_post_language( $object->ID );
 		if ( empty( $post_translations[ $post_language ] ) ) {
@@ -244,20 +253,9 @@ class Polylang {
 		 *
 		 * @since 1.4.1
 		 */
-		foreach ( $post_translations as $lang => $post_id ) {
+		$post_translations = array( $post_language => $post_translations[ $post_language ]) + $post_translations;
 
-			// Only import post translations for available languages.
-			if ( ! in_array( $lang, $available_langs, true ) ) {
-				continue;
-			}
-
-			// Change index order.
-			$current_lang = $post_translations[ $lang ];
-			unset( $post_translations[ $lang ] );
-			$post_translations[ $lang ] = $current_lang;
-
-			\pll_save_post_translations( $post_translations );
-		}
+		\pll_save_post_translations( $post_translations );
 	}
 
 	/**
