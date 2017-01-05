@@ -253,7 +253,7 @@ class Polylang {
 		 *
 		 * @since 1.4.1
 		 */
-		$post_translations = array( $post_language => $post_translations[ $post_language ]) + $post_translations;
+		$post_translations = array( $post_language => $post_translations[ $post_language ] ) + $post_translations;
 
 		\pll_save_post_translations( $post_translations );
 	}
