@@ -9,7 +9,7 @@
  * Plugin Name:       Replicast
  * Plugin URI:        http://log.pt/
  * Description:       Replicate content across WordPress installs via the WP REST API.
- * Version:           1.4.1
+ * Version:           1.4.2
  * Author:            log.OSCON, Lda.
  * Author URI:        http://log.pt/
  * License:           GPL-2.0+

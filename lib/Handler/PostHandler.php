@@ -105,7 +105,7 @@ class PostHandler extends Handler {
 		$data['replicast']['meta'][ Plugin::REPLICAST_SOURCE_INFO ] = array(
 			serialize( array(
 				'object_id' => $this->object->ID,
-				'edit_link' => \get_edit_post_link( $this->object->ID ),
+				'edit_link' => $this->get_edit_post_link( $this->object->ID ),
 			) ),
 		);
 
@@ -151,7 +151,7 @@ class PostHandler extends Handler {
 			$data['replicast']['terms'][ $term_id ]->meta = array(
 				Plugin::REPLICAST_SOURCE_INFO => serialize( array(
 					'object_id' => $term_id,
-					'edit_link' => \get_edit_term_link( $term_id, $term->taxonomy ),
+					'edit_link' => $this->get_edit_term_link( $term_id, $term->taxonomy ),
 				) ),
 			);
 
@@ -215,7 +215,7 @@ class PostHandler extends Handler {
 			$data['replicast']['media'][ $media_id ][ Plugin::REPLICAST_SOURCE_INFO ] = serialize( array(
 				'object_id' => $media_id,
 				'permalink' => \get_attachment_link( $media_id ),
-				'edit_link' => \get_edit_post_link( $media_id ),
+				'edit_link' => $this->get_edit_post_link( $media_id ),
 			) );
 		}
 
@@ -323,7 +323,7 @@ class PostHandler extends Handler {
 			$terms[ $term_id ]->meta = array(
 				Plugin::REPLICAST_SOURCE_INFO => serialize( array(
 					'object_id' => $term_id,
-					'edit_link' => \get_edit_term_link( $term_id, $term->taxonomy ),
+					'edit_link' => $this->get_edit_term_link( $term_id, $term->taxonomy ),
 				) ),
 			);
 
@@ -334,5 +334,42 @@ class PostHandler extends Handler {
 
 			$this->prepare_child_terms( $term->term_id, $terms[ $term_id ]->children, $site );
 		}
+	}
+
+	/**
+	 * Retrieves the edit post link for post.
+	 *
+	 * @see \get_edit_post_link()
+	 *
+	 * @since  1.4.2
+	 * @access private
+	 * @param  int $id Post ID.
+	 * @return string  The edit post link for the given post. Empty if the post type is invalid or does not allow an editing UI.
+	 */
+	private function get_edit_post_link( $id ) {
+		$post_link = \get_edit_post_link( $id );
+		if ( empty( $post_link ) ) {
+			return '';
+		}
+		return $post_link;
+	}
+
+	/**
+	 * Retrieves the URL for editing a given term.
+	 *
+	 * @see \get_edit_term_link()
+	 *
+	 * @since  1.4.2
+	 * @access private
+	 * @param  int    $term_id  Term ID.
+	 * @param  string $taxonomy Taxonomy.
+	 * @return string           The edit term link URL for the given term, or empty on failure.
+	 */
+	private function get_edit_term_link( $term_id, $taxonomy = '' ) {
+		$term_link = \get_edit_term_link( $term_id, $taxonomy );
+		if ( empty( $term_link ) ) {
+			return '';
+		}
+		return $term_link;
 	}
 }

@@ -1,5 +1,8 @@
 ## Changelog ##
 
+### 1.4.2 ###
+* Avoid null's on post and term edit links.
+
 ### 1.4.1 ###
 * Improved Polylang support.
 * Improved ACF support.
