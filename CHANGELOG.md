@@ -1,5 +1,8 @@
 ## Changelog ##
 
+### 1.4.3 ###
+* Minor performance improvements.
+
 ### 1.4.2 ###
 * Avoid null's on post and term edit links.
 
