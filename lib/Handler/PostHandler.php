@@ -70,6 +70,8 @@ class PostHandler extends Handler {
 	 */
 	public function prepare_attachment( $data, $site ) {
 
+		$site_id = $site->get_id();
+
 		// Force attachment status to be 'publish'.
 		// FIXME: review this later on.
 		if ( ! empty( $data['status'] ) && $data['status'] === 'inherit' ) {
@@ -83,8 +85,8 @@ class PostHandler extends Handler {
 
 			// Update object ID.
 			$data['post'] = '';
-			if ( ! empty( $replicast_info ) ) {
-				$data['post'] = $replicast_info[ $site->get_id() ]['id'];
+			if ( ! empty( $replicast_info[ $site_id ] ) ) {
+				$data['post'] = $replicast_info[ $site_id ]['id'];
 			}
 		}
 
@@ -131,6 +133,7 @@ class PostHandler extends Handler {
 			return $data;
 		}
 
+		$site_id = $site->get_id();
 		foreach ( $data['replicast']['terms'] as $term_id => $term ) {
 
 			$replicast_info = API::get_remote_info( $term );
@@ -139,8 +142,8 @@ class PostHandler extends Handler {
 			$term->term_id          = '';
 			$term->term_taxonomy_id = '';
 
-			if ( ! empty( $replicast_info[ $site->get_id() ] ) ) {
-				$replicast_info         = $replicast_info[ $site->get_id() ];
+			if ( ! empty( $replicast_info[ $site_id ] ) ) {
+				$replicast_info         = $replicast_info[ $site_id ];
 				$term->term_id          = $replicast_info['id'];
 				$term->term_taxonomy_id = isset( $replicast_info['term_taxonomy_id'] ) ? $replicast_info['term_taxonomy_id'] : '';
 			}
@@ -176,12 +179,14 @@ class PostHandler extends Handler {
 	 */
 	public function prepare_featured_media( $data, $site ) {
 
+		$site_id = $site->get_id();
+
 		$replicast_info = API::get_remote_info( \get_post( $data['featured_media'] ) );
 
 		// Update object ID.
 		$data['featured_media'] = '';
-		if ( ! empty( $replicast_info ) ) {
-			$data['featured_media'] = $replicast_info[ $site->get_id() ]['id'];
+		if ( ! empty( $replicast_info[ $site_id ] ) ) {
+			$data['featured_media'] = $replicast_info[ $site_id ]['id'];
 		}
 
 		return $data;
@@ -201,14 +206,15 @@ class PostHandler extends Handler {
 			return $data;
 		}
 
+		$site_id = $site->get_id();
 		foreach ( $data['replicast']['media'] as $media_id => $media ) {
 
 			$replicast_info = API::get_remote_info( \get_post( $media_id ) );
 
 			// Update object ID.
 			$data['replicast']['media'][ $media_id ]['id'] = '';
-			if ( ! empty( $replicast_info ) ) {
-				$data['replicast']['media'][ $media_id ]['id'] = $replicast_info[ $site->get_id() ]['id'];
+			if ( ! empty( $replicast_info[ $site_id ] ) ) {
+				$data['replicast']['media'][ $media_id ]['id'] = $replicast_info[ $site_id ]['id'];
 			}
 
 			// Add remote object info.
@@ -301,6 +307,7 @@ class PostHandler extends Handler {
 	 */
 	private function prepare_child_terms( $parent_id, &$terms, $site ) {
 
+		$site_id = $site->get_id();
 		foreach ( $terms as $term_id => $term ) {
 
 			$replicast_info = API::get_remote_info( $term );
@@ -310,8 +317,8 @@ class PostHandler extends Handler {
 			$term->term_taxonomy_id = '';
 			$term->parent           = '';
 
-			if ( ! empty( $replicast_info[ $site->get_id() ] ) ) {
-				$replicast_info         = $replicast_info[ $site->get_id() ];
+			if ( ! empty( $replicast_info[ $site_id ] ) ) {
+				$replicast_info         = $replicast_info[ $site_id ];
 				$term->term_id          = $replicast_info['id'];
 				$term->term_taxonomy_id = isset( $replicast_info['term_taxonomy_id'] ) ? $replicast_info['term_taxonomy_id'] : '';
 				$term->parent           = $parent_id;
