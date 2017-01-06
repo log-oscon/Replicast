@@ -86,6 +86,7 @@ class Polylang {
 			return $data;
 		}
 
+		$site_id = $site->get_id();
 		foreach ( $data['replicast']['terms'] as $term ) {
 
 			if ( $term->taxonomy !== 'post_translations' ) {
@@ -103,8 +104,8 @@ class Polylang {
 				$remote_info = API::get_remote_info( \get_post( $translated_object_id ) );
 
 				unset( $translations[ $lang ] );
-				if ( ! empty( $remote_info[ $site->get_id() ]['id'] ) ) {
-					$translations[ $lang ] = $remote_info[ $site->get_id() ]['id'];
+				if ( ! empty( $remote_info[ $site_id ]['id'] ) ) {
+					$translations[ $lang ] = $remote_info[ $site_id ]['id'];
 				}
 			}
 
@@ -229,6 +230,7 @@ class Polylang {
 			return $data;
 		}
 
+		$site_id = $site->get_id();
 		foreach ( $data['replicast']['terms'] as $term_id => $term ) {
 
 			if ( empty( $term->polylang['translations'] ) ) {
@@ -246,11 +248,11 @@ class Polylang {
 
 				// Update object ID's.
 				$remote_info = API::get_remote_info( $translated_term );
-				if ( empty( $remote_info[ $site->get_id() ]['id'] ) ) {
+				if ( empty( $remote_info[ $site_id ]['id'] ) ) {
 					continue;
 				}
 
-				$data['replicast']['terms'][ $term_id ]->polylang['translations'][ $lang ] = $remote_info[ $site->get_id() ]['id'];
+				$data['replicast']['terms'][ $term_id ]->polylang['translations'][ $lang ] = $remote_info[ $site_id ]['id'];
 			}
 		}
 
