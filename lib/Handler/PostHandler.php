@@ -184,7 +184,7 @@ class PostHandler extends Handler {
 		$replicast_info = API::get_remote_info( \get_post( $data['featured_media'] ) );
 
 		// Update object ID.
-		$data['featured_media'] = '';
+		$data['featured_media'] = (int) '';
 		if ( ! empty( $replicast_info[ $site_id ] ) ) {
 			$data['featured_media'] = $replicast_info[ $site_id ]['id'];
 		}
