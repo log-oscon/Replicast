@@ -188,7 +188,8 @@ class PostHandler extends Handler {
 		if ( ! empty( $replicast_info[ $site_id ] ) ) {
 			$data['featured_media'] = $replicast_info[ $site_id ]['id'];
 		}
-
+echo gettype( $data['featured_media'] );
+die();
 		return $data;
 	}
 
