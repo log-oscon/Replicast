@@ -4,6 +4,7 @@
  *
  * @link       http://log.pt/
  * @since      1.0.0
+ * @since      1.1.0 Added support for post_object relationships
  *
  * @package    Replicast
  * @subpackage Replicast/lib/Module
@@ -274,6 +275,7 @@ class ACF {
 		 * Filter for suppressing ACF meta by field type.
 		 *
 		 * @since  1.0.0
+		 * @since  1.1.0 Added support for post_object relationships
 		 * @param  array Name of the suppressed field type(s).
 		 * @param  array Object meta.
 		 * @return array Possibly-modified name of the suppressed field type(s).
@@ -312,6 +314,7 @@ class ACF {
 					$meta_value = $this->prepare_gallery( $field_value, $site );
 					break;
 				case 'relationship':
+				case 'post_object':
 					$meta_value = $this->prepare_relationship( $field_value, $site );
 					break;
 			}
