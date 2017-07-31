@@ -54,14 +54,15 @@ Observações:
 1. O caso das featured images;  
 
 
-| ACF            | Estado | Observações |
-|----------------|:------:|-------------|
-| Texto          |    X   |             |
-| Related Posts  |    X   |             |
-| Date Picker    |    X   |             |
-| Image          |        |             |
-| Gallery        |        |             |
-| Term "Meta"    |    X   |             |
+| ACF                     | Estado | Observações |
+|-------------------------|:------:|-------------|
+| Texto                   |    X   |             |
+| Related Posts           |    X   |             |
+| Isolated Post Objects   |    X   |             |
+| Date Picker             |    X   |             |
+| Image                   |        |             |
+| Gallery                 |        |             |
+| Term "Meta"             |    X   |             |
 
 
 ### Outros
@@ -87,18 +88,21 @@ Observações:
 
 ### Sonae Sierra
 
-| Stores              | Estado | Observações |
-|---------------------|:------:|-------------|
-| Título              |    X   |             |
-| Texto               |    X   |             |
-| Categorias          |    X   |             |
-| Tags                |    X   |             |
-| Logo                |        |             |
-| Gallery             |        |             |
-| Contacts            |    X   |             |
-| Shopping Hours      |    X   |             |
-| Store Management    |    X   | [1]         |
-| Editing Permissions |    -   | [2]         |
+| Stores                           | Estado | Observações |
+|----------------------------------|:------:|-------------|
+| Criar status 'Imported'          |        |             |
+| Não propagar 'Imported'          |        |             |
+| Status 'Draft' remove dos locais |        |             |
+| Título                           |    X   |             |
+| Texto                            |    X   |             |
+| Categorias                       |    X   |             |
+| Tags                             |    X   |             |
+| Logo                             |        |             |
+| Gallery                          |        |             |
+| Contacts                         |    X   |             |
+| Shopping Hours                   |    X   |             |
+| Store Management                 |    X   | [1]         |
+| Editing Permissions              |    -   | [2]         |
 
 Observações:  
 1. O campo "Relationship Group" só é sincronizado se o termo seleccionado já existir no site remoto;  
