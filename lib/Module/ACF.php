@@ -4,7 +4,7 @@
  *
  * @link       http://log.pt/
  * @since      1.0.0
- * @since      1.1.0 Added support for post_object relationships
+ * @since      1.5.0 Added support for post_object relationships
  *
  * @package    Replicast
  * @subpackage Replicast/lib/Module
@@ -275,7 +275,7 @@ class ACF {
 		 * Filter for suppressing ACF meta by field type.
 		 *
 		 * @since  1.0.0
-		 * @since  1.1.0 Added support for post_object relationships
+		 * @since  1.5.0 Added support for post_object relationships
 		 * @param  array Name of the suppressed field type(s).
 		 * @param  array Object meta.
 		 * @return array Possibly-modified name of the suppressed field type(s).
