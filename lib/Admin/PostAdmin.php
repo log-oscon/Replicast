@@ -563,6 +563,7 @@ class PostAdmin extends Admin {
 	 * Triggered whenever a post is published, or if it is edited and
 	 * the status is changed to publish.
 	 *
+	 * @since 1.6.0 Post status `draft` will have two behaviors, 'Satellite posts should be updated or deleted?'.
 	 * @since 1.4.0 Check for `REST_REQUEST` constant.
 	 * @since 1.0.0
 	 *
@@ -600,6 +601,24 @@ class PostAdmin extends Admin {
 		// Double check post status.
 		if ( ! in_array( $post->post_status, SiteAdmin::get_post_status() ) ) {
 			return new \WP_Error( 'invalid_post_status', \__( 'Invalid post status.', 'replicast' ) );
+		}
+
+		// Determine if the Satellite posts should be updated or deleted.
+		if ( $post->post_status === 'draft' ) {
+
+			/**
+			 * Filter for whether to delete satellite posts or update their status.
+			 *
+			 * @since  1.6.0
+			 * @param  bool Flag for satellite posts deletion or status update.
+			 * @return bool Possibly-modified flag for satellite posts deletion or status update.
+			 */
+			$delete_drafts = \apply_filters( "replicast_{$post->post_type}_delete_drafts", false );
+
+			if ( $delete_drafts ) {
+				$this->on_trash_post( $post_id );
+				return;
+			}
 		}
 
 		// Get user ID.
