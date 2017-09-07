@@ -616,7 +616,7 @@ class PostAdmin extends Admin {
 			$delete_drafts = \apply_filters( "replicast_{$post->post_type}_delete_drafts", false );
 
 			if ( $delete_drafts ) {
-				$this->on_trash_post( $post_id );
+				$this->on_trash_post( $post_id, $delete_drafts );
 				return;
 			}
 		}
@@ -734,7 +734,7 @@ class PostAdmin extends Admin {
 	 *
 	 * @param int $post_id The post ID.
 	 */
-	public function on_trash_post( $post_id ) {
+	public function on_trash_post( $post_id, $delete_draft = false ) {
 
 		// Bypass REST API requests.
 		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
@@ -754,7 +754,7 @@ class PostAdmin extends Admin {
 		}
 
 		// Double check post status.
-		if ( $post->post_status !== 'trash' ) {
+		if ( $post->post_status !== 'trash' && $delete_draft === false ) {
 			return new \WP_Error( 'invalid_post_status', \__( 'Invalid post status.', 'replicast' ) );
 		}
 
