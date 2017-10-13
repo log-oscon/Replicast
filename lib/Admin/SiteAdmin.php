@@ -214,10 +214,10 @@ class SiteAdmin {
 		);
 
 		$capabilities = array(
-			'manage_terms' => 'manage_sites',
-			'edit_terms'   => 'manage_sites',
-			'delete_terms' => 'manage_sites',
-			'assign_terms' => 'manage_sites',
+			'manage_terms' => 'edit_posts',
+			'edit_terms'   => 'edit_posts',
+			'delete_terms' => 'edit_posts',
+			'assign_terms' => 'edit_posts',
 		);
 
 		$this->taxonomy = \register_taxonomy(
