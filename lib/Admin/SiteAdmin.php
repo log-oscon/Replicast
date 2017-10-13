@@ -214,9 +214,9 @@ class SiteAdmin {
 		);
 
 		$capabilities = array(
-			'manage_terms' => 'edit_posts',
-			'edit_terms'   => 'edit_posts',
-			'delete_terms' => 'edit_posts',
+			'manage_terms' => 'manage_sites',
+			'edit_terms'   => 'manage_sites',
+			'delete_terms' => 'manage_sites',
 			'assign_terms' => 'edit_posts',
 		);
 
