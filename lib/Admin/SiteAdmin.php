@@ -217,7 +217,7 @@ class SiteAdmin {
 			'manage_terms' => 'manage_sites',
 			'edit_terms'   => 'manage_sites',
 			'delete_terms' => 'manage_sites',
-			'assign_terms' => 'manage_sites',
+			'assign_terms' => 'assign_replicast_site',
 		);
 
 		$this->taxonomy = \register_taxonomy(
